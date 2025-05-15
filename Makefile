@@ -1,30 +1,31 @@
 CC=xtensa-esp32s3-elf-gcc
 AR=xtensa-esp32s3-elf-ar
-CFLAGS=-I./include/
-ASFLAGS=-I./include/
+CFLAGS=-I./$(@D)/include/
+ASFLAGS=-I./$(@D)/include/
 
-libxt_hal.a: attribute.o \
-	cache_asm.o \
-	cache.o \
-	clock.o \
-	coherence.o \
-	debug.o \
-	debug_hndlr.o \
-	disass.o \
-	int_asm.o \
-	interrupts.o \
-	memcopy.o \
-	mem_ecc_parity.o \
-	misc.o \
-	miscellaneous.o \
-	mmu.o \
-	mp_asm.o \
-	set_region_translate.o \
-	state.o \
-	state_asm.o \
-	syscache_asm.o \
-	windowspill_asm.o
+libxt_hal.a: \
+	xtensa/attribute.o \
+	xtensa/cache_asm.o \
+	xtensa/cache.o \
+	xtensa/clock.o \
+	xtensa/coherence.o \
+	xtensa/debug.o \
+	xtensa/debug_hndlr.o \
+	xtensa/disass.o \
+	xtensa/int_asm.o \
+	xtensa/interrupts.o \
+	xtensa/memcopy.o \
+	xtensa/mem_ecc_parity.o \
+	xtensa/misc.o \
+	xtensa/miscellaneous.o \
+	xtensa/mmu.o \
+	xtensa/mp_asm.o \
+	xtensa/set_region_translate.o \
+	xtensa/state.o \
+	xtensa/state_asm.o \
+	xtensa/syscache_asm.o \
+	xtensa/windowspill_asm.o
 	$(AR) rcs $@ $?
 
 clean:
-	rm -f *.o
+	rm -f xtensa/*.o libxt_hal.a
