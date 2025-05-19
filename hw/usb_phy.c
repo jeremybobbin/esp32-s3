@@ -1,5 +1,4 @@
 
-#pragma once
 
 #include <stdbool.h>
 #include "soc/soc.h"
@@ -8,9 +7,6 @@
 #include "soc/rtc_cntl_struct.h"
 #include "soc/usb_serial_jtag_struct.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
 {
@@ -84,6 +80,3 @@ static inline void usb_phy_ll_int_enable_test_mode(usb_wrap_dev_t *hw, bool en)
 	}
 }
 
-#ifdef __cplusplus
-}
-#endif

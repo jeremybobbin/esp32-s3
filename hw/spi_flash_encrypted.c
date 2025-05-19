@@ -9,9 +9,6 @@
 #include "soc/soc.h"
 #include "hal/assert.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /// Choose type of chip you want to encrypt manully
 typedef enum
@@ -85,6 +82,3 @@ static inline bool spi_flash_encrypt_ll_check(uint32_t address, uint32_t length)
 	return ((address % length) == 0) ? true : false;
 }
 
-#ifdef __cplusplus
-}
-#endif

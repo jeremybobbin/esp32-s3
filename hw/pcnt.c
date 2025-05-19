@@ -2,16 +2,12 @@
 
 // The LL layer for ESP32-S3 PCNT register operations
 
-#pragma once
 
 #include <stdlib.h>
 #include <stdbool.h>
 #include "soc/pcnt_struct.h"
 #include "hal/pcnt_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define PCNT_LL_GET_HW(num) (((num) == 0) ? (&PCNT) : NULL)
 #define PCNT_LL_MAX_GLITCH_WIDTH 1023
@@ -201,6 +197,3 @@ static inline void pcnt_ll_enable_glitch_filter(pcnt_dev_t *hw, uint32_t unit, b
 	hw->conf_unit[unit].conf0.filter_en_un = enable;
 }
 
-#ifdef __cplusplus
-}
-#endif

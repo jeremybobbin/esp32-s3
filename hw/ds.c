@@ -1,5 +1,4 @@
 
-#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -8,9 +7,6 @@
 #include "soc/hwcrypto_reg.h"
 #include "soc/soc_caps.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline void ds_ll_start(void)
 {
@@ -107,6 +103,3 @@ static inline void ds_ll_finish(void)
 	ds_ll_wait_busy();
 }
 
-#ifdef __cplusplus
-}
-#endif

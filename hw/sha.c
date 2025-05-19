@@ -1,13 +1,9 @@
-#pragma once
 
 #include <stdbool.h>
 #include "soc/hwcrypto_reg.h"
 #include "hal/sha_types.h"
 #include "soc/dport_reg.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 static inline void sha_ll_start_block(esp_sha_type sha_type)
@@ -85,6 +81,3 @@ static inline void sha_ll_t_len_set(uint8_t t_len)
 	REG_WRITE(SHA_T_LENGTH_REG, t_len);
 }
 
-#ifdef __cplusplus
-}
-#endif

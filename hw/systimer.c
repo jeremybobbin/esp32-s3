@@ -1,4 +1,3 @@
-#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -13,9 +12,6 @@
 
 #define SYSTIMER_LL_TICKS_PER_US        (16) // 16 systimer ticks == 1us
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // All these functions get invoked either from ISR or HAL that linked to IRAM.
 // Always inline these functions even no gcc optimization is applied.
@@ -196,6 +192,3 @@ __attribute__((always_inline)) static inline void systimer_ll_clear_alarm_int(sy
 	}
 }
 
-#ifdef __cplusplus
-}
-#endif

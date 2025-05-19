@@ -2,11 +2,7 @@
 // The LL layer for Timer Group register operations.
 // Note that most of the register operations in this layer are non-atomic operations.
 
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -152,6 +148,3 @@ FORCE_INLINE_ATTR void rwdt_ll_clear_intr_status(rtc_cntl_dev_t *hw)
 	hw->int_clr.rtc_wdt = 1;
 }
 
-#ifdef __cplusplus
-}
-#endif

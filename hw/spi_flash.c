@@ -2,14 +2,10 @@
 
 // The Lowlevel layer for SPI Flash
 
-#pragma once
 
 #include "gpspi_flash_ll.h"
 #include "spimem_flash_ll.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // For esp32s2, spimem is equivalent to traditional spi peripherals found
 // in esp32. Let the spi flash clock reg definitions reflect this.
@@ -87,6 +83,3 @@ typedef union  {
 #define spi_flash_ll_set_cs_setup(dev, cs_setup_time)        spimem_flash_ll_set_cs_setup((spi_mem_dev_t*)dev, cs_setup_time)
 #endif
 
-#ifdef __cplusplus
-}
-#endif

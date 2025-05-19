@@ -2,11 +2,7 @@
 // The LL layer for Timer Group register operations.
 // Note that most of the register operations in this layer are non-atomic operations.
 
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdlib.h>
 #include "hal/misc.h"
@@ -180,6 +176,3 @@ static inline bool timer_ll_get_use_xtal(timg_dev_t *hw, timer_idx_t timer_num)
 	return hw->hw_timer[timer_num].config.tn_use_xtal;
 }
 
-#ifdef __cplusplus
-}
-#endif

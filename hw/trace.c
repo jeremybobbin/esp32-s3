@@ -1,5 +1,4 @@
 
-#pragma once
 #include <stdlib.h>
 
 #include "soc/dport_reg.h"

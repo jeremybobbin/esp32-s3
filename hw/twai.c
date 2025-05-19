@@ -2,11 +2,7 @@
 
 // The Lowlevel layer for TWAI
 
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -301,6 +297,3 @@ static inline void twai_ll_set_clkout(twai_dev_t *hw, uint32_t divider)
 	}
 }
 
-#ifdef __cplusplus
-}
-#endif

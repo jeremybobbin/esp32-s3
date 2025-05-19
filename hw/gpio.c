@@ -2,7 +2,6 @@
 
 // The LL layer for ESP32-S3 GPIO register operations
 
-#pragma once
 
 #include <stdbool.h>
 #include "soc/soc.h"
@@ -13,9 +12,6 @@
 #include "hal/gpio_types.h"
 #include "soc/gpio_struct.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Get GPIO hardware instance with giving gpio num
 #define GPIO_LL_GET_HW(num) (((num) == 0) ? (&GPIO) : NULL)
@@ -310,6 +306,3 @@ static inline void gpio_ll_sleep_output_enable(gpio_dev_t *hw, gpio_num_t gpio_n
 	PIN_SLP_OUTPUT_ENABLE(GPIO_PIN_MUX_REG[gpio_num]);
 }
 
-#ifdef __cplusplus
-}
-#endif

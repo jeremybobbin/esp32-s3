@@ -2,7 +2,6 @@
 
 // The Lowlevel layer for Touch Sensor
 
-#pragma once
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,9 +13,6 @@
 #include "soc/soc_caps.h"
 #include "hal/touch_sensor_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define TOUCH_LL_READ_RAW           0x0
 #define TOUCH_LL_READ_BENCHMARK     0x2
@@ -610,6 +606,3 @@ static inline void touch_ll_get_wakeup_status(touch_pad_t *pad_num)
 	*pad_num = (touch_pad_t)RTCCNTL.touch_slp_thres.touch_slp_pad;
 }
 
-#ifdef __cplusplus
-}
-#endif

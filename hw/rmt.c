@@ -1,14 +1,10 @@
 
-#pragma once
 
 #include <stddef.h>
 #include <stdbool.h>
 #include "hal/misc.h"
 #include "soc/rmt_struct.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define RMT_LL_MAX_LOOP_COUNT           (1023)/*!< Max loop count that hardware is supported */
 #define RMT_LL_HW_BASE  (&RMT)
@@ -488,6 +484,3 @@ static inline void rmt_ll_rx_enable_pingpong(rmt_dev_t *dev, uint32_t channel, b
 	dev->chmconf[channel].conf1.mem_rx_wrap_en_m = enable;
 }
 
-#ifdef __cplusplus
-}
-#endif

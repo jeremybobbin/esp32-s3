@@ -1,4 +1,3 @@
-#pragma once
 
 #include <stddef.h> /* For NULL declaration */
 #include <stdint.h>
@@ -9,9 +8,6 @@
 #include "hal/assert.h"
 #include "hal/lcd_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define LCD_LL_GET_HW(id) (((id) == 0) ? (&LCD_CAM) : NULL)
 
@@ -331,6 +327,3 @@ static inline volatile void *lcd_ll_get_interrupt_status_reg(lcd_cam_dev_t *dev)
 	return &dev->lc_dma_int_st;
 }
 
-#ifdef __cplusplus
-}
-#endif

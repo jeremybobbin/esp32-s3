@@ -1,13 +1,9 @@
-#pragma once
 
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/soc_caps.h"
 #include "soc/rtc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline void soc_ll_stall_core(int core)
 {
@@ -36,6 +32,3 @@ static inline void soc_ll_reset_core(int core)
 			core == 0 ? RTC_CNTL_SW_PROCPU_RST_M : RTC_CNTL_SW_APPCPU_RST_M);
 }
 
-#ifdef __cplusplus
-}
-#endif

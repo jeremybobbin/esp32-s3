@@ -2,7 +2,6 @@
 
 // The Lowlevel layer for SPI Flash
 
-#pragma once
 
 #include <stdlib.h>
 #include "soc/spi_periph.h"
@@ -14,9 +13,6 @@
 #include <string.h>
 #include "hal/misc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define gpspi_flash_ll_get_hw(host_id)  (((host_id)==SPI2_HOST ? &GPSPI2 \
 												: ((host_id)==SPI3_HOST ? &GPSPI3 \
@@ -246,6 +242,3 @@ static inline void gpspi_flash_ll_set_cs_setup(spi_dev_t *dev, uint32_t cs_setup
 	dev->user1.cs_setup_time = cs_setup_time - 1;
 }
 
-#ifdef __cplusplus
-}
-#endif

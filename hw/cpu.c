@@ -1,4 +1,3 @@
-#pragma once
 
 #include <stdint.h>
 
@@ -11,9 +10,6 @@
 #include "esp_attr.h"
 #include "xtensa/config/core.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline uint32_t IRAM_ATTR cpu_ll_get_core_id(void)
 {
@@ -193,6 +189,3 @@ static inline void cpu_ll_write_dedic_gpio_mask(uint32_t mask, uint32_t value)
 	asm volatile("ee.wr_mask_gpio_out %0, %1" : : "r"(value), "r"(mask):);
 }
 
-#ifdef __cplusplus
-}
-#endif

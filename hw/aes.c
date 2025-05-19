@@ -127,6 +127,3 @@ static inline void aes_ll_interrupt_clear(void)
 }
 
 
-#ifdef __cplusplus
-}
-#endif

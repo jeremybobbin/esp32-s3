@@ -3,7 +3,6 @@
 // Note that most of the register operations in this layer are non-atomic operations.
 
 
-#pragma once
 
 #include "hal/misc.h"
 #include "hal/uart_types.h"
@@ -11,9 +10,6 @@
 #include "soc/uart_struct.h"
 #include "esp_attr.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // The default fifo depth
 #define UART_LL_FIFO_DEF_LEN  (SOC_UART_FIFO_LEN)
@@ -506,6 +502,3 @@ FORCE_INLINE_ATTR uint32_t uart_ll_get_fsm_status(uart_port_t uart_num)
 	return REG_GET_FIELD(UART_FSM_STATUS_REG(uart_num), UART_ST_UTX_OUT);
 }
 
-#ifdef __cplusplus
-}
-#endif

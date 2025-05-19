@@ -2,7 +2,6 @@
 
 // The Lowlevel layer for SPI Flash
 
-#pragma once
 
 #include <stdlib.h>
 #include <sys/param.h> // For MIN/MAX
@@ -14,9 +13,6 @@
 #include "hal/spi_types.h"
 #include "hal/spi_flash_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define spimem_flash_ll_get_hw(host_id)  (((host_id)==SPI1_HOST ?  &SPIMEM1 : NULL ))
 #define spimem_flash_ll_hw_get_id(dev)  ((dev) == (void*)&SPIMEM1? SPI1_HOST: -1)
@@ -319,6 +315,3 @@ static inline void spimem_flash_ll_set_extra_dummy(spi_mem_dev_t *dev, uint32_t 
 	dev->timing_cali.extra_dummy_cyclelen = extra_dummy;
 }
 
-#ifdef __cplusplus
-}
-#endif

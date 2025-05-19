@@ -1,6 +1,5 @@
 
 
-#pragma once
 
 #include <stdlib.h>
 #include "soc/rtc_io_periph.h"
@@ -13,9 +12,6 @@
 
 #define RTCIO_LL_PIN_FUNC     0
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef enum {
 	RTCIO_FUNC_RTC = 0x0,         /*!< The pin controled by RTC module. */
@@ -215,6 +211,3 @@ static inline void rtcio_ll_ext0_set_wakeup_pin(int rtcio_num, int level)
 			level , RTC_CNTL_EXT_WAKEUP0_LV_S);
 }
 
-#ifdef __cplusplus
-}
-#endif

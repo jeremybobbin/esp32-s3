@@ -2,7 +2,6 @@
 
 // The LL layer for ESP32-S3 SPI register operations
 
-#pragma once
 
 #include <stdlib.h> //for abs()
 #include <string.h>
@@ -15,9 +14,6 @@
 #include "hal/misc.h"
 #include "hal/spi_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /// Interrupt not used. Don't use in app.
 #define SPI_LL_UNUSED_INT_MASK  (SPI_TRANS_DONE_INT_ENA | SPI_SLV_WR_DMA_DONE_INT_ENA | SPI_SLV_RD_DMA_DONE_INT_ENA | SPI_SLV_WR_BUF_DONE_INT_ENA | SPI_SLV_RD_BUF_DONE_INT_ENA)
@@ -758,6 +754,3 @@ static inline int spi_ll_get_slave_hd_dummy_bits(spi_line_mode_t line_mode)
 	return 8;
 }
 
-#ifdef __cplusplus
-}
-#endif

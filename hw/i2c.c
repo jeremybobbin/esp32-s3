@@ -1,7 +1,6 @@
 
 // The LL layer for I2C register operations
 
-#pragma once
 
 #include "hal/misc.h"
 #include "soc/i2c_periph.h"
@@ -10,9 +9,6 @@
 #include "hal/i2c_types.h"
 #include "esp_assert.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define I2C_LL_INTR_MASK          (0x3fff) /*!< I2C all interrupt bitmap */
 typedef union {
@@ -488,6 +484,3 @@ static inline void i2c_ll_slave_init(i2c_dev_t *hw)
 	hw->fifo_conf.fifo_addr_cfg_en = 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

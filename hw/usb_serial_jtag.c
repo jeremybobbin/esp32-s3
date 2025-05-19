@@ -1,13 +1,9 @@
 
 // The LL layer of the USB-serial-jtag controller
 
-#pragma once
 #include "soc/usb_serial_jtag_reg.h"
 #include "soc/usb_serial_jtag_struct.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 //The in and out endpoints are this long.
 #define USB_SERIAL_JTAG_PACKET_SZ_BYTES 64
@@ -87,6 +83,3 @@ static inline void usb_serial_jtag_ll_txfifo_flush(void)
 }
 
 
-#ifdef __cplusplus
-}
-#endif

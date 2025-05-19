@@ -1,5 +1,4 @@
 
-#pragma once
 
 #include <stdint.h>
 #include "soc/soc_caps.h"
@@ -8,9 +7,6 @@
 #include "xtensa/config/specreg.h"
 #include "xt_instr_macros.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline void intr_cntrl_ll_enable_interrupts(uint32_t mask)
 {
@@ -48,6 +44,3 @@ static inline void intr_cntrl_ll_edge_int_acknowledge (int intr)
 {
 	xthal_set_intclear(1 << intr);
 }
-#ifdef __cplusplus
-}
-#endif

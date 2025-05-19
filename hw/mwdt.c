@@ -2,11 +2,7 @@
 // The LL layer for Timer Group register operations.
 // Note that most of the register operations in this layer are non-atomic operations.
 
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -135,6 +131,3 @@ FORCE_INLINE_ATTR void mwdt_ll_set_intr_enable(timg_dev_t *hw, bool enable)
 	hw->int_ena_timers.wdt_int_ena = (enable) ? 1 : 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

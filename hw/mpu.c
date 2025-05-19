@@ -5,9 +5,6 @@
 
 #include "xt_instr_macros.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline uint32_t mpu_ll_id_to_addr(unsigned id)
 {
@@ -44,6 +41,3 @@ static inline void mpu_ll_set_region_illegal(uint32_t addr)
 	WDTLB(0xF, addr);
 }
 
-#ifdef __cplusplus
-}
-#endif

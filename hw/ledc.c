@@ -2,15 +2,11 @@
 // The LL layer for LEDC register operations.
 // Note that most of the register operations in this layer are non-atomic operations.
 
-#pragma once
 
 #include "hal/ledc_types.h"
 #include "soc/ledc_periph.h"
 #include "soc/ledc_struct.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define LEDC_LL_GET_HW() &LEDC
 #define LEDC_LL_FRACTIONAL_BITS    (8)
@@ -217,6 +213,3 @@ static inline void ledc_ll_get_channel_timer(ledc_dev_t *hw, ledc_mode_t speed_m
 	*timer_sel = hw->channel_group[speed_mode].channel[channel_num].conf0.timer_sel;
 }
 
-#ifdef __cplusplus
-}
-#endif

@@ -2,7 +2,6 @@
 
 // The LL layer for ESP32-S3 MCPWM register operations
 
-#pragma once
 
 #include <stdbool.h>
 #include "hal/misc.h"
@@ -11,9 +10,6 @@
 #include "hal/mcpwm_types.h"
 #include "hal/assert.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /// Get the address of peripheral registers
 #define MCPWM_LL_GET_HW(ID) (((ID) == 0) ? &MCPWM0 : &MCPWM1)

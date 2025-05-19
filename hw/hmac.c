@@ -1,6 +1,5 @@
 
 
-#pragma once
 
 #include "soc/hwcrypto_reg.h"
 
@@ -12,9 +11,6 @@
 #define HMAC_LL_EFUSE_KEY_PURPOSE_UP 8
 #define HMAC_LL_EFUSE_KEY_PURPOSE_DOWN_ALL 5
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline void hmac_ll_start(void)
 {
@@ -113,6 +109,3 @@ static inline void hmac_ll_calc_finish(void)
 	REG_WRITE(HMAC_SET_RESULT_FINISH_REG, 2);
 }
 
-#ifdef __cplusplus
-}
-#endif

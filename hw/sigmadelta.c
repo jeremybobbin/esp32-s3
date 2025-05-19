@@ -2,7 +2,6 @@
 
 // The LL layer for ESP32 SIGMADELTA register operations
 
-#pragma once
 
 #include <stdbool.h>
 #include "soc/sigmadelta_periph.h"
@@ -10,9 +9,6 @@
 #include "hal/sigmadelta_types.h"
 #include "hal/misc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Get SIGMADELTA hardware instance with giving sigmadelta num
 #define SIGMADELTA_LL_GET_HW(num) (((num) == 0) ? (&SIGMADELTA) : NULL)
@@ -32,6 +28,3 @@ static inline void sigmadelta_ll_set_prescale(gpio_sd_dev_t *hw, sigmadelta_chan
 	HAL_FORCE_MODIFY_U32_REG_FIELD(hw->channel[channel], prescale, prescale);
 }
 
-#ifdef __cplusplus
-}
-#endif

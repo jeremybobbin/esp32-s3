@@ -1,4 +1,3 @@
-#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -6,9 +5,6 @@
 #include "soc/gdma_struct.h"
 #include "soc/gdma_reg.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define GDMA_LL_GET_HW(id) (((id) == 0) ? (&GDMA) : NULL)
 
@@ -354,6 +350,3 @@ static inline void gdma_ll_tx_connect_to_periph(gdma_dev_t *dev, uint32_t channe
 	dev->channel[channel].out.peri_sel.sel = periph_id;
 }
 
-#ifdef __cplusplus
-}
-#endif
