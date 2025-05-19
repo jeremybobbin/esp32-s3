@@ -23,12 +23,12 @@
 #define LCD_LL_CONV_STD_TO_REG(std)      (uint8_t[]){0,1}[(std)]
 #define LCD_LL_YUV_SAMPLE_TO_REG(sample) (uint8_t[]){0,1,2}[(sample)]
 
-static inline void lcd_ll_enable_clock(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_enable_clock(lcd_cam_dev_t *dev, bool en)
 {
 	dev->lcd_clock.clk_en = en;
 }
 
-static inline void lcd_ll_select_clk_src(lcd_cam_dev_t *dev, lcd_clock_source_t src)
+void lcd_ll_select_clk_src(lcd_cam_dev_t *dev, lcd_clock_source_t src)
 {
 	switch (src) {
 	case LCD_CLK_SRC_PLL160M:
@@ -48,7 +48,7 @@ static inline void lcd_ll_select_clk_src(lcd_cam_dev_t *dev, lcd_clock_source_t 
 	}
 }
 
-static inline void lcd_ll_set_group_clock_coeff(lcd_cam_dev_t *dev, int div_num, int div_a, int div_b)
+void lcd_ll_set_group_clock_coeff(lcd_cam_dev_t *dev, int div_num, int div_a, int div_b)
 {
 	// lcd_clk = module_clock_src / (div_num + div_b / div_a)
 	HAL_ASSERT(div_num >= 2 && div_num <= LCD_LL_CLK_FRAC_DIV_N_MAX);
@@ -62,20 +62,17 @@ static inline void lcd_ll_set_group_clock_coeff(lcd_cam_dev_t *dev, int div_num,
 }
 
 
-__attribute__((always_inline))
-static inline void lcd_ll_set_clock_idle_level(lcd_cam_dev_t *dev, bool level)
+void lcd_ll_set_clock_idle_level(lcd_cam_dev_t *dev, bool level)
 {
 	dev->lcd_clock.lcd_ck_idle_edge = level;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_set_pixel_clock_edge(lcd_cam_dev_t *dev, bool active_on_neg)
+void lcd_ll_set_pixel_clock_edge(lcd_cam_dev_t *dev, bool active_on_neg)
 {
 	dev->lcd_clock.lcd_ck_out_edge = active_on_neg;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_set_pixel_clock_prescale(lcd_cam_dev_t *dev, uint32_t prescale)
+void lcd_ll_set_pixel_clock_prescale(lcd_cam_dev_t *dev, uint32_t prescale)
 {
 	HAL_ASSERT(prescale <= LCD_LL_PCLK_DIV_MAX);
 	// Formula: pixel_clk = lcd_clk / (1 + clkcnt_n)
@@ -90,47 +87,47 @@ static inline void lcd_ll_set_pixel_clock_prescale(lcd_cam_dev_t *dev, uint32_t 
 	dev->lcd_clock.lcd_clkcnt_n = scale;
 }
 
-static inline void lcd_ll_enable_rgb_yuv_convert(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_enable_rgb_yuv_convert(lcd_cam_dev_t *dev, bool en)
 {
 	dev->lcd_rgb_yuv.lcd_conv_bypass = en;
 }
 
-static inline void lcd_ll_set_convert_data_width(lcd_cam_dev_t *dev, uint32_t width)
+void lcd_ll_set_convert_data_width(lcd_cam_dev_t *dev, uint32_t width)
 {
 	HAL_ASSERT(width == 8 || width == 16);
 	dev->lcd_rgb_yuv.lcd_conv_mode_8bits_on = (width == 8) ? 1 : 0;
 }
 
-static inline void lcd_ll_set_input_color_range(lcd_cam_dev_t *dev, lcd_color_range_t range)
+void lcd_ll_set_input_color_range(lcd_cam_dev_t *dev, lcd_color_range_t range)
 {
 	dev->lcd_rgb_yuv.lcd_conv_data_in_mode = LCD_LL_COLOR_RANGE_TO_REG(range);
 }
 
-static inline void lcd_ll_set_output_color_range(lcd_cam_dev_t *dev, lcd_color_range_t range)
+void lcd_ll_set_output_color_range(lcd_cam_dev_t *dev, lcd_color_range_t range)
 {
 	dev->lcd_rgb_yuv.lcd_conv_data_out_mode = LCD_LL_COLOR_RANGE_TO_REG(range);
 }
 
-static inline void lcd_ll_set_yuv_convert_std(lcd_cam_dev_t *dev, lcd_yuv_conv_std_t std)
+void lcd_ll_set_yuv_convert_std(lcd_cam_dev_t *dev, lcd_yuv_conv_std_t std)
 {
 	dev->lcd_rgb_yuv.lcd_conv_protocol_mode = LCD_LL_CONV_STD_TO_REG(std);
 }
 
-static inline void lcd_ll_set_convert_mode_rgb_to_yuv(lcd_cam_dev_t *dev, lcd_yuv_sample_t yuv_sample)
+void lcd_ll_set_convert_mode_rgb_to_yuv(lcd_cam_dev_t *dev, lcd_yuv_sample_t yuv_sample)
 {
 	dev->lcd_rgb_yuv.lcd_conv_trans_mode = 1;
 	dev->lcd_rgb_yuv.lcd_conv_yuv_mode = LCD_LL_YUV_SAMPLE_TO_REG(yuv_sample);
 	dev->lcd_rgb_yuv.lcd_conv_yuv2yuv_mode = 3;
 }
 
-static inline void lcd_ll_set_convert_mode_yuv_to_rgb(lcd_cam_dev_t *dev, lcd_yuv_sample_t yuv_sample)
+void lcd_ll_set_convert_mode_yuv_to_rgb(lcd_cam_dev_t *dev, lcd_yuv_sample_t yuv_sample)
 {
 	dev->lcd_rgb_yuv.lcd_conv_trans_mode = 0;
 	dev->lcd_rgb_yuv.lcd_conv_yuv_mode = LCD_LL_YUV_SAMPLE_TO_REG(yuv_sample);
 	dev->lcd_rgb_yuv.lcd_conv_yuv2yuv_mode = 3;
 }
 
-static inline void lcd_ll_set_convert_mode_yuv_to_yuv(lcd_cam_dev_t *dev, lcd_yuv_sample_t src_sample, lcd_yuv_sample_t dst_sample)
+void lcd_ll_set_convert_mode_yuv_to_yuv(lcd_cam_dev_t *dev, lcd_yuv_sample_t src_sample, lcd_yuv_sample_t dst_sample)
 {
 	HAL_ASSERT(src_sample != dst_sample);
 	dev->lcd_rgb_yuv.lcd_conv_trans_mode = 1;
@@ -138,8 +135,7 @@ static inline void lcd_ll_set_convert_mode_yuv_to_yuv(lcd_cam_dev_t *dev, lcd_yu
 	dev->lcd_rgb_yuv.lcd_conv_yuv2yuv_mode = LCD_LL_YUV_SAMPLE_TO_REG(dst_sample);
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_set_phase_cycles(lcd_cam_dev_t *dev, uint32_t cmd_cycles, uint32_t dummy_cycles, uint32_t data_cycles)
+void lcd_ll_set_phase_cycles(lcd_cam_dev_t *dev, uint32_t cmd_cycles, uint32_t dummy_cycles, uint32_t data_cycles)
 {
 	HAL_ASSERT(cmd_cycles <= 2);
 	dev->lcd_user.lcd_cmd = (cmd_cycles > 0);
@@ -150,52 +146,48 @@ static inline void lcd_ll_set_phase_cycles(lcd_cam_dev_t *dev, uint32_t cmd_cycl
 	dev->lcd_user.lcd_dout_cyclelen = data_cycles - 1;
 }
 
-static inline void lcd_ll_set_blank_cycles(lcd_cam_dev_t *dev, uint32_t fk_cycles, uint32_t bk_cycles)
+void lcd_ll_set_blank_cycles(lcd_cam_dev_t *dev, uint32_t fk_cycles, uint32_t bk_cycles)
 {
 	dev->lcd_misc.lcd_bk_en = (fk_cycles || bk_cycles);
 	dev->lcd_misc.lcd_vfk_cyclelen = fk_cycles - 1;
 	dev->lcd_misc.lcd_vbk_cyclelen = bk_cycles - 1;
 }
 
-static inline void lcd_ll_set_data_width(lcd_cam_dev_t *dev, uint32_t width)
+void lcd_ll_set_data_width(lcd_cam_dev_t *dev, uint32_t width)
 {
 	HAL_ASSERT(width == 8 || width == 16);
 	dev->lcd_user.lcd_2byte_en = (width == 16);
 }
 
-static inline void lcd_ll_enable_output_always_on(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_enable_output_always_on(lcd_cam_dev_t *dev, bool en)
 {
 	dev->lcd_user.lcd_always_out_en = en;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_start(lcd_cam_dev_t *dev)
+void lcd_ll_start(lcd_cam_dev_t *dev)
 {
 	dev->lcd_user.lcd_update = 1; // update parameters before start transaction
 	dev->lcd_user.lcd_start = 1;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_stop(lcd_cam_dev_t *dev)
+void lcd_ll_stop(lcd_cam_dev_t *dev)
 {
 	dev->lcd_user.lcd_start = 0;
 	dev->lcd_user.lcd_update = 1; // self clear
 }
 
-static inline void lcd_ll_reset(lcd_cam_dev_t *dev)
+void lcd_ll_reset(lcd_cam_dev_t *dev)
 {
 	dev->lcd_user.lcd_reset = 1; // self clear
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_reverse_bit_order(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_reverse_bit_order(lcd_cam_dev_t *dev, bool en)
 {
 	// whether to change LCD_DATA_out[N:0] to LCD_DATA_out[0:N]
 	dev->lcd_user.lcd_bit_order = en;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_swap_byte_order(lcd_cam_dev_t *dev, uint32_t width, bool en)
+void lcd_ll_swap_byte_order(lcd_cam_dev_t *dev, uint32_t width, bool en)
 {
 	HAL_ASSERT(width == 8 || width == 16);
 	if (width == 8) {
@@ -209,14 +201,12 @@ static inline void lcd_ll_swap_byte_order(lcd_cam_dev_t *dev, uint32_t width, bo
 	}
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_fifo_reset(lcd_cam_dev_t *dev)
+void lcd_ll_fifo_reset(lcd_cam_dev_t *dev)
 {
 	dev->lcd_misc.lcd_afifo_reset = 1; // self clear
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_set_dc_level(lcd_cam_dev_t *dev, bool idle_phase, bool cmd_phase, bool dummy_phase, bool data_phase)
+void lcd_ll_set_dc_level(lcd_cam_dev_t *dev, bool idle_phase, bool cmd_phase, bool dummy_phase, bool data_phase)
 {
 	dev->lcd_misc.lcd_cd_idle_edge = idle_phase;
 	dev->lcd_misc.lcd_cd_cmd_set = (cmd_phase != idle_phase);
@@ -224,13 +214,12 @@ static inline void lcd_ll_set_dc_level(lcd_cam_dev_t *dev, bool idle_phase, bool
 	dev->lcd_misc.lcd_cd_data_set = (data_phase != idle_phase);
 }
 
-static inline void lcd_ll_set_dc_delay_ticks(lcd_cam_dev_t *dev, uint32_t delay)
+void lcd_ll_set_dc_delay_ticks(lcd_cam_dev_t *dev, uint32_t delay)
 {
 	dev->lcd_dly_mode.lcd_cd_mode = delay;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_set_command(lcd_cam_dev_t *dev, uint32_t data_width, uint32_t command)
+void lcd_ll_set_command(lcd_cam_dev_t *dev, uint32_t data_width, uint32_t command)
 {
 	HAL_ASSERT(data_width == 8 || data_width == 16);
 	// if command phase has two cycles, in the first cycle, command[15:0] is sent out via lcd_data_out[15:0]
@@ -241,28 +230,28 @@ static inline void lcd_ll_set_command(lcd_cam_dev_t *dev, uint32_t data_width, u
 	dev->lcd_cmd_val.lcd_cmd_value = command;
 }
 
-static inline void lcd_ll_enable_rgb_mode(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_enable_rgb_mode(lcd_cam_dev_t *dev, bool en)
 {
 	dev->lcd_ctrl.lcd_rgb_mode_en = en;
 }
 
-static inline void lcd_ll_enable_auto_next_frame(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_enable_auto_next_frame(lcd_cam_dev_t *dev, bool en)
 {
 	// in RGB mode, enabling "next frame" means LCD controller keeps sending frame data
 	dev->lcd_misc.lcd_next_frame_en = en;
 }
 
-static inline void lcd_ll_enable_output_hsync_in_porch_region(lcd_cam_dev_t *dev, bool en)
+void lcd_ll_enable_output_hsync_in_porch_region(lcd_cam_dev_t *dev, bool en)
 {
 	dev->lcd_ctrl2.lcd_hs_blank_en = en;
 }
 
-static inline void lcd_ll_set_hsync_position(lcd_cam_dev_t *dev, uint32_t offset_in_line)
+void lcd_ll_set_hsync_position(lcd_cam_dev_t *dev, uint32_t offset_in_line)
 {
 	HAL_FORCE_MODIFY_U32_REG_FIELD(dev->lcd_ctrl2, lcd_hsync_position, offset_in_line);
 }
 
-static inline void lcd_ll_set_horizontal_timing(lcd_cam_dev_t *dev, uint32_t hsw, uint32_t hbp, uint32_t active_width, uint32_t hfp)
+void lcd_ll_set_horizontal_timing(lcd_cam_dev_t *dev, uint32_t hsw, uint32_t hbp, uint32_t active_width, uint32_t hfp)
 {
 	dev->lcd_ctrl2.lcd_hsync_width = hsw - 1;
 	dev->lcd_ctrl.lcd_hb_front = hbp + hsw - 1;
@@ -270,7 +259,7 @@ static inline void lcd_ll_set_horizontal_timing(lcd_cam_dev_t *dev, uint32_t hsw
 	dev->lcd_ctrl1.lcd_ht_width = hsw + hbp + active_width + hfp - 1;
 }
 
-static inline void lcd_ll_set_vertical_timing(lcd_cam_dev_t *dev, uint32_t vsw, uint32_t vbp, uint32_t active_height, uint32_t vfp)
+void lcd_ll_set_vertical_timing(lcd_cam_dev_t *dev, uint32_t vsw, uint32_t vbp, uint32_t active_height, uint32_t vfp)
 {
 	dev->lcd_ctrl2.lcd_vsync_width = vsw - 1;
 	HAL_FORCE_MODIFY_U32_REG_FIELD(dev->lcd_ctrl1, lcd_vb_front, vbp + vsw - 1);
@@ -278,21 +267,21 @@ static inline void lcd_ll_set_vertical_timing(lcd_cam_dev_t *dev, uint32_t vsw, 
 	dev->lcd_ctrl.lcd_vt_height = vsw + vbp + active_height + vfp - 1;
 }
 
-static inline void lcd_ll_set_idle_level(lcd_cam_dev_t *dev, bool hsync_idle_level, bool vsync_idle_level, bool de_idle_level)
+void lcd_ll_set_idle_level(lcd_cam_dev_t *dev, bool hsync_idle_level, bool vsync_idle_level, bool de_idle_level)
 {
 	dev->lcd_ctrl2.lcd_hsync_idle_pol = hsync_idle_level;
 	dev->lcd_ctrl2.lcd_vsync_idle_pol = vsync_idle_level;
 	dev->lcd_ctrl2.lcd_de_idle_pol = de_idle_level;
 }
 
-static inline void lcd_ll_set_delay_ticks(lcd_cam_dev_t *dev, uint32_t hsync_delay, uint32_t vsync_delay, uint32_t de_delay)
+void lcd_ll_set_delay_ticks(lcd_cam_dev_t *dev, uint32_t hsync_delay, uint32_t vsync_delay, uint32_t de_delay)
 {
 	dev->lcd_dly_mode.lcd_hsync_mode = hsync_delay;
 	dev->lcd_dly_mode.lcd_vsync_mode = vsync_delay;
 	dev->lcd_dly_mode.lcd_de_mode = de_delay;
 }
 
-static inline void lcd_ll_set_data_delay_ticks(lcd_cam_dev_t *dev, uint32_t delay)
+void lcd_ll_set_data_delay_ticks(lcd_cam_dev_t *dev, uint32_t delay)
 {
 	uint32_t reg_val = 0;
 	for (int i = 0; i < 16; i++) {
@@ -301,7 +290,7 @@ static inline void lcd_ll_set_data_delay_ticks(lcd_cam_dev_t *dev, uint32_t dela
 	dev->lcd_data_dout_mode.val = reg_val;
 }
 
-static inline void lcd_ll_enable_interrupt(lcd_cam_dev_t *dev, uint32_t mask, bool en)
+void lcd_ll_enable_interrupt(lcd_cam_dev_t *dev, uint32_t mask, bool en)
 {
 	if (en) {
 		dev->lc_dma_int_ena.val |= mask & 0x03;
@@ -310,19 +299,17 @@ static inline void lcd_ll_enable_interrupt(lcd_cam_dev_t *dev, uint32_t mask, bo
 	}
 }
 
-__attribute__((always_inline))
-static inline uint32_t lcd_ll_get_interrupt_status(lcd_cam_dev_t *dev)
+uint32_t lcd_ll_get_interrupt_status(lcd_cam_dev_t *dev)
 {
 	return dev->lc_dma_int_st.val & 0x03;
 }
 
-__attribute__((always_inline))
-static inline void lcd_ll_clear_interrupt_status(lcd_cam_dev_t *dev, uint32_t mask)
+void lcd_ll_clear_interrupt_status(lcd_cam_dev_t *dev, uint32_t mask)
 {
 	dev->lc_dma_int_clr.val = mask & 0x03;
 }
 
-static inline volatile void *lcd_ll_get_interrupt_status_reg(lcd_cam_dev_t *dev)
+volatile void *lcd_ll_get_interrupt_status_reg(lcd_cam_dev_t *dev)
 {
 	return &dev->lc_dma_int_st;
 }

@@ -22,32 +22,32 @@ typedef enum {
 	USB_SERIAL_JTAG_INTR_EP1_ZERO_PAYLOAD       = (1 << 10),
 } usb_serial_jtag_intr_t;
 
-static inline void usb_serial_jtag_ll_ena_intr_mask(uint32_t mask)
+void usb_serial_jtag_ll_ena_intr_mask(uint32_t mask)
 {
 	USB_SERIAL_JTAG.int_ena.val |= mask;
 }
 
-static inline void usb_serial_jtag_ll_disable_intr_mask(uint32_t mask)
+void usb_serial_jtag_ll_disable_intr_mask(uint32_t mask)
 {
 	USB_SERIAL_JTAG.int_ena.val &= (~mask);
 }
 
-static inline uint32_t usb_serial_jtag_ll_get_intsts_mask(void)
+uint32_t usb_serial_jtag_ll_get_intsts_mask(void)
 {
 	return USB_SERIAL_JTAG.int_st.val;
 }
 
-static inline void usb_serial_jtag_ll_clr_intsts_mask(uint32_t mask)
+void usb_serial_jtag_ll_clr_intsts_mask(uint32_t mask)
 {
 	USB_SERIAL_JTAG.int_clr.val = mask;
 }
 
-static inline uint32_t usb_serial_jtag_ll_get_intr_ena_status(void)
+uint32_t usb_serial_jtag_ll_get_intr_ena_status(void)
 {
 	return USB_SERIAL_JTAG.int_ena.val;
 }
 
-static inline uint32_t usb_serial_jtag_ll_read_rxfifo(uint8_t *buf, uint32_t rd_len)
+uint32_t usb_serial_jtag_ll_read_rxfifo(uint8_t *buf, uint32_t rd_len)
 {
 	uint32_t i;
 	for (i = 0; i < rd_len; i++) {
@@ -57,7 +57,7 @@ static inline uint32_t usb_serial_jtag_ll_read_rxfifo(uint8_t *buf, uint32_t rd_
 	return i;
 }
 
-static inline uint32_t usb_serial_jtag_ll_write_txfifo(const uint8_t *buf, uint32_t wr_len)
+uint32_t usb_serial_jtag_ll_write_txfifo(const uint8_t *buf, uint32_t wr_len)
 {
 	uint32_t i;
 	for (i = 0; i < wr_len; i++) {
@@ -67,17 +67,17 @@ static inline uint32_t usb_serial_jtag_ll_write_txfifo(const uint8_t *buf, uint3
 	return i;
 }
 
-static inline int usb_serial_jtag_ll_rxfifo_data_available(void)
+int usb_serial_jtag_ll_rxfifo_data_available(void)
 {
 	return USB_SERIAL_JTAG.ep1_conf.serial_out_ep_data_avail;
 }
 
-static inline int usb_serial_jtag_ll_txfifo_writable(void)
+int usb_serial_jtag_ll_txfifo_writable(void)
 {
 	return USB_SERIAL_JTAG.ep1_conf.serial_in_ep_data_free;
 }
 
-static inline void usb_serial_jtag_ll_txfifo_flush(void)
+void usb_serial_jtag_ll_txfifo_flush(void)
 {
 	USB_SERIAL_JTAG.ep1_conf.wr_done=1;
 }

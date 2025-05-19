@@ -10,7 +10,7 @@ typedef enum {
 } esp_aes_state_t;
 
 
-static inline uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len)
+uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len)
 {
 	/* This variable is used for fault injection checks, so marked volatile to avoid optimisation */
 	volatile uint8_t key_in_hardware = 0;
@@ -24,7 +24,7 @@ static inline uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len)
 	return key_in_hardware;
 }
 
-static inline void aes_ll_set_mode(int mode, uint8_t key_bytes)
+void aes_ll_set_mode(int mode, uint8_t key_bytes)
 {
 	const uint32_t MODE_DECRYPT_BIT = 4;
 	unsigned mode_reg_base = (mode == ESP_AES_ENCRYPT) ? 0 : MODE_DECRYPT_BIT;
@@ -33,7 +33,7 @@ static inline void aes_ll_set_mode(int mode, uint8_t key_bytes)
 	REG_WRITE(AES_MODE_REG, mode_reg_base + ((key_bytes / 8) - 2));
 }
 
-static inline void aes_ll_write_block(const void *input)
+void aes_ll_write_block(const void *input)
 {
 	uint32_t input_word;
 
@@ -43,7 +43,7 @@ static inline void aes_ll_write_block(const void *input)
 	}
 }
 
-static inline void aes_ll_read_block(void *output)
+void aes_ll_read_block(void *output)
 {
 	uint32_t output_word;
 	const size_t REG_WIDTH = sizeof(uint32_t);
@@ -55,39 +55,39 @@ static inline void aes_ll_read_block(void *output)
 	}
 }
 
-static inline void aes_ll_start_transform(void)
+void aes_ll_start_transform(void)
 {
 	REG_WRITE(AES_TRIGGER_REG, 1);
 }
 
 
-static inline esp_aes_state_t aes_ll_get_state(void)
+esp_aes_state_t aes_ll_get_state(void)
 {
 	return REG_READ(AES_STATE_REG);
 }
 
 
-static inline void aes_ll_set_block_mode(esp_aes_mode_t mode)
+void aes_ll_set_block_mode(esp_aes_mode_t mode)
 {
 	REG_WRITE(AES_BLOCK_MODE_REG, mode);
 }
 
-static inline void aes_ll_set_inc(void)
+void aes_ll_set_inc(void)
 {
 	REG_WRITE(AES_INC_SEL_REG, 0);
 }
 
-static inline void aes_ll_dma_exit(void)
+void aes_ll_dma_exit(void)
 {
 	REG_WRITE(AES_DMA_EXIT_REG, 0);
 }
 
-static inline void aes_ll_set_num_blocks(size_t num_blocks)
+void aes_ll_set_num_blocks(size_t num_blocks)
 {
 	REG_WRITE(AES_BLOCK_NUM_REG, num_blocks);
 }
 
-static inline void aes_ll_set_iv(const uint8_t *iv)
+void aes_ll_set_iv(const uint8_t *iv)
 {
 	uint32_t *reg_addr_buf = (uint32_t *)(AES_IV_BASE);
 	uint32_t iv_word;
@@ -99,7 +99,7 @@ static inline void aes_ll_set_iv(const uint8_t *iv)
 	}
 }
 
-static inline void aes_ll_read_iv(uint8_t *iv)
+void aes_ll_read_iv(uint8_t *iv)
 {
 	uint32_t iv_word;
 	const size_t REG_WIDTH = sizeof(uint32_t);
@@ -111,17 +111,17 @@ static inline void aes_ll_read_iv(uint8_t *iv)
 	}
 }
 
-static inline void aes_ll_dma_enable(bool enable)
+void aes_ll_dma_enable(bool enable)
 {
 	REG_WRITE(AES_DMA_ENABLE_REG, enable);
 }
 
-static inline void aes_ll_interrupt_enable(bool enable)
+void aes_ll_interrupt_enable(bool enable)
 {
 	REG_WRITE(AES_INT_ENA_REG, enable);
 }
 
-static inline void aes_ll_interrupt_clear(void)
+void aes_ll_interrupt_clear(void)
 {
 	REG_WRITE(AES_INT_CLR_REG, 1);
 }

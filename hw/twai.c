@@ -38,22 +38,22 @@ typedef union {
 
 ESP_STATIC_ASSERT(sizeof(twai_ll_frame_buffer_t) == 13, "TX/RX buffer type should be 13 bytes");
 
-static inline void twai_ll_enter_reset_mode(twai_dev_t *hw)
+void twai_ll_enter_reset_mode(twai_dev_t *hw)
 {
 	hw->mode_reg.rm = 1;
 }
 
-static inline void twai_ll_exit_reset_mode(twai_dev_t *hw)
+void twai_ll_exit_reset_mode(twai_dev_t *hw)
 {
 	hw->mode_reg.rm = 0;
 }
 
-static inline bool twai_ll_is_in_reset_mode(twai_dev_t *hw)
+bool twai_ll_is_in_reset_mode(twai_dev_t *hw)
 {
 	return hw->mode_reg.rm;
 }
 
-static inline void twai_ll_set_mode(twai_dev_t *hw, twai_mode_t mode)
+void twai_ll_set_mode(twai_dev_t *hw, twai_mode_t mode)
 {
 	if (mode == TWAI_MODE_NORMAL) {           //Normal Operating mode
 		hw->mode_reg.lom = 0;
@@ -67,67 +67,67 @@ static inline void twai_ll_set_mode(twai_dev_t *hw, twai_mode_t mode)
 	}
 }
 
-static inline void twai_ll_set_cmd_tx(twai_dev_t *hw)
+void twai_ll_set_cmd_tx(twai_dev_t *hw)
 {
 	hw->command_reg.tr = 1;
 }
 
-static inline void twai_ll_set_cmd_tx_single_shot(twai_dev_t *hw)
+void twai_ll_set_cmd_tx_single_shot(twai_dev_t *hw)
 {
 	hw->command_reg.val = 0x03; //Set command_reg.tr and command_reg.at simultaneously for single shot transmittion request
 }
 
-static inline void twai_ll_set_cmd_abort_tx(twai_dev_t *hw)
+void twai_ll_set_cmd_abort_tx(twai_dev_t *hw)
 {
 	hw->command_reg.at = 1;
 }
 
-static inline void twai_ll_set_cmd_release_rx_buffer(twai_dev_t *hw)
+void twai_ll_set_cmd_release_rx_buffer(twai_dev_t *hw)
 {
 	hw->command_reg.rrb = 1;
 }
 
-static inline void twai_ll_set_cmd_clear_data_overrun(twai_dev_t *hw)
+void twai_ll_set_cmd_clear_data_overrun(twai_dev_t *hw)
 {
 	hw->command_reg.cdo = 1;
 }
 
-static inline void twai_ll_set_cmd_self_rx_request(twai_dev_t *hw)
+void twai_ll_set_cmd_self_rx_request(twai_dev_t *hw)
 {
 	hw->command_reg.srr = 1;
 }
 
-static inline void twai_ll_set_cmd_self_rx_single_shot(twai_dev_t *hw)
+void twai_ll_set_cmd_self_rx_single_shot(twai_dev_t *hw)
 {
 	hw->command_reg.val = 0x12; //Set command_reg.srr and command_reg.at simultaneously for single shot self reception request
 }
 
-static inline uint32_t twai_ll_get_status(twai_dev_t *hw)
+uint32_t twai_ll_get_status(twai_dev_t *hw)
 {
 	return hw->status_reg.val;
 }
 
-static inline bool twai_ll_is_fifo_overrun(twai_dev_t *hw)
+bool twai_ll_is_fifo_overrun(twai_dev_t *hw)
 {
 	return hw->status_reg.dos;
 }
 
-static inline bool twai_ll_is_last_tx_successful(twai_dev_t *hw)
+bool twai_ll_is_last_tx_successful(twai_dev_t *hw)
 {
 	return hw->status_reg.tcs;
 }
 
-static inline uint32_t twai_ll_get_and_clear_intrs(twai_dev_t *hw)
+uint32_t twai_ll_get_and_clear_intrs(twai_dev_t *hw)
 {
 	return hw->interrupt_reg.val;
 }
 
-static inline void twai_ll_set_enabled_intrs(twai_dev_t *hw, uint32_t intr_mask)
+void twai_ll_set_enabled_intrs(twai_dev_t *hw, uint32_t intr_mask)
 {
 	hw->interrupt_enable_reg.val = intr_mask;
 }
 
-static inline void twai_ll_set_bus_timing(twai_dev_t *hw, uint32_t brp, uint32_t sjw, uint32_t tseg1, uint32_t tseg2, bool triple_sampling)
+void twai_ll_set_bus_timing(twai_dev_t *hw, uint32_t brp, uint32_t sjw, uint32_t tseg1, uint32_t tseg2, bool triple_sampling)
 {
 	hw->bus_timing_0_reg.brp = (brp / 2) - 1;
 	hw->bus_timing_0_reg.sjw = sjw - 1;
@@ -136,47 +136,47 @@ static inline void twai_ll_set_bus_timing(twai_dev_t *hw, uint32_t brp, uint32_t
 	hw->bus_timing_1_reg.sam = triple_sampling;
 }
 
-static inline void twai_ll_clear_arb_lost_cap(twai_dev_t *hw)
+void twai_ll_clear_arb_lost_cap(twai_dev_t *hw)
 {
 	(void)hw->arbitration_lost_captue_reg.val;
 }
 
-static inline void twai_ll_clear_err_code_cap(twai_dev_t *hw)
+void twai_ll_clear_err_code_cap(twai_dev_t *hw)
 {
 	(void)hw->error_code_capture_reg.val;
 }
 
-static inline void twai_ll_set_err_warn_lim(twai_dev_t *hw, uint32_t ewl)
+void twai_ll_set_err_warn_lim(twai_dev_t *hw, uint32_t ewl)
 {
 	HAL_FORCE_MODIFY_U32_REG_FIELD(hw->error_warning_limit_reg, ewl, ewl);
 }
 
-static inline uint32_t twai_ll_get_err_warn_lim(twai_dev_t *hw)
+uint32_t twai_ll_get_err_warn_lim(twai_dev_t *hw)
 {
 	return hw->error_warning_limit_reg.val;
 }
 
-static inline uint32_t twai_ll_get_rec(twai_dev_t *hw)
+uint32_t twai_ll_get_rec(twai_dev_t *hw)
 {
 	return hw->rx_error_counter_reg.val;
 }
 
-static inline void twai_ll_set_rec(twai_dev_t *hw, uint32_t rec)
+void twai_ll_set_rec(twai_dev_t *hw, uint32_t rec)
 {
 	HAL_FORCE_MODIFY_U32_REG_FIELD(hw->rx_error_counter_reg, rxerr, rec);
 }
 
-static inline uint32_t twai_ll_get_tec(twai_dev_t *hw)
+uint32_t twai_ll_get_tec(twai_dev_t *hw)
 {
 	return hw->tx_error_counter_reg.val;
 }
 
-static inline void twai_ll_set_tec(twai_dev_t *hw, uint32_t tec)
+void twai_ll_set_tec(twai_dev_t *hw, uint32_t tec)
 {
 	HAL_FORCE_MODIFY_U32_REG_FIELD(hw->tx_error_counter_reg, txerr, tec);
 }
 
-static inline void twai_ll_set_acc_filter(twai_dev_t* hw, uint32_t code, uint32_t mask, bool single_filter)
+void twai_ll_set_acc_filter(twai_dev_t* hw, uint32_t code, uint32_t mask, bool single_filter)
 {
 	uint32_t code_swapped = HAL_SWAP32(code);
 	uint32_t mask_swapped = HAL_SWAP32(mask);
@@ -187,7 +187,7 @@ static inline void twai_ll_set_acc_filter(twai_dev_t* hw, uint32_t code, uint32_
 	hw->mode_reg.afm = single_filter;
 }
 
-static inline void twai_ll_set_tx_buffer(twai_dev_t *hw, twai_ll_frame_buffer_t *tx_frame)
+void twai_ll_set_tx_buffer(twai_dev_t *hw, twai_ll_frame_buffer_t *tx_frame)
 {
 	//Copy formatted frame into TX buffer
 	for (int i = 0; i < 13; i++) {
@@ -195,7 +195,7 @@ static inline void twai_ll_set_tx_buffer(twai_dev_t *hw, twai_ll_frame_buffer_t 
 	}
 }
 
-static inline void twai_ll_get_rx_buffer(twai_dev_t *hw, twai_ll_frame_buffer_t *rx_frame)
+void twai_ll_get_rx_buffer(twai_dev_t *hw, twai_ll_frame_buffer_t *rx_frame)
 {
 	//Copy RX buffer registers into frame
 	for (int i = 0; i < 13; i++) {
@@ -203,7 +203,7 @@ static inline void twai_ll_get_rx_buffer(twai_dev_t *hw, twai_ll_frame_buffer_t 
 	}
 }
 
-static inline void twai_ll_format_frame_buffer(uint32_t id, uint8_t dlc, const uint8_t *data,
+void twai_ll_format_frame_buffer(uint32_t id, uint8_t dlc, const uint8_t *data,
 											  uint32_t flags, twai_ll_frame_buffer_t *tx_frame)
 {
 	bool is_extd = flags & TWAI_MSG_FLAG_EXTD;
@@ -237,7 +237,7 @@ static inline void twai_ll_format_frame_buffer(uint32_t id, uint8_t dlc, const u
 	}
 }
 
-static inline void twai_ll_prase_frame_buffer(twai_ll_frame_buffer_t *rx_frame, uint32_t *id, uint8_t *dlc,
+void twai_ll_prase_frame_buffer(twai_ll_frame_buffer_t *rx_frame, uint32_t *id, uint8_t *dlc,
 											 uint8_t *data, uint32_t *flags)
 {
 	//Copy frame information
@@ -277,12 +277,12 @@ static inline void twai_ll_prase_frame_buffer(twai_ll_frame_buffer_t *rx_frame, 
 	}
 }
 
-static inline uint32_t twai_ll_get_rx_msg_count(twai_dev_t *hw)
+uint32_t twai_ll_get_rx_msg_count(twai_dev_t *hw)
 {
 	return hw->rx_message_counter_reg.val;
 }
 
-static inline void twai_ll_set_clkout(twai_dev_t *hw, uint32_t divider)
+void twai_ll_set_clkout(twai_dev_t *hw, uint32_t divider)
 {
 	if (divider >= 2 && divider <= 490) {
 		hw->clock_divider_reg.co = 0;

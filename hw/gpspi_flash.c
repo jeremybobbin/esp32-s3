@@ -33,7 +33,7 @@ typedef typeof(GPSPI2.clock) gpspi_flash_ll_clock_reg_t;
 #define GPSPI_FLASH_LL_CLKREG_VAL_40MHZ  ((gpspi_flash_ll_clock_reg_t){.val=0x00001001})   ///< Clock set to 40 MHz
 #define GPSPI_FLASH_LL_CLKREG_VAL_80MHZ  ((gpspi_flash_ll_clock_reg_t){.val=0x80000000})   ///< Clock set to 80 MHz
 
-static inline void gpspi_flash_ll_reset(spi_dev_t *dev)
+void gpspi_flash_ll_reset(spi_dev_t *dev)
 {
 	dev->user.val = 0;
 	dev->ctrl.val = 0;
@@ -48,12 +48,12 @@ static inline void gpspi_flash_ll_reset(spi_dev_t *dev)
 	dev->dma_conf.dma_seg_trans_en = 0;
 }
 
-static inline bool gpspi_flash_ll_cmd_is_done(const spi_dev_t *dev)
+bool gpspi_flash_ll_cmd_is_done(const spi_dev_t *dev)
 {
 	return (dev->cmd.usr == 0);
 }
 
-static inline void gpspi_flash_ll_get_buffer_data(spi_dev_t *dev, void *buffer, uint32_t read_len)
+void gpspi_flash_ll_get_buffer_data(spi_dev_t *dev, void *buffer, uint32_t read_len)
 {
 	if (((intptr_t)buffer % 4 == 0) && (read_len % 4 == 0)) {
 		// If everything is word-aligned, do a faster memcpy
@@ -71,12 +71,12 @@ static inline void gpspi_flash_ll_get_buffer_data(spi_dev_t *dev, void *buffer, 
 	}
 }
 
-static inline void gpspi_flash_ll_write_word(spi_dev_t *dev, uint32_t word)
+void gpspi_flash_ll_write_word(spi_dev_t *dev, uint32_t word)
 {
 	dev->data_buf[0] = word;
 }
 
-static inline void gpspi_flash_ll_set_buffer_data(spi_dev_t *dev, const void *buffer, uint32_t length)
+void gpspi_flash_ll_set_buffer_data(spi_dev_t *dev, const void *buffer, uint32_t length)
 {
 	// Load data registers, word at a time
 	int num_words = (length + 3) / 4;
@@ -90,24 +90,24 @@ static inline void gpspi_flash_ll_set_buffer_data(spi_dev_t *dev, const void *bu
 	}
 }
 
-static inline void gpspi_flash_ll_user_start(spi_dev_t *dev)
+void gpspi_flash_ll_user_start(spi_dev_t *dev)
 {
 	dev->cmd.update = 1;
 	while (dev->cmd.update);
 	dev->cmd.usr = 1;
 }
 
-static inline void gpspi_flash_ll_set_hold_pol(spi_dev_t *dev, uint32_t pol_val)
+void gpspi_flash_ll_set_hold_pol(spi_dev_t *dev, uint32_t pol_val)
 {
 	dev->ctrl.hold_pol = pol_val;
 }
 
-static inline bool gpspi_flash_ll_host_idle(const spi_dev_t *dev)
+bool gpspi_flash_ll_host_idle(const spi_dev_t *dev)
 {
 	return dev->cmd.usr == 0;
 }
 
-static inline void gpspi_flash_ll_read_phase(spi_dev_t *dev)
+void gpspi_flash_ll_read_phase(spi_dev_t *dev)
 {
 	typeof (dev->user) user = {
 		.usr_command = 1,
@@ -117,13 +117,13 @@ static inline void gpspi_flash_ll_read_phase(spi_dev_t *dev)
 	};
 	dev->user = user;
 }
-static inline void gpspi_flash_ll_set_cs_pin(spi_dev_t *dev, int pin)
+void gpspi_flash_ll_set_cs_pin(spi_dev_t *dev, int pin)
 {
 	dev->misc.cs0_dis = (pin == 0) ? 0 : 1;
 	dev->misc.cs1_dis = (pin == 1) ? 0 : 1;
 }
 
-static inline void gpspi_flash_ll_set_read_mode(spi_dev_t *dev, esp_flash_io_mode_t read_mode)
+void gpspi_flash_ll_set_read_mode(spi_dev_t *dev, esp_flash_io_mode_t read_mode)
 {
 	typeof (dev->ctrl) ctrl = dev->ctrl;
 	typeof (dev->user) user = dev->user;
@@ -162,12 +162,12 @@ static inline void gpspi_flash_ll_set_read_mode(spi_dev_t *dev, esp_flash_io_mod
 	dev->user = user;
 }
 
-static inline void gpspi_flash_ll_set_clock(spi_dev_t *dev, gpspi_flash_ll_clock_reg_t *clock_val)
+void gpspi_flash_ll_set_clock(spi_dev_t *dev, gpspi_flash_ll_clock_reg_t *clock_val)
 {
 	dev->clock = *clock_val;
 }
 
-static inline void gpspi_flash_ll_set_miso_bitlen(spi_dev_t *dev, uint32_t bitlen)
+void gpspi_flash_ll_set_miso_bitlen(spi_dev_t *dev, uint32_t bitlen)
 {
 	dev->user.usr_miso = bitlen > 0;
 	if (bitlen) {
@@ -175,7 +175,7 @@ static inline void gpspi_flash_ll_set_miso_bitlen(spi_dev_t *dev, uint32_t bitle
 	}
 }
 
-static inline void gpspi_flash_ll_set_mosi_bitlen(spi_dev_t *dev, uint32_t bitlen)
+void gpspi_flash_ll_set_mosi_bitlen(spi_dev_t *dev, uint32_t bitlen)
 {
 	dev->user.usr_mosi = bitlen > 0;
 	if (bitlen) {
@@ -183,7 +183,7 @@ static inline void gpspi_flash_ll_set_mosi_bitlen(spi_dev_t *dev, uint32_t bitle
 	}
 }
 
-static inline void gpspi_flash_ll_set_command(spi_dev_t *dev, uint8_t command, uint32_t bitlen)
+void gpspi_flash_ll_set_command(spi_dev_t *dev, uint8_t command, uint32_t bitlen)
 {
 	dev->user.usr_command = 1;
 	typeof(dev->user2) user2 = {
@@ -193,18 +193,18 @@ static inline void gpspi_flash_ll_set_command(spi_dev_t *dev, uint8_t command, u
 	dev->user2 = user2;
 }
 
-static inline int gpspi_flash_ll_get_addr_bitlen(spi_dev_t *dev)
+int gpspi_flash_ll_get_addr_bitlen(spi_dev_t *dev)
 {
 	return dev->user.usr_addr ? dev->user1.usr_addr_bitlen + 1 : 0;
 }
 
-static inline void gpspi_flash_ll_set_addr_bitlen(spi_dev_t *dev, uint32_t bitlen)
+void gpspi_flash_ll_set_addr_bitlen(spi_dev_t *dev, uint32_t bitlen)
 {
 	dev->user1.usr_addr_bitlen = (bitlen - 1);
 	dev->user.usr_addr = bitlen ? 1 : 0;
 }
 
-static inline void gpspi_flash_ll_set_usr_address(spi_dev_t *dev, uint32_t addr, uint32_t bitlen)
+void gpspi_flash_ll_set_usr_address(spi_dev_t *dev, uint32_t addr, uint32_t bitlen)
 {
 	// The blank region should be all ones
 	uint32_t padding_ones = (bitlen == 32? 0 : UINT32_MAX >> bitlen);
@@ -212,31 +212,31 @@ static inline void gpspi_flash_ll_set_usr_address(spi_dev_t *dev, uint32_t addr,
 }
 
 
-static inline void gpspi_flash_ll_set_address(spi_dev_t *dev, uint32_t addr)
+void gpspi_flash_ll_set_address(spi_dev_t *dev, uint32_t addr)
 {
 	dev->addr = addr;
 }
 
-static inline void gpspi_flash_ll_set_dummy(spi_dev_t *dev, uint32_t dummy_n)
+void gpspi_flash_ll_set_dummy(spi_dev_t *dev, uint32_t dummy_n)
 {
 	dev->user.usr_dummy = dummy_n ? 1 : 0;
 	HAL_FORCE_MODIFY_U32_REG_FIELD(dev->user1, usr_dummy_cyclelen, dummy_n - 1)
 }
 
-static inline void gpspi_flash_ll_set_dummy_out(spi_dev_t *dev, uint32_t out_en, uint32_t out_lev)
+void gpspi_flash_ll_set_dummy_out(spi_dev_t *dev, uint32_t out_en, uint32_t out_lev)
 {
 	dev->ctrl.dummy_out = out_en;
 	dev->ctrl.q_pol = out_lev;
 	dev->ctrl.d_pol = out_lev;
 }
 
-static inline void gpspi_flash_ll_set_hold(spi_dev_t *dev, uint32_t hold_n)
+void gpspi_flash_ll_set_hold(spi_dev_t *dev, uint32_t hold_n)
 {
 	dev->user1.cs_hold_time = hold_n - 1;
 	dev->user.cs_hold = (hold_n > 0? 1: 0);
 }
 
-static inline void gpspi_flash_ll_set_cs_setup(spi_dev_t *dev, uint32_t cs_setup_time)
+void gpspi_flash_ll_set_cs_setup(spi_dev_t *dev, uint32_t cs_setup_time)
 {
 	dev->user.cs_setup = (cs_setup_time > 0 ? 1 : 0);
 	dev->user1.cs_setup_time = cs_setup_time - 1;

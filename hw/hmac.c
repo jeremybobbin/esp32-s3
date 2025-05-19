@@ -12,12 +12,12 @@
 #define HMAC_LL_EFUSE_KEY_PURPOSE_DOWN_ALL 5
 
 
-static inline void hmac_ll_start(void)
+void hmac_ll_start(void)
 {
 	REG_WRITE(HMAC_SET_START_REG, 1);
 }
 
-static inline void hmac_ll_config_output(hmac_hal_output_t config)
+void hmac_ll_config_output(hmac_hal_output_t config)
 {
 	switch(config) {
 	case HMAC_OUTPUT_USER:
@@ -37,22 +37,22 @@ static inline void hmac_ll_config_output(hmac_hal_output_t config)
 	}
 }
 
-static inline void hmac_ll_config_hw_key_id(uint32_t key_id)
+void hmac_ll_config_hw_key_id(uint32_t key_id)
 {
 	REG_WRITE(HMAC_SET_PARA_KEY_REG, key_id);
 }
 
-static inline void hmac_ll_config_finish(void)
+void hmac_ll_config_finish(void)
 {
 	REG_WRITE(HMAC_SET_PARA_FINISH_REG, 1);
 }
 
-static inline uint32_t hmac_ll_query_config_error(void)
+uint32_t hmac_ll_query_config_error(void)
 {
 	return REG_READ(HMAC_QUERY_ERROR_REG);
 }
 
-static inline void hmac_ll_wait_idle(void)
+void hmac_ll_wait_idle(void)
 {
 	uint32_t query;
 	do {
@@ -60,7 +60,7 @@ static inline void hmac_ll_wait_idle(void)
 	} while(query != 0);
 }
 
-static inline void hmac_ll_write_block_512(const uint32_t *block)
+void hmac_ll_write_block_512(const uint32_t *block)
 {
 	const size_t REG_WIDTH = sizeof(uint32_t);
 	for (size_t i = 0; i < SHA256_BLOCK_SZ / REG_WIDTH; i++) {
@@ -70,7 +70,7 @@ static inline void hmac_ll_write_block_512(const uint32_t *block)
 	REG_WRITE(HMAC_SET_MESSAGE_ONE_REG, 1);
 }
 
-static inline void hmac_ll_read_result_256(uint32_t *result)
+void hmac_ll_read_result_256(uint32_t *result)
 {
 	const size_t REG_WIDTH = sizeof(uint32_t);
 	for (size_t i = 0; i < SHA256_DIGEST_SZ / REG_WIDTH; i++) {
@@ -78,33 +78,33 @@ static inline void hmac_ll_read_result_256(uint32_t *result)
 	}
 }
 
-static inline void hmac_ll_clean(void)
+void hmac_ll_clean(void)
 {
 	REG_WRITE(HMAC_SET_INVALIDATE_DS_REG, 1);
 	REG_WRITE(HMAC_SET_INVALIDATE_JTAG_REG, 1);
 }
 
-static inline void hmac_ll_msg_padding(void)
+void hmac_ll_msg_padding(void)
 {
 	REG_WRITE(HMAC_SET_MESSAGE_PAD_REG, 1);
 }
 
-static inline void hmac_ll_msg_end(void)
+void hmac_ll_msg_end(void)
 {
 	REG_WRITE(HMAC_SET_MESSAGE_END_REG, 1);
 }
 
-static inline void hmac_ll_msg_one_block(void)
+void hmac_ll_msg_one_block(void)
 {
 	REG_WRITE(HMAC_ONE_BLOCK_REG, 1);
 }
 
-static inline void hmac_ll_msg_continue(void)
+void hmac_ll_msg_continue(void)
 {
 	REG_WRITE(HMAC_SET_MESSAGE_ING_REG, 1);
 }
 
-static inline void hmac_ll_calc_finish(void)
+void hmac_ll_calc_finish(void)
 {
 	REG_WRITE(HMAC_SET_RESULT_FINISH_REG, 2);
 }

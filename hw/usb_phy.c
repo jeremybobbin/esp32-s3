@@ -8,7 +8,7 @@
 #include "soc/usb_serial_jtag_struct.h"
 
 
-static inline void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
+void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
 {
 	hw->otg_conf.pad_enable = 1;
 	// USB_OTG use internal PHY
@@ -19,7 +19,7 @@ static inline void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
 }
 
-static inline void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
+void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
 {
 	// USB_OTG use external PHY
 	hw->otg_conf.phy_sel = 1;
@@ -29,7 +29,7 @@ static inline void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
 }
 
-static inline void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
+void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
 {
 	// USB_Serial_JTAG use internal PHY
 	hw->conf0.phy_sel = 0;
@@ -45,7 +45,7 @@ static inline void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
 }
 
-static inline void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
+void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
 {
 	// USB_Serial_JTAG use external PHY
 	hw->conf0.phy_sel = 1;
@@ -55,7 +55,7 @@ static inline void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
 }
 
-static inline void usb_phy_ll_int_load_conf(usb_wrap_dev_t *hw, bool dp_pu, bool dp_pd, bool dm_pu, bool dm_pd)
+void usb_phy_ll_int_load_conf(usb_wrap_dev_t *hw, bool dp_pu, bool dp_pd, bool dm_pu, bool dm_pd)
 {
 	usb_wrap_otg_conf_reg_t conf = hw->otg_conf;
 	conf.pad_pull_override = 1;
@@ -66,7 +66,7 @@ static inline void usb_phy_ll_int_load_conf(usb_wrap_dev_t *hw, bool dp_pu, bool
 	hw->otg_conf = conf;
 }
 
-static inline void usb_phy_ll_int_enable_test_mode(usb_wrap_dev_t *hw, bool en)
+void usb_phy_ll_int_enable_test_mode(usb_wrap_dev_t *hw, bool en)
 {
 	if (en) {
 		// Clear USB_WRAP_TEST_CONF_REG

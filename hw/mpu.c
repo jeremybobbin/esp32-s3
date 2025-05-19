@@ -6,7 +6,7 @@
 #include "xt_instr_macros.h"
 
 
-static inline uint32_t mpu_ll_id_to_addr(unsigned id)
+uint32_t mpu_ll_id_to_addr(unsigned id)
 {
 	// vpn - id
 	// 0x00000000 = 0
@@ -20,22 +20,22 @@ static inline uint32_t mpu_ll_id_to_addr(unsigned id)
 	return id * SOC_MPU_MIN_REGION_SIZE;
 }
 
-static inline void mpu_ll_set_region_rw(uint32_t addr)
+void mpu_ll_set_region_rw(uint32_t addr)
 {
 	WDTLB(0x0, addr); // cached, no allocate
 }
 
-static inline void mpu_ll_set_region_rwx(uint32_t addr)
+void mpu_ll_set_region_rwx(uint32_t addr)
 {
 	WDTLB(0x2, addr); // bypass cache
 }
 
-static inline void mpu_ll_set_region_x(uint32_t addr)
+void mpu_ll_set_region_x(uint32_t addr)
 {
 	WITLB(0x3, addr); // cached
 }
 
-static inline void mpu_ll_set_region_illegal(uint32_t addr)
+void mpu_ll_set_region_illegal(uint32_t addr)
 {
 	WITLB(0xF, addr);
 	WDTLB(0xF, addr);

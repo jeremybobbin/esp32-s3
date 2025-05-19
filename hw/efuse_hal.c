@@ -12,7 +12,7 @@
 //The wafer_major and MSB of wafer_minor fields was allocated to other purposes when block version is v1.1.
 //Luckily only chip v0.0 have this kind of block version and efuse usage.
 //This workaround fixes the issue.
-static inline bool is_eco0(uint32_t minor_raw)
+bool is_eco0(uint32_t minor_raw)
 {
 	return ((minor_raw & 0x7) == 0 &&
 			efuse_ll_get_blk_version_major() == 1 && efuse_ll_get_blk_version_minor() == 1);

@@ -71,7 +71,7 @@ typedef struct {
 // I2C max timeout value
 #define I2C_LL_MAX_TIMEOUT I2C_TIME_OUT_VALUE_V
 
-static inline void i2c_ll_cal_bus_clk(uint32_t source_clk, uint32_t bus_freq, i2c_clk_cal_t *clk_cal)
+void i2c_ll_cal_bus_clk(uint32_t source_clk, uint32_t bus_freq, i2c_clk_cal_t *clk_cal)
 {
 	uint32_t clkm_div = source_clk / (bus_freq * 1024) +1;
 	uint32_t sclk_freq = source_clk / clkm_div;
@@ -93,13 +93,12 @@ static inline void i2c_ll_cal_bus_clk(uint32_t source_clk, uint32_t bus_freq, i2
 	clk_cal->tout = (int)(sizeof(half_cycle) * 8 - __builtin_clz(5 * half_cycle)) + 2;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_update(i2c_dev_t *hw)
+void i2c_ll_update(i2c_dev_t *hw)
 {
 	hw->ctr.conf_upgate = 1;
 }
 
-static inline void i2c_ll_set_bus_timing(i2c_dev_t *hw, i2c_clk_cal_t *bus_cfg)
+void i2c_ll_set_bus_timing(i2c_dev_t *hw, i2c_clk_cal_t *bus_cfg)
 {
 	HAL_FORCE_MODIFY_U32_REG_FIELD(hw->clk_conf, sclk_div_num, bus_cfg->clkm_div - 1);
 	/* According to the Technical Reference Manual, the following timings must be subtracted by 1.
@@ -123,19 +122,19 @@ static inline void i2c_ll_set_bus_timing(i2c_dev_t *hw, i2c_clk_cal_t *bus_cfg)
 	hw->to.time_out_en = 1;
 }
 
-static inline void i2c_ll_txfifo_rst(i2c_dev_t *hw)
+void i2c_ll_txfifo_rst(i2c_dev_t *hw)
 {
 	hw->fifo_conf.tx_fifo_rst = 1;
 	hw->fifo_conf.tx_fifo_rst = 0;
 }
 
-static inline void i2c_ll_rxfifo_rst(i2c_dev_t *hw)
+void i2c_ll_rxfifo_rst(i2c_dev_t *hw)
 {
 	hw->fifo_conf.rx_fifo_rst = 1;
 	hw->fifo_conf.rx_fifo_rst = 0;
 }
 
-static inline void i2c_ll_set_scl_timing(i2c_dev_t *hw, int high_period, int low_period)
+void i2c_ll_set_scl_timing(i2c_dev_t *hw, int high_period, int low_period)
 {
 	int high_period_output = high_period - 10; // The rising edge by open-drain output + internal pullup (about 50K) is slow
 	hw->scl_low_period.scl_low_period = low_period - 1;
@@ -143,52 +142,50 @@ static inline void i2c_ll_set_scl_timing(i2c_dev_t *hw, int high_period, int low
 	hw->scl_high_period.scl_wait_high_period = high_period - high_period_output;
 }
 
-static inline void i2c_ll_set_scl_clk_timing(i2c_dev_t *hw, int high_period, int low_period, int wait_high_period)
+void i2c_ll_set_scl_clk_timing(i2c_dev_t *hw, int high_period, int low_period, int wait_high_period)
 {
 	hw->scl_low_period.scl_low_period = low_period;
 	hw->scl_high_period.scl_high_period = high_period;
 	hw->scl_high_period.scl_wait_high_period = wait_high_period;
 }
 
-static inline void i2c_ll_clr_intsts_mask(i2c_dev_t *hw, uint32_t mask)
+void i2c_ll_clr_intsts_mask(i2c_dev_t *hw, uint32_t mask)
 {
 	hw->int_clr.val = mask;
 }
 
-static inline void i2c_ll_enable_intr_mask(i2c_dev_t *hw, uint32_t mask)
+void i2c_ll_enable_intr_mask(i2c_dev_t *hw, uint32_t mask)
 {
 	hw->int_ena.val |= mask;
 }
 
-static inline void i2c_ll_disable_intr_mask(i2c_dev_t *hw, uint32_t mask)
+void i2c_ll_disable_intr_mask(i2c_dev_t *hw, uint32_t mask)
 {
 	hw->int_ena.val &= (~mask);
 }
 
-__attribute__((always_inline))
-static inline uint32_t i2c_ll_get_intsts_mask(i2c_dev_t *hw)
+uint32_t i2c_ll_get_intsts_mask(i2c_dev_t *hw)
 {
 	return hw->int_status.val;
 }
 
-static inline void i2c_ll_set_fifo_mode(i2c_dev_t *hw, bool fifo_mode_en)
+void i2c_ll_set_fifo_mode(i2c_dev_t *hw, bool fifo_mode_en)
 {
 	hw->fifo_conf.nonfifo_en = fifo_mode_en ? 0 : 1;
 }
 
-static inline void i2c_ll_set_tout(i2c_dev_t *hw, int tout)
+void i2c_ll_set_tout(i2c_dev_t *hw, int tout)
 {
 	hw->to.time_out_value = tout;
 }
 
-static inline void i2c_ll_set_slave_addr(i2c_dev_t *hw, uint16_t slave_addr, bool addr_10bit_en)
+void i2c_ll_set_slave_addr(i2c_dev_t *hw, uint16_t slave_addr, bool addr_10bit_en)
 {
 	hw->slave_addr.slave_addr = slave_addr;
 	hw->slave_addr.addr_10bit_en = addr_10bit_en;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_write_cmd_reg(i2c_dev_t *hw, i2c_hw_cmd_t cmd, int cmd_idx)
+void i2c_ll_write_cmd_reg(i2c_dev_t *hw, i2c_hw_cmd_t cmd, int cmd_idx)
 {
 	ESP_STATIC_ASSERT(sizeof(i2c_comd0_reg_t) == sizeof(i2c_hw_cmd_t),
 					  "i2c_comdX_reg_t structure size must be equal to i2c_hw_cmd_t structure size");
@@ -196,132 +193,127 @@ static inline void i2c_ll_write_cmd_reg(i2c_dev_t *hw, i2c_hw_cmd_t cmd, int cmd
 	commands[cmd_idx].val = cmd.val;
 }
 
-static inline void i2c_ll_set_start_timing(i2c_dev_t *hw, int start_setup, int start_hold)
+void i2c_ll_set_start_timing(i2c_dev_t *hw, int start_setup, int start_hold)
 {
 	hw->scl_rstart_setup.scl_rstart_setup_time = start_setup;
 	hw->scl_start_hold.scl_start_hold_time = start_hold - 1;
 }
 
-static inline void i2c_ll_set_stop_timing(i2c_dev_t *hw, int stop_setup, int stop_hold)
+void i2c_ll_set_stop_timing(i2c_dev_t *hw, int stop_setup, int stop_hold)
 {
 	hw->scl_stop_setup.scl_stop_setup_time = stop_setup;
 	hw->scl_stop_hold.scl_stop_hold_time = stop_hold;
 }
 
-static inline void i2c_ll_set_sda_timing(i2c_dev_t *hw, int sda_sample, int sda_hold)
+void i2c_ll_set_sda_timing(i2c_dev_t *hw, int sda_sample, int sda_hold)
 {
 	hw->sda_hold.sda_hold_time = sda_hold;
 	hw->sda_sample.sda_sample_time = sda_sample;
 }
 
-static inline void i2c_ll_set_txfifo_empty_thr(i2c_dev_t *hw, uint8_t empty_thr)
+void i2c_ll_set_txfifo_empty_thr(i2c_dev_t *hw, uint8_t empty_thr)
 {
 	hw->fifo_conf.txfifo_wm_thrhd = empty_thr;
 }
 
-static inline void i2c_ll_set_rxfifo_full_thr(i2c_dev_t *hw, uint8_t full_thr)
+void i2c_ll_set_rxfifo_full_thr(i2c_dev_t *hw, uint8_t full_thr)
 {
 	hw->fifo_conf.rxfifo_wm_thrhd = full_thr;
 }
 
-static inline void i2c_ll_set_data_mode(i2c_dev_t *hw, i2c_trans_mode_t tx_mode, i2c_trans_mode_t rx_mode)
+void i2c_ll_set_data_mode(i2c_dev_t *hw, i2c_trans_mode_t tx_mode, i2c_trans_mode_t rx_mode)
 {
 	hw->ctr.tx_lsb_first = tx_mode;
 	hw->ctr.rx_lsb_first = rx_mode;
 }
 
-static inline void i2c_ll_get_data_mode(i2c_dev_t *hw, i2c_trans_mode_t *tx_mode, i2c_trans_mode_t *rx_mode)
+void i2c_ll_get_data_mode(i2c_dev_t *hw, i2c_trans_mode_t *tx_mode, i2c_trans_mode_t *rx_mode)
 {
 	*tx_mode = hw->ctr.tx_lsb_first;
 	*rx_mode = hw->ctr.rx_lsb_first;
 }
 
-static inline void i2c_ll_get_sda_timing(i2c_dev_t *hw, int *sda_sample, int *sda_hold)
+void i2c_ll_get_sda_timing(i2c_dev_t *hw, int *sda_sample, int *sda_hold)
 {
 	*sda_hold = hw->sda_hold.sda_hold_time;
 	*sda_sample = hw->sda_sample.sda_sample_time;
 }
 
-static inline uint32_t i2c_ll_get_hw_version(i2c_dev_t *hw)
+uint32_t i2c_ll_get_hw_version(i2c_dev_t *hw)
 {
 	return hw->date.val;
 }
 
-static inline bool i2c_ll_is_bus_busy(i2c_dev_t *hw)
+bool i2c_ll_is_bus_busy(i2c_dev_t *hw)
 {
 	return hw->sr.bus_busy;
 }
 
-static inline bool i2c_ll_is_master_mode(i2c_dev_t *hw)
+bool i2c_ll_is_master_mode(i2c_dev_t *hw)
 {
 	return hw->ctr.ms_mode;
 }
 
-__attribute__((always_inline))
-static inline uint32_t i2c_ll_get_rxfifo_cnt(i2c_dev_t *hw)
+uint32_t i2c_ll_get_rxfifo_cnt(i2c_dev_t *hw)
 {
 	return hw->sr.rxfifo_cnt;
 }
 
-__attribute__((always_inline))
-static inline uint32_t i2c_ll_get_txfifo_len(i2c_dev_t *hw)
+uint32_t i2c_ll_get_txfifo_len(i2c_dev_t *hw)
 {
 	return SOC_I2C_FIFO_LEN - hw->sr.txfifo_cnt;
 }
 
-static inline uint32_t i2c_ll_get_tout(i2c_dev_t *hw)
+uint32_t i2c_ll_get_tout(i2c_dev_t *hw)
 {
 	return hw->to.time_out_value;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_trans_start(i2c_dev_t *hw)
+void i2c_ll_trans_start(i2c_dev_t *hw)
 {
 	hw->ctr.trans_start = 1;
 }
 
-static inline void i2c_ll_get_start_timing(i2c_dev_t *hw, int *setup_time, int *hold_time)
+void i2c_ll_get_start_timing(i2c_dev_t *hw, int *setup_time, int *hold_time)
 {
 	*setup_time = hw->scl_rstart_setup.scl_rstart_setup_time;
 	*hold_time = hw->scl_start_hold.scl_start_hold_time + 1;
 }
 
-static inline void i2c_ll_get_stop_timing(i2c_dev_t *hw, int *setup_time, int *hold_time)
+void i2c_ll_get_stop_timing(i2c_dev_t *hw, int *setup_time, int *hold_time)
 {
 	*setup_time = hw->scl_stop_setup.scl_stop_setup_time;
 	*hold_time = hw->scl_stop_hold.scl_stop_hold_time;
 }
 
-static inline void i2c_ll_get_scl_timing(i2c_dev_t *hw, int *high_period, int *low_period)
+void i2c_ll_get_scl_timing(i2c_dev_t *hw, int *high_period, int *low_period)
 {
 	*high_period = hw->scl_high_period.scl_high_period + hw->scl_high_period.scl_wait_high_period;
 	*low_period = hw->scl_low_period.scl_low_period + 1;
 }
 
-static inline void i2c_ll_get_scl_clk_timing(i2c_dev_t *hw, int *high_period, int *low_period, int *wait_high_period)
+void i2c_ll_get_scl_clk_timing(i2c_dev_t *hw, int *high_period, int *low_period, int *wait_high_period)
 {
 	*high_period = hw->scl_high_period.scl_high_period;
 	*wait_high_period = hw->scl_high_period.scl_wait_high_period;
 	*low_period = hw->scl_low_period.scl_low_period;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_write_txfifo(i2c_dev_t *hw, uint8_t *ptr, uint8_t len)
+void i2c_ll_write_txfifo(i2c_dev_t *hw, uint8_t *ptr, uint8_t len)
 {
 	for (int i = 0; i< len; i++) {
 		HAL_FORCE_MODIFY_U32_REG_FIELD(hw->data, fifo_rdata, ptr[i]);
 	}
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_read_rxfifo(i2c_dev_t *hw, uint8_t *ptr, uint8_t len)
+void i2c_ll_read_rxfifo(i2c_dev_t *hw, uint8_t *ptr, uint8_t len)
 {
 	for(int i = 0; i < len; i++) {
 		ptr[i] = HAL_FORCE_READ_U32_REG_FIELD(hw->data, fifo_rdata);
 	}
 }
 
-static inline void i2c_ll_set_filter(i2c_dev_t *hw, uint8_t filter_num)
+void i2c_ll_set_filter(i2c_dev_t *hw, uint8_t filter_num)
 {
 	if (filter_num > 0) {
 		hw->filter_cfg.scl_filter_thres = filter_num;
@@ -334,87 +326,79 @@ static inline void i2c_ll_set_filter(i2c_dev_t *hw, uint8_t filter_num)
 	}
 }
 
-static inline uint8_t i2c_ll_get_filter(i2c_dev_t *hw)
+uint8_t i2c_ll_get_filter(i2c_dev_t *hw)
 {
 	return hw->filter_cfg.scl_filter_thres;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_enable_tx_it(i2c_dev_t *hw)
+void i2c_ll_master_enable_tx_it(i2c_dev_t *hw)
 {
 	hw->int_clr.val = ~0;
 	hw->int_ena.val =  I2C_LL_MASTER_TX_INT;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_enable_rx_it(i2c_dev_t *hw)
+void i2c_ll_master_enable_rx_it(i2c_dev_t *hw)
 {
 	hw->int_clr.val = ~0;
 	hw->int_ena.val = I2C_LL_MASTER_RX_INT;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_disable_tx_it(i2c_dev_t *hw)
+void i2c_ll_master_disable_tx_it(i2c_dev_t *hw)
 {
 	hw->int_ena.val &= (~I2C_LL_MASTER_TX_INT);
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_disable_rx_it(i2c_dev_t *hw)
+void i2c_ll_master_disable_rx_it(i2c_dev_t *hw)
 {
 	hw->int_ena.val &= (~I2C_LL_MASTER_RX_INT);
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_clr_tx_it(i2c_dev_t *hw)
+void i2c_ll_master_clr_tx_it(i2c_dev_t *hw)
 {
 	hw->int_clr.val = I2C_LL_MASTER_TX_INT;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_clr_rx_it(i2c_dev_t *hw)
+void i2c_ll_master_clr_rx_it(i2c_dev_t *hw)
 {
 	hw->int_clr.val = I2C_LL_MASTER_RX_INT;
 }
 
-static inline void i2c_ll_slave_enable_tx_it(i2c_dev_t *hw)
+void i2c_ll_slave_enable_tx_it(i2c_dev_t *hw)
 {
 	hw->int_ena.val |= I2C_LL_SLAVE_TX_INT;
 }
 
-static inline void i2c_ll_slave_enable_rx_it(i2c_dev_t *hw)
+void i2c_ll_slave_enable_rx_it(i2c_dev_t *hw)
 {
 	hw->int_ena.val |= I2C_LL_SLAVE_RX_INT;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_slave_disable_tx_it(i2c_dev_t *hw)
+void i2c_ll_slave_disable_tx_it(i2c_dev_t *hw)
 {
 	hw->int_ena.val &= (~I2C_LL_SLAVE_TX_INT);
 }
 
-static inline void i2c_ll_slave_disable_rx_it(i2c_dev_t *hw)
+void i2c_ll_slave_disable_rx_it(i2c_dev_t *hw)
 {
 	hw->int_ena.val &= (~I2C_LL_SLAVE_RX_INT);
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_slave_clr_tx_it(i2c_dev_t *hw)
+void i2c_ll_slave_clr_tx_it(i2c_dev_t *hw)
 {
 	hw->int_clr.val = I2C_LL_SLAVE_TX_INT;
 }
 
-static inline void i2c_ll_slave_clr_rx_it(i2c_dev_t *hw)
+void i2c_ll_slave_clr_rx_it(i2c_dev_t *hw)
 {
 	hw->int_clr.val = I2C_LL_SLAVE_RX_INT;
 }
 
-static inline void i2c_ll_master_fsm_rst(i2c_dev_t *hw)
+void i2c_ll_master_fsm_rst(i2c_dev_t *hw)
 {
 	hw->ctr.fsm_rst = 1;
 }
 
-static inline void i2c_ll_master_clr_bus(i2c_dev_t *hw)
+void i2c_ll_master_clr_bus(i2c_dev_t *hw)
 {
 	hw->scl_sp_conf.scl_rst_slv_num = 9;
 	hw->scl_sp_conf.scl_rst_slv_en = 0;
@@ -422,13 +406,12 @@ static inline void i2c_ll_master_clr_bus(i2c_dev_t *hw)
 	hw->scl_sp_conf.scl_rst_slv_en = 1;
 }
 
-static inline void i2c_ll_set_source_clk(i2c_dev_t *hw, i2c_sclk_t src_clk)
+void i2c_ll_set_source_clk(i2c_dev_t *hw, i2c_sclk_t src_clk)
 {
 	hw->clk_conf.sclk_sel = (src_clk == I2C_SCLK_RTC) ? 1 : 0;
 }
 
-__attribute__((always_inline))
-static inline void i2c_ll_master_get_event(i2c_dev_t *hw, i2c_intr_event_t *event)
+void i2c_ll_master_get_event(i2c_dev_t *hw, i2c_intr_event_t *event)
 {
 	typeof(hw->int_status) int_sts = hw->int_status;
 	if (int_sts.arbitration_lost_int_st) {
@@ -447,8 +430,7 @@ static inline void i2c_ll_master_get_event(i2c_dev_t *hw, i2c_intr_event_t *even
 }
 
 
-__attribute__((always_inline))
-static inline void i2c_ll_slave_get_event(i2c_dev_t *hw, i2c_intr_event_t *event)
+void i2c_ll_slave_get_event(i2c_dev_t *hw, i2c_intr_event_t *event)
 {
 	typeof(hw->int_status) int_sts = hw->int_status;
 	if (int_sts.txfifo_wm_int_st) {
@@ -462,7 +444,7 @@ static inline void i2c_ll_slave_get_event(i2c_dev_t *hw, i2c_intr_event_t *event
 	}
 }
 
-static inline void i2c_ll_master_init(i2c_dev_t *hw)
+void i2c_ll_master_init(i2c_dev_t *hw)
 {
 	typeof(hw->ctr) ctrl_reg;
 	ctrl_reg.val = 0;
@@ -473,7 +455,7 @@ static inline void i2c_ll_master_init(i2c_dev_t *hw)
 	hw->ctr.val = ctrl_reg.val;
 }
 
-static inline void i2c_ll_slave_init(i2c_dev_t *hw)
+void i2c_ll_slave_init(i2c_dev_t *hw)
 {
 	typeof(hw->ctr) ctrl_reg;
 	ctrl_reg.val = 0;

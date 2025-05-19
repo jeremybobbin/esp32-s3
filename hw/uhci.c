@@ -17,7 +17,7 @@ typedef enum {
 	UHCI_RX_EOF_MAX       = 0x7,
 } uhci_rxeof_cfg_t;
 
-static inline void uhci_ll_init(uhci_dev_t *hw)
+void uhci_ll_init(uhci_dev_t *hw)
 {
 	typeof(hw->conf0) conf0_reg;
 	hw->conf0.clk_en = 1;
@@ -27,14 +27,14 @@ static inline void uhci_ll_init(uhci_dev_t *hw)
 	hw->conf1.val = 0;
 }
 
-static inline void uhci_ll_attach_uart_port(uhci_dev_t *hw, int uart_num)
+void uhci_ll_attach_uart_port(uhci_dev_t *hw, int uart_num)
 {
 	hw->conf0.uart0_ce = (uart_num == 0)? 1: 0;
 	hw->conf0.uart1_ce = (uart_num == 1)? 1: 0;
 	hw->conf0.uart2_ce = (uart_num == 2)? 1: 0;
 }
 
-static inline void uhci_ll_set_seper_chr(uhci_dev_t *hw, uhci_seper_chr_t *seper_char)
+void uhci_ll_set_seper_chr(uhci_dev_t *hw, uhci_seper_chr_t *seper_char)
 {
 	if (seper_char->sub_chr_en) {
 		typeof(hw->esc_conf0) esc_conf0_reg = hw->esc_conf0;
@@ -50,13 +50,13 @@ static inline void uhci_ll_set_seper_chr(uhci_dev_t *hw, uhci_seper_chr_t *seper
 	}
 }
 
-static inline void uhci_ll_get_seper_chr(uhci_dev_t *hw, uhci_seper_chr_t *seper_chr)
+void uhci_ll_get_seper_chr(uhci_dev_t *hw, uhci_seper_chr_t *seper_chr)
 {
 	(void)hw;
 	(void)seper_chr;
 }
 
-static inline void uhci_ll_set_swflow_ctrl_sub_chr(uhci_dev_t *hw, uhci_swflow_ctrl_sub_chr_t *sub_ctr)
+void uhci_ll_set_swflow_ctrl_sub_chr(uhci_dev_t *hw, uhci_swflow_ctrl_sub_chr_t *sub_ctr)
 {
 	typeof(hw->escape_conf) escape_conf_reg = hw->escape_conf;
 	if (sub_ctr->flow_en == 1) {
@@ -83,28 +83,28 @@ static inline void uhci_ll_set_swflow_ctrl_sub_chr(uhci_dev_t *hw, uhci_swflow_c
 	hw->escape_conf.val = escape_conf_reg.val;
 }
 
-static inline void uhci_ll_enable_intr(uhci_dev_t *hw, uint32_t intr_mask)
+void uhci_ll_enable_intr(uhci_dev_t *hw, uint32_t intr_mask)
 {
 	hw->int_ena.val |= intr_mask;
 }
 
-static inline void uhci_ll_disable_intr(uhci_dev_t *hw, uint32_t intr_mask)
+void uhci_ll_disable_intr(uhci_dev_t *hw, uint32_t intr_mask)
 {
 	hw->int_ena.val &= (~intr_mask);
 }
 
-static inline void uhci_ll_clear_intr(uhci_dev_t *hw, uint32_t intr_mask)
+void uhci_ll_clear_intr(uhci_dev_t *hw, uint32_t intr_mask)
 {
 	hw->int_clr.val = intr_mask;
 }
 
-static inline uint32_t uhci_ll_get_intr(uhci_dev_t *hw)
+uint32_t uhci_ll_get_intr(uhci_dev_t *hw)
 {
 	return hw->int_st.val;
 }
 
 
-static inline void uhci_ll_set_eof_mode(uhci_dev_t *hw, uint32_t eof_mode)
+void uhci_ll_set_eof_mode(uhci_dev_t *hw, uint32_t eof_mode)
 {
 	if (eof_mode & UHCI_RX_BREAK_CHR_EOF) {
 		hw->conf0.uart_rx_brk_eof_en = 1;

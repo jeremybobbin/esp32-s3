@@ -72,7 +72,7 @@ typedef enum {
 	SPI_LL_BASE_CMD_HD_INT2     = 0x0A,
 } spi_ll_base_command_t;
 
-static inline void spi_ll_master_init(spi_dev_t *hw)
+void spi_ll_master_init(spi_dev_t *hw)
 {
 	//Reset timing
 	hw->user1.cs_setup_time = 0;
@@ -96,7 +96,7 @@ static inline void spi_ll_master_init(spi_dev_t *hw)
 	hw->dma_conf.dma_seg_trans_en = 0;
 }
 
-static inline void spi_ll_slave_init(spi_dev_t *hw)
+void spi_ll_slave_init(spi_dev_t *hw)
 {
 	//Configure slave
 	hw->clock.val = 0;
@@ -119,7 +119,7 @@ static inline void spi_ll_slave_init(spi_dev_t *hw)
 	hw->dma_int_ena.val &= ~SPI_LL_UNUSED_INT_MASK;
 }
 
-static inline void spi_ll_slave_hd_init(spi_dev_t *hw)
+void spi_ll_slave_hd_init(spi_dev_t *hw)
 {
 	hw->clock.val = 0;
 	hw->user.val = 0;
@@ -132,84 +132,84 @@ static inline void spi_ll_slave_hd_init(spi_dev_t *hw)
 	hw->slave.slave_mode = 1;
 }
 
-static inline bool spi_ll_usr_is_done(spi_dev_t *hw)
+bool spi_ll_usr_is_done(spi_dev_t *hw)
 {
 	return hw->dma_int_raw.trans_done;
 }
 
-static inline void spi_ll_master_user_start(spi_dev_t *hw)
+void spi_ll_master_user_start(spi_dev_t *hw)
 {
 	hw->cmd.update = 1;
 	while (hw->cmd.update);
 	hw->cmd.usr = 1;
 }
 
-static inline void spi_ll_slave_user_start(spi_dev_t *hw)
+void spi_ll_slave_user_start(spi_dev_t *hw)
 {
 	hw->cmd.usr = 1;
 }
 
-static inline uint32_t spi_ll_get_running_cmd(spi_dev_t *hw)
+uint32_t spi_ll_get_running_cmd(spi_dev_t *hw)
 {
 	return hw->cmd.val;
 }
 
-static inline void spi_ll_slave_reset(spi_dev_t *hw)
+void spi_ll_slave_reset(spi_dev_t *hw)
 {
 	hw->slave.soft_reset = 1;
 	hw->slave.soft_reset = 0;
 }
 
-static inline void spi_ll_cpu_tx_fifo_reset(spi_dev_t *hw)
+void spi_ll_cpu_tx_fifo_reset(spi_dev_t *hw)
 {
 	hw->dma_conf.buf_afifo_rst = 1;
 	hw->dma_conf.buf_afifo_rst = 0;
 }
 
-static inline void spi_ll_cpu_rx_fifo_reset(spi_dev_t *hw)
+void spi_ll_cpu_rx_fifo_reset(spi_dev_t *hw)
 {
 	hw->dma_conf.rx_afifo_rst = 1;
 	hw->dma_conf.rx_afifo_rst = 0;
 }
 
-static inline void spi_ll_dma_tx_fifo_reset(spi_dev_t *hw)
+void spi_ll_dma_tx_fifo_reset(spi_dev_t *hw)
 {
 	hw->dma_conf.dma_afifo_rst = 1;
 	hw->dma_conf.dma_afifo_rst = 0;
 }
 
-static inline void spi_ll_dma_rx_fifo_reset(spi_dev_t *hw)
+void spi_ll_dma_rx_fifo_reset(spi_dev_t *hw)
 {
 	hw->dma_conf.rx_afifo_rst = 1;
 	hw->dma_conf.rx_afifo_rst = 0;
 }
 
-static inline void spi_ll_infifo_full_clr(spi_dev_t *hw)
+void spi_ll_infifo_full_clr(spi_dev_t *hw)
 {
 	hw->dma_int_clr.infifo_full_err = 1;
 }
 
-static inline void spi_ll_outfifo_empty_clr(spi_dev_t *hw)
+void spi_ll_outfifo_empty_clr(spi_dev_t *hw)
 {
 	hw->dma_int_clr.outfifo_empty_err = 1;
 }
 
-static inline void spi_ll_dma_rx_enable(spi_dev_t *hw, bool enable)
+void spi_ll_dma_rx_enable(spi_dev_t *hw, bool enable)
 {
 	hw->dma_conf.dma_rx_ena = enable;
 }
 
-static inline void spi_ll_dma_tx_enable(spi_dev_t *hw, bool enable)
+void spi_ll_dma_tx_enable(spi_dev_t *hw, bool enable)
 {
 	hw->dma_conf.dma_tx_ena = enable;
 }
 
-static inline void spi_ll_dma_set_rx_eof_generation(spi_dev_t *hw, bool enable)
+void spi_ll_dma_set_rx_eof_generation(spi_dev_t *hw, bool enable)
 {
 	hw->dma_conf.rx_eof_en = enable;
 }
 
-static inline void spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_send, size_t bitlen)
+void spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_send, size_t bitlen)
 {
 	for (size_t x = 0; x < bitlen; x += 32) {
 		//Use memcpy to get around alignment issues for txdata
@@ -219,7 +219,7 @@ static inline void spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_s
 	}
 }
 
-static inline void spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *data, int len)
+void spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *data, int len)
 {
 	HAL_ASSERT(byte_id + len <= 64);
 	HAL_ASSERT(len > 0);
@@ -246,7 +246,7 @@ static inline void spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t 
 	}
 }
 
-static inline void spi_ll_read_buffer(spi_dev_t *hw, uint8_t *buffer_to_rcv, size_t bitlen)
+void spi_ll_read_buffer(spi_dev_t *hw, uint8_t *buffer_to_rcv, size_t bitlen)
 {
 	for (size_t x = 0; x < bitlen; x += 32) {
 		//Do a memcpy to get around possible alignment issues in rx_buffer
@@ -259,7 +259,7 @@ static inline void spi_ll_read_buffer(spi_dev_t *hw, uint8_t *buffer_to_rcv, siz
 	}
 }
 
-static inline void spi_ll_read_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *out_data, int len)
+void spi_ll_read_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *out_data, int len)
 {
 	while (len > 0) {
 		uint32_t word = hw->data_buf[byte_id / 4];
@@ -276,7 +276,7 @@ static inline void spi_ll_read_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *
 	}
 }
 
-static inline void spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_cs)
+void spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_cs)
 {
 	if (pos_cs) {
 		hw->misc.master_cs_pol |= (1 << cs);
@@ -285,17 +285,17 @@ static inline void spi_ll_master_set_pos_cs(spi_dev_t *hw, int cs, uint32_t pos_
 	}
 }
 
-static inline void spi_ll_set_tx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
+void spi_ll_set_tx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
 {
 	hw->ctrl.wr_bit_order = lsbfirst;
 }
 
-static inline void spi_ll_set_rx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
+void spi_ll_set_rx_lsbfirst(spi_dev_t *hw, bool lsbfirst)
 {
 	hw->ctrl.rd_bit_order = lsbfirst;
 }
 
-static inline void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
+void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
 {
 	//Configure polarity
 	if (mode == 0) {
@@ -313,7 +313,7 @@ static inline void spi_ll_master_set_mode(spi_dev_t *hw, uint8_t mode)
 	}
 }
 
-static inline void spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma_used)
+void spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma_used)
 {
 	if (mode == 0) {
 		hw->misc.ck_idle_edge = 0;
@@ -339,17 +339,17 @@ static inline void spi_ll_slave_set_mode(spi_dev_t *hw, const int mode, bool dma
 	hw->slave.rsck_data_out = 0;
 }
 
-static inline void spi_ll_set_half_duplex(spi_dev_t *hw, bool half_duplex)
+void spi_ll_set_half_duplex(spi_dev_t *hw, bool half_duplex)
 {
 	hw->user.doutdin = !half_duplex;
 }
 
-static inline void spi_ll_set_sio_mode(spi_dev_t *hw, int sio_mode)
+void spi_ll_set_sio_mode(spi_dev_t *hw, int sio_mode)
 {
 	hw->user.sio = sio_mode;
 }
 
-static inline void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t line_mode)
+void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t line_mode)
 {
 	hw->ctrl.val &= ~SPI_LL_ONE_LINE_CTRL_MASK;
 	hw->user.val &= ~SPI_LL_ONE_LINE_USER_MASK;
@@ -367,12 +367,12 @@ static inline void spi_ll_master_set_line_mode(spi_dev_t *hw, spi_line_mode_t li
 	hw->user.fwrite_oct = (line_mode.data_lines == 8);
 }
 
-static inline void spi_ll_slave_set_seg_mode(spi_dev_t *hw, bool seg_trans)
+void spi_ll_slave_set_seg_mode(spi_dev_t *hw, bool seg_trans)
 {
 	hw->dma_conf.dma_seg_trans_en = seg_trans;
 }
 
-static inline void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
+void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
 {
 	if (hw == &GPSPI2) {
 		hw->misc.cs0_dis = (cs_id == 0) ? 0 : 1;
@@ -390,22 +390,22 @@ static inline void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
 	}
 }
 
-static inline void spi_ll_master_keep_cs(spi_dev_t *hw, int keep_active)
+void spi_ll_master_keep_cs(spi_dev_t *hw, int keep_active)
 {
 	hw->misc.cs_keep_active = (keep_active != 0) ? 1 : 0;
 }
 
-static inline void spi_ll_master_set_clock_by_reg(spi_dev_t *hw, const spi_ll_clock_val_t *val)
+void spi_ll_master_set_clock_by_reg(spi_dev_t *hw, const spi_ll_clock_val_t *val)
 {
 	hw->clock.val = *(uint32_t *)val;
 }
 
-static inline int spi_ll_freq_for_pre_n(int fapb, int pre, int n)
+int spi_ll_freq_for_pre_n(int fapb, int pre, int n)
 {
 	return (fapb / (pre * n));
 }
 
-static inline int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_ll_clock_val_t *out_reg)
+int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_ll_clock_val_t *out_reg)
 {
 	typeof(GPSPI2.clock) reg;
 	int eff_clk;
@@ -469,7 +469,7 @@ static inline int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_
 	return eff_clk;
 }
 
-static inline int spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int duty_cycle)
+int spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int duty_cycle)
 {
 	spi_ll_clock_val_t reg_val;
 	int freq = spi_ll_master_cal_clock(fapb, hz, duty_cycle, &reg_val);
@@ -477,63 +477,63 @@ static inline int spi_ll_master_set_clock(spi_dev_t *hw, int fapb, int hz, int d
 	return freq;
 }
 
-static inline void spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int delay_num)
+void spi_ll_set_mosi_delay(spi_dev_t *hw, int delay_mode, int delay_num)
 {
 }
 
-static inline void spi_ll_set_miso_delay(spi_dev_t *hw, int delay_mode, int delay_num)
+void spi_ll_set_miso_delay(spi_dev_t *hw, int delay_mode, int delay_num)
 {
 }
 
-static inline void spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
+void spi_ll_master_set_cs_hold(spi_dev_t *hw, int hold)
 {
 	hw->user1.cs_hold_time = hold;
 	hw->user.cs_hold = hold ? 1 : 0;
 }
 
-static inline void spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
+void spi_ll_master_set_cs_setup(spi_dev_t *hw, uint8_t setup)
 {
 	hw->user1.cs_setup_time = setup - 1;
 	hw->user.cs_setup = setup ? 1 : 0;
 }
 
-static inline void spi_ll_set_mosi_bitlen(spi_dev_t *hw, size_t bitlen)
+void spi_ll_set_mosi_bitlen(spi_dev_t *hw, size_t bitlen)
 {
 	if (bitlen > 0) {
 		hw->ms_dlen.ms_data_bitlen = bitlen - 1;
 	}
 }
 
-static inline void spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
+void spi_ll_set_miso_bitlen(spi_dev_t *hw, size_t bitlen)
 {
 	if (bitlen > 0) {
 		hw->ms_dlen.ms_data_bitlen = bitlen - 1;
 	}
 }
 
-static inline void spi_ll_slave_set_rx_bitlen(spi_dev_t *hw, size_t bitlen)
+void spi_ll_slave_set_rx_bitlen(spi_dev_t *hw, size_t bitlen)
 {
 	//This is not used in esp32s3
 }
 
-static inline void spi_ll_slave_set_tx_bitlen(spi_dev_t *hw, size_t bitlen)
+void spi_ll_slave_set_tx_bitlen(spi_dev_t *hw, size_t bitlen)
 {
 	//This is not used in esp32s3
 }
 
-static inline void spi_ll_set_command_bitlen(spi_dev_t *hw, int bitlen)
+void spi_ll_set_command_bitlen(spi_dev_t *hw, int bitlen)
 {
 	hw->user2.usr_command_bitlen = bitlen - 1;
 	hw->user.usr_command = bitlen ? 1 : 0;
 }
 
-static inline void spi_ll_set_addr_bitlen(spi_dev_t *hw, int bitlen)
+void spi_ll_set_addr_bitlen(spi_dev_t *hw, int bitlen)
 {
 	hw->user1.usr_addr_bitlen = bitlen - 1;
 	hw->user.usr_addr = bitlen ? 1 : 0;
 }
 
-static inline void spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen, uint32_t lsbfirst)
+void spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen, uint32_t lsbfirst)
 {
 	if (lsbfirst) {
 		/* The output address start from the LSB of the highest byte, i.e.
@@ -552,7 +552,7 @@ static inline void spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen,
 	}
 }
 
-static inline void spi_ll_set_command(spi_dev_t *hw, uint16_t cmd, int cmdlen, bool lsbfirst)
+void spi_ll_set_command(spi_dev_t *hw, uint16_t cmd, int cmdlen, bool lsbfirst)
 {
 	if (lsbfirst) {
 		// The output command start from bit0 to bit 15, kept as is.
@@ -567,23 +567,23 @@ static inline void spi_ll_set_command(spi_dev_t *hw, uint16_t cmd, int cmdlen, b
 	}
 }
 
-static inline void spi_ll_set_dummy(spi_dev_t *hw, int dummy_n)
+void spi_ll_set_dummy(spi_dev_t *hw, int dummy_n)
 {
 	hw->user.usr_dummy = dummy_n ? 1 : 0;
 	HAL_FORCE_MODIFY_U32_REG_FIELD(hw->user1, usr_dummy_cyclelen, dummy_n - 1);
 }
 
-static inline void spi_ll_enable_miso(spi_dev_t *hw, int enable)
+void spi_ll_enable_miso(spi_dev_t *hw, int enable)
 {
 	hw->user.usr_miso = enable;
 }
 
-static inline void spi_ll_enable_mosi(spi_dev_t *hw, int enable)
+void spi_ll_enable_mosi(spi_dev_t *hw, int enable)
 {
 	hw->user.usr_mosi = enable;
 }
 
-static inline uint32_t spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
+uint32_t spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
 {
 	return hw->slave1.data_bitlen;
 }
@@ -603,35 +603,35 @@ static inline uint32_t spi_ll_slave_get_rcv_bitlen(spi_dev_t *hw)
 	item(SPI_LL_INTR_CMDA,          dma_int_ena.cmda,               dma_int_raw.cmda,               dma_int_clr.cmda,               dma_int_set.cmda_int_set)
 
 
-static inline void spi_ll_enable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+void spi_ll_enable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define ENA_INTR(intr_bit, en_reg, ...) if (intr_mask & (intr_bit)) hw->en_reg = 1;
 	FOR_EACH_ITEM(ENA_INTR, INTR_LIST);
 #undef ENA_INTR
 }
 
-static inline void spi_ll_disable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+void spi_ll_disable_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define DIS_INTR(intr_bit, en_reg, ...) if (intr_mask & (intr_bit)) hw->en_reg = 0;
 	FOR_EACH_ITEM(DIS_INTR, INTR_LIST);
 #undef DIS_INTR
 }
 
-static inline void spi_ll_set_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+void spi_ll_set_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define SET_INTR(intr_bit, _, __, ___, set_reg) if (intr_mask & (intr_bit)) hw->set_reg = 1;
 	FOR_EACH_ITEM(SET_INTR, INTR_LIST);
 #undef SET_INTR
 }
 
-static inline void spi_ll_clear_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+void spi_ll_clear_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define CLR_INTR(intr_bit, _, __, clr_reg, ...) if (intr_mask & (intr_bit)) hw->clr_reg = 1;
 	FOR_EACH_ITEM(CLR_INTR, INTR_LIST);
 #undef CLR_INTR
 }
 
-static inline bool spi_ll_get_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
+bool spi_ll_get_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 {
 #define GET_INTR(intr_bit, _, raw_reg, ...) if (intr_mask & (intr_bit) && hw->raw_reg) return true;
 	FOR_EACH_ITEM(GET_INTR, INTR_LIST);
@@ -642,27 +642,27 @@ static inline bool spi_ll_get_intr(spi_dev_t *hw, spi_ll_intr_t intr_mask)
 #undef FOR_EACH_ITEM
 #undef INTR_LIST
 
-static inline void spi_ll_disable_int(spi_dev_t *hw)
+void spi_ll_disable_int(spi_dev_t *hw)
 {
 	hw->dma_int_ena.trans_done = 0;
 }
 
-static inline void spi_ll_clear_int_stat(spi_dev_t *hw)
+void spi_ll_clear_int_stat(spi_dev_t *hw)
 {
 	hw->dma_int_clr.trans_done = 1;
 }
 
-static inline void spi_ll_set_int_stat(spi_dev_t *hw)
+void spi_ll_set_int_stat(spi_dev_t *hw)
 {
 	hw->dma_int_set.trans_done_int_set = 1;
 }
 
-static inline void spi_ll_enable_int(spi_dev_t *hw)
+void spi_ll_enable_int(spi_dev_t *hw)
 {
 	hw->dma_int_ena.trans_done = 1;
 }
 
-static inline void spi_ll_slave_hd_set_len_cond(spi_dev_t *hw, spi_ll_trans_len_cond_t cond_mask)
+void spi_ll_slave_hd_set_len_cond(spi_dev_t *hw, spi_ll_trans_len_cond_t cond_mask)
 {
 	hw->slave.rdbuf_bitlen_en = (cond_mask & SPI_LL_TRANS_LEN_COND_RDBUF) ? 1 : 0;
 	hw->slave.wrbuf_bitlen_en = (cond_mask & SPI_LL_TRANS_LEN_COND_WRBUF) ? 1 : 0;
@@ -670,12 +670,12 @@ static inline void spi_ll_slave_hd_set_len_cond(spi_dev_t *hw, spi_ll_trans_len_
 	hw->slave.wrdma_bitlen_en = (cond_mask & SPI_LL_TRANS_LEN_COND_WRDMA) ? 1 : 0;
 }
 
-static inline int spi_ll_slave_get_rx_byte_len(spi_dev_t *hw)
+int spi_ll_slave_get_rx_byte_len(spi_dev_t *hw)
 {
 	return hw->slave1.data_bitlen / 8;
 }
 
-static inline uint32_t spi_ll_slave_hd_get_last_addr(spi_dev_t *hw)
+uint32_t spi_ll_slave_hd_get_last_addr(spi_dev_t *hw)
 {
 	return hw->slave1.last_addr;
 }
@@ -683,7 +683,7 @@ static inline uint32_t spi_ll_slave_hd_get_last_addr(spi_dev_t *hw)
 #undef SPI_LL_RST_MASK
 #undef SPI_LL_UNUSED_INT_MASK
 
-static inline uint8_t spi_ll_get_slave_hd_base_command(spi_command_t cmd_t)
+uint8_t spi_ll_get_slave_hd_base_command(spi_command_t cmd_t)
 {
 	uint8_t cmd_base = 0x00;
 	switch (cmd_t)
@@ -724,7 +724,7 @@ static inline uint8_t spi_ll_get_slave_hd_base_command(spi_command_t cmd_t)
 	return cmd_base;
 }
 
-static inline uint16_t spi_ll_get_slave_hd_command(spi_command_t cmd_t, spi_line_mode_t line_mode)
+uint16_t spi_ll_get_slave_hd_command(spi_command_t cmd_t, spi_line_mode_t line_mode)
 {
 	uint8_t cmd_base = spi_ll_get_slave_hd_base_command(cmd_t);
 	uint8_t cmd_mod = 0x00; //CMD:1-bit, ADDR:1-bit, DATA:1-bit
@@ -749,7 +749,7 @@ static inline uint16_t spi_ll_get_slave_hd_command(spi_command_t cmd_t, spi_line
 	return cmd_base | cmd_mod;
 }
 
-static inline int spi_ll_get_slave_hd_dummy_bits(spi_line_mode_t line_mode)
+int spi_ll_get_slave_hd_dummy_bits(spi_line_mode_t line_mode)
 {
 	return 8;
 }

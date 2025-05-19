@@ -23,7 +23,7 @@ typedef enum {
 
 #define PCNT_LL_EVENT_MASK ((1 << PCNT_LL_EVENT_MAX) - 1)
 
-static inline void pcnt_ll_set_edge_action(pcnt_dev_t *hw, uint32_t unit, uint32_t channel, pcnt_channel_edge_action_t pos_act, pcnt_channel_edge_action_t neg_act)
+void pcnt_ll_set_edge_action(pcnt_dev_t *hw, uint32_t unit, uint32_t channel, pcnt_channel_edge_action_t pos_act, pcnt_channel_edge_action_t neg_act)
 {
 	if (channel == 0) {
 		hw->conf_unit[unit].conf0.ch0_pos_mode_un = pos_act;
@@ -34,7 +34,7 @@ static inline void pcnt_ll_set_edge_action(pcnt_dev_t *hw, uint32_t unit, uint32
 	}
 }
 
-static inline void pcnt_ll_set_level_action(pcnt_dev_t *hw, uint32_t unit, uint32_t channel, pcnt_channel_level_action_t high_act, pcnt_channel_level_action_t low_act)
+void pcnt_ll_set_level_action(pcnt_dev_t *hw, uint32_t unit, uint32_t channel, pcnt_channel_level_action_t high_act, pcnt_channel_level_action_t low_act)
 {
 	if (channel == 0) {
 		hw->conf_unit[unit].conf0.ch0_hctrl_mode_un = high_act;
@@ -45,30 +45,30 @@ static inline void pcnt_ll_set_level_action(pcnt_dev_t *hw, uint32_t unit, uint3
 	}
 }
 
-static inline int pcnt_ll_get_count(pcnt_dev_t *hw, uint32_t unit)
+int pcnt_ll_get_count(pcnt_dev_t *hw, uint32_t unit)
 {
 	pcnt_un_cnt_reg_t cnt_reg = hw->cnt_unit[unit];
 	int16_t value = cnt_reg.pulse_cnt_un;
 	return value;
 }
 
-static inline void pcnt_ll_stop_count(pcnt_dev_t *hw, uint32_t unit)
+void pcnt_ll_stop_count(pcnt_dev_t *hw, uint32_t unit)
 {
 	hw->ctrl.val |= 1 << (2 * unit + 1);
 }
 
-static inline void pcnt_ll_start_count(pcnt_dev_t *hw, uint32_t unit)
+void pcnt_ll_start_count(pcnt_dev_t *hw, uint32_t unit)
 {
 	hw->ctrl.val &= ~(1 << (2 * unit + 1));
 }
 
-static inline void pcnt_ll_clear_count(pcnt_dev_t *hw, uint32_t unit)
+void pcnt_ll_clear_count(pcnt_dev_t *hw, uint32_t unit)
 {
 	hw->ctrl.val |= 1 << (2 * unit);
 	hw->ctrl.val &= ~(1 << (2 * unit));
 }
 
-static inline void pcnt_ll_enable_intr(pcnt_dev_t *hw, uint32_t unit_mask, bool enable)
+void pcnt_ll_enable_intr(pcnt_dev_t *hw, uint32_t unit_mask, bool enable)
 {
 	if (enable) {
 		hw->int_ena.val |= unit_mask;
@@ -77,32 +77,32 @@ static inline void pcnt_ll_enable_intr(pcnt_dev_t *hw, uint32_t unit_mask, bool 
 	}
 }
 
-__attribute__((always_inline)) static inline uint32_t pcnt_ll_get_intr_status(pcnt_dev_t *hw)
+uint32_t pcnt_ll_get_intr_status(pcnt_dev_t *hw)
 {
 	return hw->int_st.val;
 }
 
-__attribute__((always_inline)) static inline void pcnt_ll_clear_intr_status(pcnt_dev_t *hw, uint32_t status)
+void pcnt_ll_clear_intr_status(pcnt_dev_t *hw, uint32_t status)
 {
 	hw->int_clr.val = status;
 }
 
-static inline void pcnt_ll_enable_high_limit_event(pcnt_dev_t *hw, uint32_t unit, bool enable)
+void pcnt_ll_enable_high_limit_event(pcnt_dev_t *hw, uint32_t unit, bool enable)
 {
 	hw->conf_unit[unit].conf0.thr_h_lim_en_un = enable;
 }
 
-static inline void pcnt_ll_enable_low_limit_event(pcnt_dev_t *hw, uint32_t unit, bool enable)
+void pcnt_ll_enable_low_limit_event(pcnt_dev_t *hw, uint32_t unit, bool enable)
 {
 	hw->conf_unit[unit].conf0.thr_l_lim_en_un = enable;
 }
 
-static inline void pcnt_ll_enable_zero_cross_event(pcnt_dev_t *hw, uint32_t unit, bool enable)
+void pcnt_ll_enable_zero_cross_event(pcnt_dev_t *hw, uint32_t unit, bool enable)
 {
 	hw->conf_unit[unit].conf0.thr_zero_en_un = enable;
 }
 
-static inline void pcnt_ll_enable_thres_event(pcnt_dev_t *hw, uint32_t unit, uint32_t thres, bool enable)
+void pcnt_ll_enable_thres_event(pcnt_dev_t *hw, uint32_t unit, uint32_t thres, bool enable)
 {
 	if (thres == 0) {
 		hw->conf_unit[unit].conf0.thr_thres0_en_un = enable;
@@ -111,26 +111,26 @@ static inline void pcnt_ll_enable_thres_event(pcnt_dev_t *hw, uint32_t unit, uin
 	}
 }
 
-static inline void pcnt_ll_disable_all_events(pcnt_dev_t *hw, uint32_t unit)
+void pcnt_ll_disable_all_events(pcnt_dev_t *hw, uint32_t unit)
 {
 	hw->conf_unit[unit].conf0.val &= ~(PCNT_LL_EVENT_MASK << 11);
 }
 
-static inline void pcnt_ll_set_high_limit_value(pcnt_dev_t *hw, uint32_t unit, int value)
+void pcnt_ll_set_high_limit_value(pcnt_dev_t *hw, uint32_t unit, int value)
 {
 	pcnt_un_conf2_reg_t conf2_reg = hw->conf_unit[unit].conf2;
 	conf2_reg.cnt_h_lim_un = value;
 	hw->conf_unit[unit].conf2 = conf2_reg;
 }
 
-static inline void pcnt_ll_set_low_limit_value(pcnt_dev_t *hw, uint32_t unit, int value)
+void pcnt_ll_set_low_limit_value(pcnt_dev_t *hw, uint32_t unit, int value)
 {
 	pcnt_un_conf2_reg_t conf2_reg = hw->conf_unit[unit].conf2;
 	conf2_reg.cnt_l_lim_un = value;
 	hw->conf_unit[unit].conf2 = conf2_reg;
 }
 
-static inline void pcnt_ll_set_thres_value(pcnt_dev_t *hw, uint32_t unit, uint32_t thres, int value)
+void pcnt_ll_set_thres_value(pcnt_dev_t *hw, uint32_t unit, uint32_t thres, int value)
 {
 	pcnt_un_conf1_reg_t conf1_reg = hw->conf_unit[unit].conf1;
 	if (thres == 0) {
@@ -141,21 +141,21 @@ static inline void pcnt_ll_set_thres_value(pcnt_dev_t *hw, uint32_t unit, uint32
 	hw->conf_unit[unit].conf1 = conf1_reg;
 }
 
-static inline int pcnt_ll_get_high_limit_value(pcnt_dev_t *hw, uint32_t unit)
+int pcnt_ll_get_high_limit_value(pcnt_dev_t *hw, uint32_t unit)
 {
 	pcnt_un_conf2_reg_t conf2_reg = hw->conf_unit[unit].conf2;
 	int16_t value = conf2_reg.cnt_h_lim_un;
 	return value;
 }
 
-static inline int pcnt_ll_get_low_limit_value(pcnt_dev_t *hw, uint32_t unit)
+int pcnt_ll_get_low_limit_value(pcnt_dev_t *hw, uint32_t unit)
 {
 	pcnt_un_conf2_reg_t conf2_reg = hw->conf_unit[unit].conf2;
 	int16_t value = conf2_reg.cnt_l_lim_un;
 	return value;
 }
 
-static inline int pcnt_ll_get_thres_value(pcnt_dev_t *hw, uint32_t unit, uint32_t thres)
+int pcnt_ll_get_thres_value(pcnt_dev_t *hw, uint32_t unit, uint32_t thres)
 {
 	int16_t value;
 	pcnt_un_conf1_reg_t conf1_reg = hw->conf_unit[unit].conf1;
@@ -167,32 +167,32 @@ static inline int pcnt_ll_get_thres_value(pcnt_dev_t *hw, uint32_t unit, uint32_
 	return value;
 }
 
-static inline uint32_t pcnt_ll_get_unit_status(pcnt_dev_t *hw, uint32_t unit)
+uint32_t pcnt_ll_get_unit_status(pcnt_dev_t *hw, uint32_t unit)
 {
 	return hw->status_unit[unit].val;
 }
 
-static inline pcnt_unit_count_sign_t pcnt_ll_get_count_sign(pcnt_dev_t *hw, uint32_t unit)
+pcnt_unit_count_sign_t pcnt_ll_get_count_sign(pcnt_dev_t *hw, uint32_t unit)
 {
 	return hw->status_unit[unit].val & 0x03;
 }
 
-static inline uint32_t pcnt_ll_get_event_status(pcnt_dev_t *hw, uint32_t unit)
+uint32_t pcnt_ll_get_event_status(pcnt_dev_t *hw, uint32_t unit)
 {
 	return hw->status_unit[unit].val >> 2;
 }
 
-static inline void pcnt_ll_set_glitch_filter_thres(pcnt_dev_t *hw, uint32_t unit, uint32_t filter_val)
+void pcnt_ll_set_glitch_filter_thres(pcnt_dev_t *hw, uint32_t unit, uint32_t filter_val)
 {
 	hw->conf_unit[unit].conf0.filter_thres_un = filter_val;
 }
 
-static inline uint32_t pcnt_ll_get_glitch_filter_thres(pcnt_dev_t *hw, uint32_t unit)
+uint32_t pcnt_ll_get_glitch_filter_thres(pcnt_dev_t *hw, uint32_t unit)
 {
 	return hw->conf_unit[unit].conf0.filter_thres_un;
 }
 
-static inline void pcnt_ll_enable_glitch_filter(pcnt_dev_t *hw, uint32_t unit, bool enable)
+void pcnt_ll_enable_glitch_filter(pcnt_dev_t *hw, uint32_t unit, bool enable)
 {
 	hw->conf_unit[unit].conf0.filter_en_un = enable;
 }

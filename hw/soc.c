@@ -5,7 +5,7 @@
 #include "soc/rtc.h"
 
 
-static inline void soc_ll_stall_core(int core)
+void soc_ll_stall_core(int core)
 {
 	const int rtc_cntl_c1_m[SOC_CPU_CORES_NUM] = {RTC_CNTL_SW_STALL_PROCPU_C1_M, RTC_CNTL_SW_STALL_APPCPU_C1_M};
 	const int rtc_cntl_c1_s[SOC_CPU_CORES_NUM] = {RTC_CNTL_SW_STALL_PROCPU_C1_S, RTC_CNTL_SW_STALL_APPCPU_C1_S};
@@ -18,7 +18,7 @@ static inline void soc_ll_stall_core(int core)
 	SET_PERI_REG_MASK(RTC_CNTL_OPTIONS0_REG, 2 << rtc_cntl_c0_s[core]);
 }
 
-static inline void soc_ll_unstall_core(int core)
+void soc_ll_unstall_core(int core)
 {
 	const int rtc_cntl_c1_m[SOC_CPU_CORES_NUM] = {RTC_CNTL_SW_STALL_PROCPU_C1_M, RTC_CNTL_SW_STALL_APPCPU_C1_M};
 	const int rtc_cntl_c0_m[SOC_CPU_CORES_NUM] = {RTC_CNTL_SW_STALL_PROCPU_C0_M, RTC_CNTL_SW_STALL_APPCPU_C0_M};
@@ -26,7 +26,7 @@ static inline void soc_ll_unstall_core(int core)
 	CLEAR_PERI_REG_MASK(RTC_CNTL_OPTIONS0_REG, rtc_cntl_c0_m[core]);
 }
 
-static inline void soc_ll_reset_core(int core)
+void soc_ll_reset_core(int core)
 {
 	SET_PERI_REG_MASK(RTC_CNTL_OPTIONS0_REG,
 			core == 0 ? RTC_CNTL_SW_PROCPU_RST_M : RTC_CNTL_SW_APPCPU_RST_M);

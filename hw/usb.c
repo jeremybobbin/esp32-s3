@@ -6,7 +6,7 @@
 #include "soc/usb_periph.h"
 #include "soc/rtc_cntl_struct.h"
 
-static inline void usb_ll_int_phy_enable(void)
+void usb_ll_int_phy_enable(void)
 {
 	USB_WRAP.otg_conf.pad_enable = 1;
 	// USB_OTG use internal PHY
@@ -17,7 +17,7 @@ static inline void usb_ll_int_phy_enable(void)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
 }
 
-static inline void usb_ll_ext_phy_enable(void)
+void usb_ll_ext_phy_enable(void)
 {
 	USB_WRAP.otg_conf.pad_enable = 1;
 	// USB_OTG use external PHY
@@ -28,7 +28,7 @@ static inline void usb_ll_ext_phy_enable(void)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
 }
 
-static inline void usb_ll_int_phy_pullup_conf(bool dp_pu, bool dp_pd, bool dm_pu, bool dm_pd)
+void usb_ll_int_phy_pullup_conf(bool dp_pu, bool dp_pd, bool dm_pu, bool dm_pd)
 {
 	usb_wrap_otg_conf_reg_t conf = USB_WRAP.otg_conf;
 	conf.pad_pull_override = 1;

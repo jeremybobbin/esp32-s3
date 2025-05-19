@@ -4,7 +4,7 @@
 #include "soc/dport_reg.h"
 #include "soc/tracemem_config.h"
 
-static inline void trace_ll_set_mem_block(int cpu, int block)
+void trace_ll_set_mem_block(int cpu, int block)
 {
 	uint32_t block_bits = 0;
 

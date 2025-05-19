@@ -8,22 +8,22 @@
 #include "soc/soc_caps.h"
 
 
-static inline void ds_ll_start(void)
+void ds_ll_start(void)
 {
 	REG_WRITE(DS_SET_START_REG, 1);
 }
 
-static inline bool ds_ll_busy(void)
+bool ds_ll_busy(void)
 {
 	return (REG_READ(DS_QUERY_BUSY_REG) > 0) ? true : false;
 }
 
-static inline void ds_ll_wait_busy(void)
+void ds_ll_wait_busy(void)
 {
 	while (ds_ll_busy());
 }
 
-static inline ds_key_check_t ds_ll_key_error_source(void)
+ds_key_check_t ds_ll_key_error_source(void)
 {
 	uint32_t key_error = REG_READ(DS_QUERY_KEY_WRONG_REG);
 	if (key_error == 0) {
@@ -33,19 +33,19 @@ static inline ds_key_check_t ds_ll_key_error_source(void)
 	}
 }
 
-static inline void ds_ll_configure_iv(const uint32_t *iv)
+void ds_ll_configure_iv(const uint32_t *iv)
 {
 	for (size_t i = 0; i < (SOC_DS_KEY_PARAM_MD_IV_LENGTH / sizeof(uint32_t)); i++) {
 		REG_WRITE(DS_IV_BASE + (i * 4), iv[i]);
 	}
 }
 
-static inline void ds_ll_write_message(const uint8_t *msg, size_t size)
+void ds_ll_write_message(const uint8_t *msg, size_t size)
 {
 	memcpy((uint8_t *) DS_X_BASE, msg, size);
 }
 
-static inline void ds_ll_write_private_key_params(const uint8_t *encrypted_key_params)
+void ds_ll_write_private_key_params(const uint8_t *encrypted_key_params)
 {
 	/* Note: as the internal peripheral still has RSA 4096 structure,
 	   but C is encrypted based on the actual max RSA length (ETS_DS_MAX_BITS), need to fragment it
@@ -72,12 +72,12 @@ static inline void ds_ll_write_private_key_params(const uint8_t *encrypted_key_p
 	}
 }
 
-static inline void ds_ll_start_sign(void)
+void ds_ll_start_sign(void)
 {
 	REG_WRITE(DS_SET_ME_REG, 1);
 }
 
-static inline ds_signature_check_t ds_ll_check_signature(void)
+ds_signature_check_t ds_ll_check_signature(void)
 {
 	uint32_t result = REG_READ(DS_QUERY_CHECK_REG);
 	switch (result) {
@@ -92,12 +92,12 @@ static inline ds_signature_check_t ds_ll_check_signature(void)
 	}
 }
 
-static inline void ds_ll_read_result(uint8_t *result, size_t size)
+void ds_ll_read_result(uint8_t *result, size_t size)
 {
 	memcpy(result, (uint8_t *) DS_Z_BASE, size);
 }
 
-static inline void ds_ll_finish(void)
+void ds_ll_finish(void)
 {
 	REG_WRITE(DS_SET_FINISH_REG, 1);
 	ds_ll_wait_busy();

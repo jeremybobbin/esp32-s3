@@ -29,7 +29,7 @@ typedef enum {
 	RTCIO_OUTPUT_OD = 0x1,      /*!< RTCIO output mode is open-drain. */
 } rtcio_ll_out_mode_t;
 
-static inline void rtcio_ll_function_select(int rtcio_num, rtcio_ll_func_t func)
+void rtcio_ll_function_select(int rtcio_num, rtcio_ll_func_t func)
 {
 	if (func == RTCIO_FUNC_RTC) {
 		// Disable USB Serial JTAG if pin 19 or pin 20 needs to select the rtc function
@@ -49,17 +49,17 @@ static inline void rtcio_ll_function_select(int rtcio_num, rtcio_ll_func_t func)
 	}
 }
 
-static inline void rtcio_ll_output_enable(int rtcio_num)
+void rtcio_ll_output_enable(int rtcio_num)
 {
 	RTCIO.enable_w1ts.w1ts = (1U << rtcio_num);
 }
 
-static inline void rtcio_ll_output_disable(int rtcio_num)
+void rtcio_ll_output_disable(int rtcio_num)
 {
 	RTCIO.enable_w1tc.w1tc = (1U << rtcio_num);
 }
 
-static inline void rtcio_ll_set_level(int rtcio_num, uint32_t level)
+void rtcio_ll_set_level(int rtcio_num, uint32_t level)
 {
 	if (level) {
 		RTCIO.out_w1ts.w1ts = (1U << rtcio_num);
@@ -68,46 +68,46 @@ static inline void rtcio_ll_set_level(int rtcio_num, uint32_t level)
 	}
 }
 
-static inline void rtcio_ll_input_enable(int rtcio_num)
+void rtcio_ll_input_enable(int rtcio_num)
 {
 	SET_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].ie);
 }
 
-static inline void rtcio_ll_input_disable(int rtcio_num)
+void rtcio_ll_input_disable(int rtcio_num)
 {
 	CLEAR_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].ie);
 }
 
-static inline uint32_t rtcio_ll_get_level(int rtcio_num)
+uint32_t rtcio_ll_get_level(int rtcio_num)
 {
 	return (uint32_t)(RTCIO.in_val.in >> rtcio_num) & 0x1;
 }
 
-static inline void rtcio_ll_set_drive_capability(int rtcio_num, uint32_t strength)
+void rtcio_ll_set_drive_capability(int rtcio_num, uint32_t strength)
 {
 	if (rtc_io_desc[rtcio_num].drv_v) {
 		SET_PERI_REG_BITS(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].drv_v, strength, rtc_io_desc[rtcio_num].drv_s);
 	}
 }
 
-static inline uint32_t rtcio_ll_get_drive_capability(int rtcio_num)
+uint32_t rtcio_ll_get_drive_capability(int rtcio_num)
 {
 	return GET_PERI_REG_BITS2(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].drv_v, rtc_io_desc[rtcio_num].drv_s);
 }
 
-static inline void rtcio_ll_output_mode_set(int rtcio_num, rtcio_ll_out_mode_t mode)
+void rtcio_ll_output_mode_set(int rtcio_num, rtcio_ll_out_mode_t mode)
 {
 	RTCIO.pin[rtcio_num].pad_driver = mode;
 }
 
-static inline void rtcio_ll_pullup_enable(int rtcio_num)
+void rtcio_ll_pullup_enable(int rtcio_num)
 {
 	if (rtc_io_desc[rtcio_num].pullup) {
 		SET_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].pullup);
 	}
 }
 
-static inline void rtcio_ll_pullup_disable(int rtcio_num)
+void rtcio_ll_pullup_disable(int rtcio_num)
 {
 	// The pull-up value of the USB pins are controlled by the pins’ pull-up value together with USB pull-up value
 	// USB DP pin is default to PU enabled
@@ -122,88 +122,88 @@ static inline void rtcio_ll_pullup_disable(int rtcio_num)
 	}
 }
 
-static inline void rtcio_ll_pulldown_enable(int rtcio_num)
+void rtcio_ll_pulldown_enable(int rtcio_num)
 {
 	if (rtc_io_desc[rtcio_num].pulldown) {
 		SET_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].pulldown);
 	}
 }
 
-static inline void rtcio_ll_pulldown_disable(int rtcio_num)
+void rtcio_ll_pulldown_disable(int rtcio_num)
 {
 	if (rtc_io_desc[rtcio_num].pulldown) {
 		CLEAR_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].pulldown);
 	}
 }
 
-static inline void rtcio_ll_force_hold_enable(int rtcio_num)
+void rtcio_ll_force_hold_enable(int rtcio_num)
 {
 	SET_PERI_REG_MASK(RTC_CNTL_PAD_HOLD_REG, rtc_io_desc[rtcio_num].hold_force);
 }
 
-static inline void rtcio_ll_force_hold_disable(int rtcio_num)
+void rtcio_ll_force_hold_disable(int rtcio_num)
 {
 	CLEAR_PERI_REG_MASK(RTC_CNTL_PAD_HOLD_REG, rtc_io_desc[rtcio_num].hold_force);
 }
 
-static inline void rtcio_ll_force_hold_all(void)
+void rtcio_ll_force_hold_all(void)
 {
 	SET_PERI_REG_MASK(RTC_CNTL_PWC_REG, RTC_CNTL_PAD_FORCE_HOLD_M);
 }
 
-static inline void rtcio_ll_force_unhold_all(void)
+void rtcio_ll_force_unhold_all(void)
 {
 	CLEAR_PERI_REG_MASK(RTC_CNTL_PWC_REG, RTC_CNTL_PAD_FORCE_HOLD_M);
 }
 
-static inline void rtcio_ll_wakeup_enable(int rtcio_num, rtcio_ll_wake_type_t type)
+void rtcio_ll_wakeup_enable(int rtcio_num, rtcio_ll_wake_type_t type)
 {
 	SENS.sar_peri_clk_gate_conf.iomux_clk_en = 1;
 	RTCIO.pin[rtcio_num].wakeup_enable = 0x1;
 	RTCIO.pin[rtcio_num].int_type = type;
 }
 
-static inline void rtcio_ll_wakeup_disable(int rtcio_num)
+void rtcio_ll_wakeup_disable(int rtcio_num)
 {
 	RTCIO.pin[rtcio_num].wakeup_enable = 0;
 	RTCIO.pin[rtcio_num].int_type = RTCIO_WAKEUP_DISABLE;
 }
 
-static inline void rtcio_ll_enable_output_in_sleep(gpio_num_t gpio_num)
+void rtcio_ll_enable_output_in_sleep(gpio_num_t gpio_num)
 {
 	if (rtc_io_desc[gpio_num].slpoe) {
 		SET_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpoe);
 	}
 }
 
-static inline void rtcio_ll_in_sleep_disable_output(gpio_num_t gpio_num)
+void rtcio_ll_in_sleep_disable_output(gpio_num_t gpio_num)
 {
 	if (rtc_io_desc[gpio_num].slpoe) {
 		CLEAR_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpoe);
 	}
 }
 
-static inline void rtcio_ll_in_sleep_enable_input(gpio_num_t gpio_num)
+void rtcio_ll_in_sleep_enable_input(gpio_num_t gpio_num)
 {
 	SET_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpie);
 }
 
-static inline void rtcio_ll_in_sleep_disable_input(gpio_num_t gpio_num)
+void rtcio_ll_in_sleep_disable_input(gpio_num_t gpio_num)
 {
 	CLEAR_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpie);
 }
 
-static inline void rtcio_ll_enable_sleep_setting(gpio_num_t gpio_num)
+void rtcio_ll_enable_sleep_setting(gpio_num_t gpio_num)
 {
 	SET_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpsel);
 }
 
-static inline void rtcio_ll_disable_sleep_setting(gpio_num_t gpio_num)
+void rtcio_ll_disable_sleep_setting(gpio_num_t gpio_num)
 {
 	CLEAR_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpsel);
 }
 
-static inline void rtcio_ll_ext0_set_wakeup_pin(int rtcio_num, int level)
+void rtcio_ll_ext0_set_wakeup_pin(int rtcio_num, int level)
 {
 	REG_SET_FIELD(RTC_IO_EXT_WAKEUP0_REG, RTC_IO_EXT_WAKEUP0_SEL, rtcio_num);
 	// Set level which will trigger wakeup
