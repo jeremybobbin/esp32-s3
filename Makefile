@@ -1,7 +1,13 @@
 CC=xtensa-esp32s3-elf-gcc
 AR=xtensa-esp32s3-elf-ar
-CFLAGS=-I./$(@D)
+CFLAGS=-I./$(@D) -I.
 ASFLAGS=-I./$(@D)
+
+build: libsoc.a libxtensa.a
+
+libsoc.a: \
+	soc/adc.o
+	$(AR) rcs $@ $?
 
 libxtensa.a: \
 	xtensa/attribute.o \
@@ -28,4 +34,4 @@ libxtensa.a: \
 	$(AR) rcs $@ $?
 
 clean:
-	rm -f xtensa/*.o libxtensa.a
+	rm -f soc/*.o xtensa/*.o libxtensa.a
