@@ -3,7 +3,7 @@ AR=xtensa-esp32s3-elf-ar
 CFLAGS=-I./$(@D)
 ASFLAGS=-I./$(@D)
 
-libxt_hal.a: \
+libxtensa.a: \
 	xtensa/attribute.o \
 	xtensa/cache_asm.o \
 	xtensa/cache.o \
@@ -28,4 +28,4 @@ libxt_hal.a: \
 	$(AR) rcs $@ $?
 
 clean:
-	rm -f xtensa/*.o libxt_hal.a
+	rm -f xtensa/*.o libxtensa.a
