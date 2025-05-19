@@ -144,16 +144,21 @@ void adc_ll_digi_convert_limit_disable(void) {
 }
 
 void adc_ll_digi_set_convert_mode(adc_ll_digi_convert_mode_t mode) {
-	if (mode == ADC_LL_DIGI_CONV_ONLY_ADC1) {
+	switch (mode) {
+	case ADC_LL_DIGI_CONV_ONLY_ADC1:
 		APB_SARADC->ctrl.work_mode = 0;
 		APB_SARADC->ctrl.sar_sel = 0;
-	} else if (mode == ADC_LL_DIGI_CONV_ONLY_ADC2) {
+		break;
+	case ADC_LL_DIGI_CONV_ONLY_ADC2:
 		APB_SARADC->ctrl.work_mode = 0;
 		APB_SARADC->ctrl.sar_sel = 1;
-	} else if (mode == ADC_LL_DIGI_CONV_BOTH_UNIT) {
+		break;
+	case ADC_LL_DIGI_CONV_BOTH_UNIT:
 		APB_SARADC->ctrl.work_mode = 1;
-	} else if (mode == ADC_LL_DIGI_CONV_ALTER_UNIT) {
+		break;
+	case ADC_LL_DIGI_CONV_ALTER_UNIT:
 		APB_SARADC->ctrl.work_mode = 2;
+		break;
 	}
 	APB_SARADC->ctrl.data_sar_sel = 1;
 }
