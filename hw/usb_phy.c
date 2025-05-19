@@ -1,8 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
 #pragma once
 
@@ -17,11 +12,6 @@
 extern "C" {
 #endif
 
-/**
- * @brief Configures the internal PHY for USB_OTG
- *
- * @param hw Start address of the USB Wrap registers
- */
 static inline void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
 {
 	hw->otg_conf.pad_enable = 1;
@@ -33,11 +23,6 @@ static inline void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
 }
 
-/**
- * @brief Configures the external PHY for USB_OTG
- *
- * @param hw Start address of the USB Wrap registers
- */
 static inline void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
 {
 	// USB_OTG use external PHY
@@ -48,11 +33,6 @@ static inline void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
 }
 
-/**
- * @brief Configures the internal PHY for USB_Serial_JTAG
- *
- * @param hw Start address of the USB Serial_JTAG registers
- */
 static inline void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
 {
 	// USB_Serial_JTAG use internal PHY
@@ -69,11 +49,6 @@ static inline void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
 }
 
-/**
- * @brief Configures the external PHY for USB_Serial_JTAG
- *
- * @param hw Start address of the USB Serial_JTAG registers
- */
 static inline void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
 {
 	// USB_Serial_JTAG use external PHY
@@ -84,15 +59,6 @@ static inline void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
 	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
 }
 
-/**
- * @brief Configures port loads for the internal PHY
- *
- * @param hw Start address of the USB Wrap registers
- * @param dp_pu D+ pullup load
- * @param dp_pd D+ pulldown load
- * @param dm_pu D- pullup load
- * @param dm_pd D- pulldown load
- */
 static inline void usb_phy_ll_int_load_conf(usb_wrap_dev_t *hw, bool dp_pu, bool dp_pd, bool dm_pu, bool dm_pd)
 {
 	usb_wrap_otg_conf_reg_t conf = hw->otg_conf;
@@ -104,12 +70,6 @@ static inline void usb_phy_ll_int_load_conf(usb_wrap_dev_t *hw, bool dp_pu, bool
 	hw->otg_conf = conf;
 }
 
-/**
- * @brief Enable the internal PHY's test mode
- *
- * @param hw Start address of the USB Wrap registers
- * @param en Whether to enable the internal PHY's test mode
- */
 static inline void usb_phy_ll_int_enable_test_mode(usb_wrap_dev_t *hw, bool en)
 {
 	if (en) {

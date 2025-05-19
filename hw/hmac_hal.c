@@ -1,8 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
 #include "hal/hmac_hal.h"
 #include "hal/hmac_ll.h"

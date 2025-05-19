@@ -1,8 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
 // The HAL layer for RTC CNTL (common part)
 

@@ -26,70 +26,31 @@ typedef enum {
 	USB_SERIAL_JTAG_INTR_EP1_ZERO_PAYLOAD       = (1 << 10),
 } usb_serial_jtag_intr_t;
 
-/**
- * @brief  Enable the USB_SERIAL_JTAG interrupt based on the given mask.
- *
- * @param  mask The bitmap of the interrupts need to be enabled.
- *
- * @return None
- */
 static inline void usb_serial_jtag_ll_ena_intr_mask(uint32_t mask)
 {
 	USB_SERIAL_JTAG.int_ena.val |= mask;
 }
 
-/**
- * @brief  Disable the USB_SERIAL_JTAG interrupt based on the given mask.
- *
- * @param  mask The bitmap of the interrupts need to be disabled.
- *
- * @return None
- */
 static inline void usb_serial_jtag_ll_disable_intr_mask(uint32_t mask)
 {
 	USB_SERIAL_JTAG.int_ena.val &= (~mask);
 }
 
-/**
- * @brief  Get the USB_SERIAL_JTAG interrupt status.
- *
- * @return The USB_SERIAL_JTAG interrupt status.
- */
 static inline uint32_t usb_serial_jtag_ll_get_intsts_mask(void)
 {
 	return USB_SERIAL_JTAG.int_st.val;
 }
 
-/**
- * @brief  Clear the USB_SERIAL_JTAG interrupt status based on the given mask.
- *
- * @param  mask The bitmap of the interrupts need to be cleared.
- *
- * @return None
- */
 static inline void usb_serial_jtag_ll_clr_intsts_mask(uint32_t mask)
 {
 	USB_SERIAL_JTAG.int_clr.val = mask;
 }
 
-/**
- * @brief  Get status of enabled interrupt.
- *
- * @return interrupt enable value
- */
 static inline uint32_t usb_serial_jtag_ll_get_intr_ena_status(void)
 {
 	return USB_SERIAL_JTAG.int_ena.val;
 }
 
-/**
- * @brief  Read the bytes from the USB_SERIAL_JTAG rxfifo.
- *
- * @param  buf The data buffer.
- * @param  rd_len The data length needs to be read.
- *
- * @return amount of bytes read
- */
 static inline uint32_t usb_serial_jtag_ll_read_rxfifo(uint8_t *buf, uint32_t rd_len)
 {
 	uint32_t i;
@@ -100,15 +61,6 @@ static inline uint32_t usb_serial_jtag_ll_read_rxfifo(uint8_t *buf, uint32_t rd_
 	return i;
 }
 
-/**
- * @brief  Write byte to the USB_SERIAL_JTAG txfifo. Only writes bytes as long / if there
- *         is room in the buffer.
- *
- * @param  buf The data buffer.
- * @param  wr_len The data length needs to be writen.
- *
- * @return Amount of bytes actually written. May be less than wr_len.
- */
 static inline uint32_t usb_serial_jtag_ll_write_txfifo(const uint8_t *buf, uint32_t wr_len)
 {
 	uint32_t i;
@@ -119,32 +71,16 @@ static inline uint32_t usb_serial_jtag_ll_write_txfifo(const uint8_t *buf, uint3
 	return i;
 }
 
-/**
- * @brief  Returns 1 if the USB_SERIAL_JTAG rxfifo has data available.
- *
- * @return 0 if no data available, 1 if data available
- */
 static inline int usb_serial_jtag_ll_rxfifo_data_available(void)
 {
 	return USB_SERIAL_JTAG.ep1_conf.serial_out_ep_data_avail;
 }
 
-/**
- * @brief  Returns 1 if the USB_SERIAL_JTAG txfifo has room.
- *
- * @return 0 if no data available, 1 if data available
- */
 static inline int usb_serial_jtag_ll_txfifo_writable(void)
 {
 	return USB_SERIAL_JTAG.ep1_conf.serial_in_ep_data_free;
 }
 
-/**
- * @brief  Flushes the TX buffer, that is, make it available for the
- *         host to pick up.
- *
- * @return na
- */
 static inline void usb_serial_jtag_ll_txfifo_flush(void)
 {
 	USB_SERIAL_JTAG.ep1_conf.wr_done=1;

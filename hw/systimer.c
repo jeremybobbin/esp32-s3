@@ -20,14 +20,6 @@ extern "C" {
 // All these functions get invoked either from ISR or HAL that linked to IRAM.
 // Always inline these functions even no gcc optimization is applied.
 
-/******************* Clock *************************/
-
-__attribute__((always_inline)) static inline void systimer_ll_enable_clock(systimer_dev_t *dev, bool en)
-{
-	dev->conf.clk_en = en;
-}
-
-/******************* Counter *************************/
 
 __attribute__((always_inline)) static inline void systimer_ll_enable_counter(systimer_dev_t *dev, uint32_t counter_id, bool en)
 {
@@ -78,60 +70,6 @@ __attribute__((always_inline)) static inline void systimer_ll_apply_counter_valu
 	dev->unit_load[counter_id].val = 0x01;
 }
 
-/******************* Alarm *************************/
-
-__attribute__((always_inline)) static inline void systimer_ll_set_alarm_target(systimer_dev_t *dev, uint32_t alarm_id, uint64_t value)
-{
-	dev->target_val[alarm_id].hi.timer_target_hi = value >> 32;
-	dev->target_val[alarm_id].lo.timer_target_lo = value & 0xFFFFFFFF;
-}
-
-__attribute__((always_inline)) static inline uint64_t systimer_ll_get_alarm_target(systimer_dev_t *dev, uint32_t alarm_id)
-{
-	return ((uint64_t)(dev->target_val[alarm_id].hi.timer_target_hi) << 32) | dev->target_val[alarm_id].lo.timer_target_lo;
-}
-
-__attribute__((always_inline)) static inline void systimer_ll_connect_alarm_counter(systimer_dev_t *dev, uint32_t alarm_id, uint32_t counter_id)
-{
-	dev->target_conf[alarm_id].target_timer_unit_sel = counter_id;
-}
-
-__attribute__((always_inline)) static inline void systimer_ll_enable_alarm_oneshot(systimer_dev_t *dev, uint32_t alarm_id)
-{
-	dev->target_conf[alarm_id].target_period_mode = 0;
-}
-
-__attribute__((always_inline)) static inline void systimer_ll_enable_alarm_period(systimer_dev_t *dev, uint32_t alarm_id)
-{
-	dev->target_conf[alarm_id].target_period_mode = 1;
-}
-
-__attribute__((always_inline)) static inline void systimer_ll_set_alarm_period(systimer_dev_t *dev, uint32_t alarm_id, uint32_t period)
-{
-	HAL_ASSERT(period < (1 << 26));
-	dev->target_conf[alarm_id].target_period = period;
-}
-
-__attribute__((always_inline)) static inline uint32_t systimer_ll_get_alarm_period(systimer_dev_t *dev, uint32_t alarm_id)
-{
-	return dev->target_conf[alarm_id].target_period;
-}
-
-__attribute__((always_inline)) static inline void systimer_ll_apply_alarm_value(systimer_dev_t *dev, uint32_t alarm_id)
-{
-	dev->comp_load[alarm_id].val = 0x01;
-}
-
-__attribute__((always_inline)) static inline void systimer_ll_enable_alarm(systimer_dev_t *dev, uint32_t alarm_id, bool en)
-{
-	if (en) {
-		dev->conf.val |= 1 << (24 - alarm_id);
-	} else {
-		dev->conf.val &= ~(1 << (24 - alarm_id));
-	}
-}
-
-/******************* Interrupt *************************/
 
 __attribute__((always_inline)) static inline void systimer_ll_enable_alarm_int(systimer_dev_t *dev, uint32_t alarm_id, bool en)
 {

@@ -10,14 +10,6 @@ typedef enum {
 } esp_aes_state_t;
 
 
-/**
- * @brief Write the encryption/decryption key to hardware
- *
- * @param key Key to be written to the AES hardware
- * @param key_word_len Number of words in the key
- *
- * @return Number of bytes written to hardware, used for fault injection check
- */
 static inline uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len)
 {
 	/* This variable is used for fault injection checks, so marked volatile to avoid optimisation */
@@ -32,12 +24,6 @@ static inline uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len)
 	return key_in_hardware;
 }
 
-/**
- * @brief Sets the mode
- *
- * @param mode ESP_AES_ENCRYPT = 1, or ESP_AES_DECRYPT = 0
- * @param key_bytes Number of bytes in the key
- */
 static inline void aes_ll_set_mode(int mode, uint8_t key_bytes)
 {
 	const uint32_t MODE_DECRYPT_BIT = 4;
@@ -47,11 +33,6 @@ static inline void aes_ll_set_mode(int mode, uint8_t key_bytes)
 	REG_WRITE(AES_MODE_REG, mode_reg_base + ((key_bytes / 8) - 2));
 }
 
-/**
- * @brief Writes message block to AES hardware
- *
- * @param input Block to be written
- */
 static inline void aes_ll_write_block(const void *input)
 {
 	uint32_t input_word;
@@ -62,11 +43,6 @@ static inline void aes_ll_write_block(const void *input)
 	}
 }
 
-/**
- * @brief Read the AES block
- *
- * @param output the output of the transform, length = AES_BLOCK_BYTES
- */
 static inline void aes_ll_read_block(void *output)
 {
 	uint32_t output_word;
@@ -79,74 +55,38 @@ static inline void aes_ll_read_block(void *output)
 	}
 }
 
-/**
- * @brief Starts block transform
- *
- */
 static inline void aes_ll_start_transform(void)
 {
 	REG_WRITE(AES_TRIGGER_REG, 1);
 }
 
 
-/**
- * @brief Read state of AES accelerator
- *
- * @return esp_aes_state_t
- */
 static inline esp_aes_state_t aes_ll_get_state(void)
 {
 	return REG_READ(AES_STATE_REG);
 }
 
 
-/**
- * @brief Set mode of operation
- *
- * @note Only used for DMA transforms
- *
- * @param mode
- */
 static inline void aes_ll_set_block_mode(esp_aes_mode_t mode)
 {
 	REG_WRITE(AES_BLOCK_MODE_REG, mode);
 }
 
-/**
- * @brief Set AES-CTR counter to INC32
- *
- * @note Only affects AES-CTR mode
- *
- */
 static inline void aes_ll_set_inc(void)
 {
 	REG_WRITE(AES_INC_SEL_REG, 0);
 }
 
-/**
- * @brief Release the DMA
- *
- */
 static inline void aes_ll_dma_exit(void)
 {
 	REG_WRITE(AES_DMA_EXIT_REG, 0);
 }
 
-/**
- * @brief Sets the number of blocks to be transformed
- *
- * @note Only used for DMA transforms
- *
- * @param num_blocks Number of blocks to transform
- */
 static inline void aes_ll_set_num_blocks(size_t num_blocks)
 {
 	REG_WRITE(AES_BLOCK_NUM_REG, num_blocks);
 }
 
-/*
- * Write IV to hardware iv registers
- */
 static inline void aes_ll_set_iv(const uint8_t *iv)
 {
 	uint32_t *reg_addr_buf = (uint32_t *)(AES_IV_BASE);
@@ -159,9 +99,6 @@ static inline void aes_ll_set_iv(const uint8_t *iv)
 	}
 }
 
-/*
- * Read IV from hardware iv registers
- */
 static inline void aes_ll_read_iv(uint8_t *iv)
 {
 	uint32_t iv_word;
@@ -174,30 +111,16 @@ static inline void aes_ll_read_iv(uint8_t *iv)
 	}
 }
 
-/**
- * @brief Enable or disable DMA mode
- *
- * @param enable true to enable, false to disable.
- */
 static inline void aes_ll_dma_enable(bool enable)
 {
 	REG_WRITE(AES_DMA_ENABLE_REG, enable);
 }
 
-/**
- * @brief Enable or disable transform completed interrupt
- *
- * @param enable true to enable, false to disable.
- */
 static inline void aes_ll_interrupt_enable(bool enable)
 {
 	REG_WRITE(AES_INT_ENA_REG, enable);
 }
 
-/**
- * @brief Clears the interrupt
- *
- */
 static inline void aes_ll_interrupt_clear(void)
 {
 	REG_WRITE(AES_INT_CLR_REG, 1);

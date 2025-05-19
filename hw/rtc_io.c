@@ -1,14 +1,4 @@
-/*
- * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 
-/*******************************************************************************
- * NOTICE
- * The ll is not public api, don't use in application code.
- * See readme.md in hal/include/hal/readme.md
- ******************************************************************************/
 
 #pragma once
 
@@ -43,13 +33,6 @@ typedef enum {
 	RTCIO_OUTPUT_OD = 0x1,      /*!< RTCIO output mode is open-drain. */
 } rtcio_ll_out_mode_t;
 
-/**
- * @brief Select the rtcio function.
- *
- * @note The RTC function must be selected before the pad analog function is enabled.
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @param func Select pin function.
- */
 static inline void rtcio_ll_function_select(int rtcio_num, rtcio_ll_func_t func)
 {
 	if (func == RTCIO_FUNC_RTC) {
@@ -70,32 +53,16 @@ static inline void rtcio_ll_function_select(int rtcio_num, rtcio_ll_func_t func)
 	}
 }
 
-/**
- * Enable rtcio output.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_output_enable(int rtcio_num)
 {
 	RTCIO.enable_w1ts.w1ts = (1U << rtcio_num);
 }
 
-/**
- * Disable rtcio output.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_output_disable(int rtcio_num)
 {
 	RTCIO.enable_w1tc.w1tc = (1U << rtcio_num);
 }
 
-/**
- * Set RTCIO output level.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @param level 0: output low; ~0: output high.
- */
 static inline void rtcio_ll_set_level(int rtcio_num, uint32_t level)
 {
 	if (level) {
@@ -105,43 +72,21 @@ static inline void rtcio_ll_set_level(int rtcio_num, uint32_t level)
 	}
 }
 
-/**
- * Enable rtcio input.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_input_enable(int rtcio_num)
 {
 	SET_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].ie);
 }
 
-/**
- * Disable rtcio input.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_input_disable(int rtcio_num)
 {
 	CLEAR_PERI_REG_MASK(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].ie);
 }
 
-/**
- * Get RTCIO input level.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @return 0: input low; ~0: input high.
- */
 static inline uint32_t rtcio_ll_get_level(int rtcio_num)
 {
 	return (uint32_t)(RTCIO.in_val.in >> rtcio_num) & 0x1;
 }
 
-/**
- * @brief Set RTC GPIO pad drive capability
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @param strength Drive capability of the pad. Range: 0 ~ 3.
- */
 static inline void rtcio_ll_set_drive_capability(int rtcio_num, uint32_t strength)
 {
 	if (rtc_io_desc[rtcio_num].drv_v) {
@@ -149,33 +94,16 @@ static inline void rtcio_ll_set_drive_capability(int rtcio_num, uint32_t strengt
 	}
 }
 
-/**
- * @brief Get RTC GPIO pad drive capability.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @return Drive capability of the pad. Range: 0 ~ 3.
- */
 static inline uint32_t rtcio_ll_get_drive_capability(int rtcio_num)
 {
 	return GET_PERI_REG_BITS2(rtc_io_desc[rtcio_num].reg, rtc_io_desc[rtcio_num].drv_v, rtc_io_desc[rtcio_num].drv_s);
 }
 
-/**
- * @brief Set RTC GPIO pad output mode.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @return mode Output mode.
- */
 static inline void rtcio_ll_output_mode_set(int rtcio_num, rtcio_ll_out_mode_t mode)
 {
 	RTCIO.pin[rtcio_num].pad_driver = mode;
 }
 
-/**
- * RTC GPIO pullup enable.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_pullup_enable(int rtcio_num)
 {
 	if (rtc_io_desc[rtcio_num].pullup) {
@@ -183,11 +111,6 @@ static inline void rtcio_ll_pullup_enable(int rtcio_num)
 	}
 }
 
-/**
- * RTC GPIO pullup disable.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_pullup_disable(int rtcio_num)
 {
 	// The pull-up value of the USB pins are controlled by the pins’ pull-up value together with USB pull-up value
@@ -203,11 +126,6 @@ static inline void rtcio_ll_pullup_disable(int rtcio_num)
 	}
 }
 
-/**
- * RTC GPIO pulldown enable.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_pulldown_enable(int rtcio_num)
 {
 	if (rtc_io_desc[rtcio_num].pulldown) {
@@ -215,11 +133,6 @@ static inline void rtcio_ll_pulldown_enable(int rtcio_num)
 	}
 }
 
-/**
- * RTC GPIO pulldown disable.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_pulldown_disable(int rtcio_num)
 {
 	if (rtc_io_desc[rtcio_num].pulldown) {
@@ -227,64 +140,26 @@ static inline void rtcio_ll_pulldown_disable(int rtcio_num)
 	}
 }
 
-/**
- * Enable force hold function for RTC IO pad.
- *
- * Enabling HOLD function will cause the pad to lock current status, such as,
- * input/output enable, input/output value, function, drive strength values.
- * This function is useful when going into light or deep sleep mode to prevent
- * the pin configuration from changing.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_force_hold_enable(int rtcio_num)
 {
 	SET_PERI_REG_MASK(RTC_CNTL_PAD_HOLD_REG, rtc_io_desc[rtcio_num].hold_force);
 }
 
-/**
- * Disable hold function on an RTC IO pad
- *
- * @note If disable the pad hold, the status of pad maybe changed in sleep mode.
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_force_hold_disable(int rtcio_num)
 {
 	CLEAR_PERI_REG_MASK(RTC_CNTL_PAD_HOLD_REG, rtc_io_desc[rtcio_num].hold_force);
 }
 
-/**
- * Enable force hold function for RTC IO pad.
- *
- * Enabling HOLD function will cause the pad to lock current status, such as,
- * input/output enable, input/output value, function, drive strength values.
- * This function is useful when going into light or deep sleep mode to prevent
- * the pin configuration from changing.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_force_hold_all(void)
 {
 	SET_PERI_REG_MASK(RTC_CNTL_PWC_REG, RTC_CNTL_PAD_FORCE_HOLD_M);
 }
 
-/**
- * Disable hold function on an RTC IO pad
- *
- * @note If disable the pad hold, the status of pad maybe changed in sleep mode.
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_force_unhold_all(void)
 {
 	CLEAR_PERI_REG_MASK(RTC_CNTL_PWC_REG, RTC_CNTL_PAD_FORCE_HOLD_M);
 }
 
-/**
- * Enable wakeup function and set wakeup type from light sleep status for rtcio.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- * @param type  Wakeup on high level or low level.
- */
 static inline void rtcio_ll_wakeup_enable(int rtcio_num, rtcio_ll_wake_type_t type)
 {
 	SENS.sar_peri_clk_gate_conf.iomux_clk_en = 1;
@@ -292,22 +167,12 @@ static inline void rtcio_ll_wakeup_enable(int rtcio_num, rtcio_ll_wake_type_t ty
 	RTCIO.pin[rtcio_num].int_type = type;
 }
 
-/**
- * Disable wakeup function from light sleep status for rtcio.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_wakeup_disable(int rtcio_num)
 {
 	RTCIO.pin[rtcio_num].wakeup_enable = 0;
 	RTCIO.pin[rtcio_num].int_type = RTCIO_WAKEUP_DISABLE;
 }
 
-/**
- * Enable rtc io output in deep sleep.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_enable_output_in_sleep(gpio_num_t gpio_num)
 {
 	if (rtc_io_desc[gpio_num].slpoe) {
@@ -315,11 +180,6 @@ static inline void rtcio_ll_enable_output_in_sleep(gpio_num_t gpio_num)
 	}
 }
 
-/**
- * Disable rtc io output in deep sleep.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_in_sleep_disable_output(gpio_num_t gpio_num)
 {
 	if (rtc_io_desc[gpio_num].slpoe) {
@@ -327,41 +187,21 @@ static inline void rtcio_ll_in_sleep_disable_output(gpio_num_t gpio_num)
 	}
 }
 
-/**
- * Enable rtc io input in deep sleep.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_in_sleep_enable_input(gpio_num_t gpio_num)
 {
 	SET_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpie);
 }
 
-/**
- * Disable rtc io input in deep sleep.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_in_sleep_disable_input(gpio_num_t gpio_num)
 {
 	CLEAR_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpie);
 }
 
-/**
- * Enable rtc io keep another setting in deep sleep.
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_enable_sleep_setting(gpio_num_t gpio_num)
 {
 	SET_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpsel);
 }
 
-/**
- * Disable rtc io keep another setting in deep sleep. (Default)
- *
- * @param rtcio_num The index of rtcio. 0 ~ MAX(rtcio).
- */
 static inline void rtcio_ll_disable_sleep_setting(gpio_num_t gpio_num)
 {
 	CLEAR_PERI_REG_MASK(rtc_io_desc[gpio_num].reg, rtc_io_desc[gpio_num].slpsel);
