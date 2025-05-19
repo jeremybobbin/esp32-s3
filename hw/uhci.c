@@ -4,8 +4,6 @@
 
 
 #include <stdio.h>
-#include "hal/uhci_types.h"
-#include "soc/uhci_struct.h"
 
 
 #define UHCI_LL_GET_HW(num) (((num) == 0) ? (&UHCI0) : (NULL))

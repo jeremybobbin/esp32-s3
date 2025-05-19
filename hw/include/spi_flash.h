@@ -1,5 +1,3 @@
-#include "gpspi_flash_ll.h"
-#include "spimem_flash_ll.h"
 
 #define SPI_FLASH_LL_CLKREG_VAL_5MHZ   {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_5MHZ}
 #define SPI_FLASH_LL_CLKREG_VAL_10MHZ  {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_10MHZ}

@@ -1,8 +1,5 @@
 
 #include <stdbool.h>
-#include "soc/hwcrypto_reg.h"
-#include "hal/sha_types.h"
-#include "soc/dport_reg.h"
 
 
 

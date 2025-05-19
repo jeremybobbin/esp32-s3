@@ -1,9 +1,4 @@
 #include <stdlib.h>
-#include "hal/misc.h"
-#include "soc/timer_periph.h"
-#include "soc/timer_group_struct.h"
-#include "hal/timer_types.h"
-#include "hal/assert.h"
 
 typedef struct {
 	timg_dev_t *dev;

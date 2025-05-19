@@ -1,9 +1,4 @@
 #include <stdint.h>
-#include "soc/soc_caps.h"
-#include "soc/soc.h"
-#include "xtensa/xtensa_api.h"
-#include "xtensa/config/specreg.h"
-#include "xt_instr_macros.h"
 
 void intr_cntrl_ll_enable_interrupts(uint32_t mask);
 void intr_cntrl_ll_disable_interrupts(uint32_t mask);

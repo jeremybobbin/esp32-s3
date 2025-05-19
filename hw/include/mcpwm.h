@@ -1,9 +1,4 @@
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/soc_caps.h"
-#include "soc/mcpwm_struct.h"
-#include "hal/mcpwm_types.h"
-#include "hal/assert.h"
 
 #define MCPWM_LL_GET_HW(ID) (((ID) == 0) ? &MCPWM0 : &MCPWM1)
 #define MCPWM_LL_MAX_CAPTURE_PRESCALE 255

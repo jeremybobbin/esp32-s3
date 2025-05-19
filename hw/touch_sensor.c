@@ -1,13 +1,5 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/touch_sensor_periph.h"
-#include "soc/rtc_cntl_struct.h"
-#include "soc/rtc_io_struct.h"
-#include "soc/sens_struct.h"
-#include "soc/soc_caps.h"
-#include "hal/touch_sensor_types.h"
-#include "soc/soc_pins.h"
 
 static int s_sleep_cycle = -1;
 static int s_meas_times = -1;

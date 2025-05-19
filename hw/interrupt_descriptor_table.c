@@ -1,9 +1,4 @@
 
-#include "sdkconfig.h"
-#include "hal/interrupt_controller_hal.h"
-#include "hal/interrupt_controller_ll.h"
-#include "soc/soc_caps.h"
-#include "soc/soc.h"
 
 //We should mark the interrupt for the timer used by FreeRTOS as reserved. The specific timer
 //is selectable using menuconfig; we use these cpp bits to convert that into something we can use in

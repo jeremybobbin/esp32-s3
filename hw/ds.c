@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "soc/hwcrypto_reg.h"
-#include "soc/soc_caps.h"
 
 
 void ds_ll_start(void)

@@ -4,11 +4,6 @@
 
 
 
-#include "hal/misc.h"
-#include "hal/uart_types.h"
-#include "soc/uart_periph.h"
-#include "soc/uart_struct.h"
-#include "esp_attr.h"
 
 
 // The default fifo depth

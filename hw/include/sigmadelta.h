@@ -1,8 +1,4 @@
 #include <stdbool.h>
-#include "soc/sigmadelta_periph.h"
-#include "soc/gpio_sd_struct.h"
-#include "hal/sigmadelta_types.h"
-#include "hal/misc.h"
 
 #define SIGMADELTA_LL_GET_HW(num) (((num) == 0) ? (&SIGMADELTA) : NULL)
 

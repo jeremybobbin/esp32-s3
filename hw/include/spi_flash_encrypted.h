@@ -1,9 +1,5 @@
 #include <stdbool.h>
 #include <string.h>
-#include "soc/system_reg.h"
-#include "soc/hwcrypto_reg.h"
-#include "soc/soc.h"
-#include "hal/assert.h"
 
 typedef enum
 {

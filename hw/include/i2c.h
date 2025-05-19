@@ -1,9 +1,3 @@
-#include "hal/misc.h"
-#include "soc/i2c_periph.h"
-#include "soc/soc_caps.h"
-#include "soc/i2c_struct.h"
-#include "hal/i2c_types.h"
-#include "esp_assert.h"
 
 #define I2C_LL_INTR_MASK          (0x3fff) /*!< I2C all interrupt bitmap */
 typedef union {

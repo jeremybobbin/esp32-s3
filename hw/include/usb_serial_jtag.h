@@ -1,5 +1,3 @@
-#include "soc/usb_serial_jtag_reg.h"
-#include "soc/usb_serial_jtag_struct.h"
 
 #define USB_SERIAL_JTAG_PACKET_SZ_BYTES 64
 

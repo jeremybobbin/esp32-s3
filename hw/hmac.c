@@ -1,7 +1,6 @@
 
 
 
-#include "soc/hwcrypto_reg.h"
 
 #define SHA256_BLOCK_SZ 64
 #define SHA256_DIGEST_SZ 32
@@ -110,8 +109,6 @@ void hmac_ll_calc_finish(void)
 }
 
 
-#include "hal/hmac_hal.h"
-#include "hal/hmac_ll.h"
 
 void hmac_hal_start(void)
 {

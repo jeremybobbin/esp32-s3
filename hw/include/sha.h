@@ -1,7 +1,4 @@
 #include <stdbool.h>
-#include "soc/hwcrypto_reg.h"
-#include "hal/sha_types.h"
-#include "soc/dport_reg.h"
 
 void sha_ll_start_block(esp_sha_type sha_type);
 void sha_ll_continue_block(esp_sha_type sha_type);

@@ -1,13 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include "esp_attr.h"
-#include "esp_types.h"
-#include "soc/spi_periph.h"
-#include "soc/spi_struct.h"
-#include "soc/lldesc.h"
-#include "hal/assert.h"
-#include "hal/misc.h"
-#include "hal/spi_types.h"
 
 #define SPI_LL_UNUSED_INT_MASK	(SPI_TRANS_DONE_INT_ENA | SPI_SLV_WR_DMA_DONE_INT_ENA | SPI_SLV_RD_DMA_DONE_INT_ENA | SPI_SLV_WR_BUF_DONE_INT_ENA | SPI_SLV_RD_BUF_DONE_INT_ENA)
 #define SPI_LL_ONE_LINE_CTRL_MASK (SPI_FREAD_OCT | SPI_FREAD_QUAD | SPI_FREAD_DUAL | SPI_FCMD_OCT | \

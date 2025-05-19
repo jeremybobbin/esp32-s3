@@ -1,12 +1,7 @@
 #include <stdlib.h>
-#include "soc/spi_periph.h"
-#include "soc/spi_struct.h"
-#include "hal/spi_types.h"
-#include "hal/spi_flash_types.h"
 #include <sys/param.h> // For MIN/MAX
 #include <stdbool.h>
 #include <string.h>
-#include "hal/misc.h"
 
 #define gpspi_flash_ll_get_hw(host_id)  (((host_id)==SPI2_HOST ? &GPSPI2 \
 												: ((host_id)==SPI3_HOST ? &GPSPI3 \

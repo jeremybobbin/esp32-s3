@@ -1,10 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "esp_assert.h"
-#include "hal/misc.h"
-#include "hal/twai_types.h"
-#include "soc/twai_periph.h"
-#include "soc/twai_struct.h"
 
 #define TWAI_LL_STATUS_RBS      (0x1 << 0)      //Receive Buffer Status
 #define TWAI_LL_STATUS_DOS      (0x1 << 1)      //Data Overrun Status

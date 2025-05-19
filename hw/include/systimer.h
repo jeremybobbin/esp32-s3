@@ -1,7 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "soc/systimer_struct.h"
-#include "hal/assert.h"
 
 #define SYSTIMER_LL_COUNTER_CLOCK       (0) // Counter used for "wallclock" time
 #define SYSTIMER_LL_COUNTER_OS_TICK     (1) // Counter used for OS tick

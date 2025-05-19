@@ -1,8 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "soc/efuse_periph.h"
-#include "hal/assert.h"
-#include "esp32s3/rom/efuse.h"
 
 uint32_t efuse_ll_get_flash_crypt_cnt(void) {
 	return EFUSE.rd_repeat_data1.reg_spi_boot_crypt_cnt;
@@ -86,12 +83,7 @@ void efuse_ll_set_pwr_off_num(uint16_t value) {
 	EFUSE.wr_tim_conf2.pwr_off_num = value;
 }
 
-#include "sdkconfig.h"
 #include <sys/param.h>
-#include "soc/soc_caps.h"
-#include "hal/assert.h"
-#include "hal/efuse_hal.h"
-#include "hal/efuse_ll.h"
 
 #define ESP_EFUSE_BLOCK_ERROR_BITS(error_reg, block) ((error_reg) & (0x0F << (4 * (block))))
 

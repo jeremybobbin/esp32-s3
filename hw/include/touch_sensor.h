@@ -1,12 +1,5 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/touch_sensor_periph.h"
-#include "soc/rtc_cntl_struct.h"
-#include "soc/rtc_io_struct.h"
-#include "soc/sens_struct.h"
-#include "soc/soc_caps.h"
-#include "hal/touch_sensor_types.h"
 
 #define TOUCH_LL_READ_RAW           0x0
 #define TOUCH_LL_READ_BENCHMARK     0x2

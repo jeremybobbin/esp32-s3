@@ -5,8 +5,6 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include "soc/pcnt_struct.h"
-#include "hal/pcnt_types.h"
 
 
 #define PCNT_LL_GET_HW(num) (((num) == 0) ? (&PCNT) : NULL)

@@ -3,8 +3,6 @@
 // The Lowlevel layer for SPI Flash
 
 
-#include "gpspi_flash_ll.h"
-#include "spimem_flash_ll.h"
 
 
 // For esp32s2, spimem is equivalent to traditional spi peripherals found

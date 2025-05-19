@@ -6,11 +6,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "esp_assert.h"
-#include "hal/misc.h"
-#include "hal/twai_types.h"
-#include "soc/twai_periph.h"
-#include "soc/twai_struct.h"
 
 typedef union {
 	struct {

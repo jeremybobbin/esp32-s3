@@ -2,11 +2,6 @@
 #include <stddef.h> /* For NULL declaration */
 #include <stdint.h>
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/lcd_cam_reg.h"
-#include "soc/lcd_cam_struct.h"
-#include "hal/assert.h"
-#include "hal/lcd_types.h"
 
 
 #define LCD_LL_GET_HW(id) (((id) == 0) ? (&LCD_CAM) : NULL)

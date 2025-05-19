@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include "soc/soc_caps.h"
-#include "xt_instr_macros.h"
 
 uint32_t mpu_ll_id_to_addr(unsigned id);
 void mpu_ll_set_region_rw(uint32_t addr);

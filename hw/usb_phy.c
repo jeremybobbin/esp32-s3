@@ -1,11 +1,6 @@
 
 
 #include <stdbool.h>
-#include "soc/soc.h"
-#include "soc/system_reg.h"
-#include "soc/usb_wrap_struct.h"
-#include "soc/rtc_cntl_struct.h"
-#include "soc/usb_serial_jtag_struct.h"
 
 
 void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)

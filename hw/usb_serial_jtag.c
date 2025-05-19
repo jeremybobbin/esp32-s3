@@ -1,8 +1,6 @@
 
 // The LL layer of the USB-serial-jtag controller
 
-#include "soc/usb_serial_jtag_reg.h"
-#include "soc/usb_serial_jtag_struct.h"
 
 
 //The in and out endpoints are this long.

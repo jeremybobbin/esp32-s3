@@ -1,8 +1,4 @@
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/i2s_periph.h"
-#include "soc/i2s_struct.h"
-#include "hal/i2s_types.h"
 
 #define I2S_LL_GET_HW(num) (((num) == 0) ? (&I2S0) : &I2S1)
 

@@ -4,10 +4,6 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include "soc/system_reg.h"
-#include "soc/hwcrypto_reg.h"
-#include "soc/soc.h"
-#include "hal/assert.h"
 
 
 /// Choose type of chip you want to encrypt manully

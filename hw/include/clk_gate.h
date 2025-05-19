@@ -1,10 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "esp_attr.h"
-#include "soc/periph_defs.h"
-#include "soc/system_reg.h"
-#include "soc/syscon_reg.h"
-#include "soc/dport_access.h"
 
 uint32_t periph_ll_get_clk_en_mask(periph_module_t periph);
 uint32_t periph_ll_get_rst_en_mask(periph_module_t periph, bool enable);

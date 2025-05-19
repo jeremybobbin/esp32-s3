@@ -1,4 +1,3 @@
-#include "adc.h"
 
 #define HAL_FORCE_MODIFY_U32_REG_FIELD(base_reg, reg_field, field_val)    \
 {                                                           \

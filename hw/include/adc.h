@@ -1,15 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "regi2c_ctrl.h"
 
-#include "soc/adc_periph.h"
-#include "hal/adc_types.h"
-#include "soc/apb_saradc_struct.h"
-#include "soc/sens_struct.h"
-#include "soc/apb_saradc_reg.h"
-#include "soc/rtc_cntl_struct.h"
-#include "soc/rtc_cntl_reg.h"
-#include "hal/misc.h"
 
 #define SOC_ADC_FSM_RSTB_WAIT_DEFAULT       (8)
 #define SOC_ADC_FSM_START_WAIT_DEFAULT      (5)

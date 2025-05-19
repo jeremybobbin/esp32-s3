@@ -1,8 +1,3 @@
-#include "hal/misc.h"
-#include "hal/uart_types.h"
-#include "soc/uart_periph.h"
-#include "soc/uart_struct.h"
-#include "esp_attr.h"
 
 #define UART_LL_FIFO_DEF_LEN  (SOC_UART_FIFO_LEN)
 #define UART_LL_GET_HW(num) (((num) == 0) ? (&UART0) : (((num) == 1) ? (&UART1) : (&UART2)))

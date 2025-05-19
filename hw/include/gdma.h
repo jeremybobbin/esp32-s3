@@ -1,8 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "soc/soc_caps.h"
-#include "soc/gdma_struct.h"
-#include "soc/gdma_reg.h"
 
 #define GDMA_LL_GET_HW(id) (((id) == 0) ? (&GDMA) : NULL)
 

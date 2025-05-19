@@ -1,8 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "soc/efuse_periph.h"
-#include "hal/assert.h"
-#include "esp32s3/rom/efuse.h"
 
 uint32_t efuse_ll_get_flash_crypt_cnt(void);
 uint32_t efuse_ll_get_wdt_delay_sel(void);

@@ -5,14 +5,6 @@
 
 #include <stdlib.h> //for abs()
 #include <string.h>
-#include "esp_attr.h"
-#include "esp_types.h"
-#include "soc/spi_periph.h"
-#include "soc/spi_struct.h"
-#include "soc/lldesc.h"
-#include "hal/assert.h"
-#include "hal/misc.h"
-#include "hal/spi_types.h"
 
 
 /// Interrupt not used. Don't use in app.

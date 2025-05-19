@@ -1,11 +1,5 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include "hal/wdt_types.h"
-#include "soc/rtc_cntl_periph.h"
-#include "soc/rtc_cntl_struct.h"
-#include "soc/efuse_reg.h"
-#include "esp_attr.h"
-#include "esp_assert.h"
 
 #define RWDT_LL_WDT_WKEY_VALUE 0x50D83AA1
 

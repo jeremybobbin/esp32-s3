@@ -1,11 +1,3 @@
-#include "soc/soc.h"
-#include "soc/rtc.h"
-#include "soc/rtc_cntl_reg.h"
-#include "soc/apb_ctrl_reg.h"
-#include "soc/soc_caps.h"
-#include "esp32s3/rom/lldesc.h"
-#include "esp32s3/rom/cache.h"
-#include "esp_attr.h"
 
 #define RTC_CNTL_HAL_LINK_BUF_SIZE_MIN  (SOC_RTC_CNTL_CPU_PD_DMA_BLOCK_SIZE) /* The minimum size of dma link buffer */
 #define RTC_CNTL_LL_RETENTION_TARGET_CPU         (1<<0)

@@ -4,11 +4,6 @@
 
 
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/soc_caps.h"
-#include "soc/mcpwm_struct.h"
-#include "hal/mcpwm_types.h"
-#include "hal/assert.h"
 
 
 /// Get the address of peripheral registers

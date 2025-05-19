@@ -1,7 +1,3 @@
-#include "soc/soc.h"
-#include "soc/rtc.h"
-#include "soc/rtc_cntl_reg.h"
-#include "soc/apb_ctrl_reg.h"
 
 #define RTC_CNTL_LL_RETENTION_TARGET_CPU         (BIT(0))
 #define RTC_CNTL_LL_RETENTION_TARGET_TAGMEM      (BIT(1))

@@ -6,12 +6,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "hal/misc.h"
-#include "soc/timer_periph.h"
-#include "soc/timer_group_struct.h"
-#include "hal/wdt_types.h"
-#include "esp_attr.h"
-#include "esp_assert.h"
 
 #define MWDT_LL_STG_SEL_OFF 0
 #define MWDT_LL_STG_SEL_INT 1

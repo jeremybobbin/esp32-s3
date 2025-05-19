@@ -1,14 +1,7 @@
 
 #include <stdint.h>
 
-#include "soc/soc_caps.h"
 
-#include "xt_instr_macros.h"
-#include "xtensa/config/specreg.h"
-#include "xtensa/config/extreg.h"
-#include "esp_bit_defs.h"
-#include "esp_attr.h"
-#include "xtensa/config/core.h"
 
 
 uint32_t IRAM_ATTR cpu_ll_get_core_id(void)

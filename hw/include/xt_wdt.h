@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include "soc/rtc_cntl_periph.h"
 
 #define XT_WDT_LL_XTAL32_DEAD_INTR_MASK RTC_CNTL_XTAL32K_DEAD_INT_ST_M
 

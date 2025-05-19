@@ -1,7 +1,5 @@
 #include <stdbool.h>
 #include <string.h>
-#include "soc/hwcrypto_reg.h"
-#include "hal/aes_types.h"
 
 typedef enum {
 	ESP_AES_STATE_IDLE = 0, /* AES accelerator is idle */
