@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
-
+#include <stdint.h>
 
 #define SOC_ADC_FSM_RSTB_WAIT_DEFAULT       (8)
 #define SOC_ADC_FSM_START_WAIT_DEFAULT      (5)
@@ -13,6 +13,82 @@
 #define ADC_LL_CLKM_DIV_NUM_DEFAULT 15
 #define ADC_LL_CLKM_DIV_B_DEFAULT   1
 #define ADC_LL_CLKM_DIV_A_DEFAULT   0
+
+typedef enum {
+	ADC_UNIT_1 = 1,          /*!< SAR ADC 1. */
+	ADC_UNIT_2 = 2,          /*!< SAR ADC 2. */
+	ADC_UNIT_BOTH = 3,       /*!< SAR ADC 1 and 2. */
+	ADC_UNIT_ALTER = 7,      /*!< SAR ADC 1 and 2 alternative mode. */
+	ADC_UNIT_MAX,
+} adc_unit_t;
+
+typedef enum {
+	ADC_CHANNEL_0 = 0, /*!< ADC channel */
+	ADC_CHANNEL_1,     /*!< ADC channel */
+	ADC_CHANNEL_2,     /*!< ADC channel */
+	ADC_CHANNEL_3,     /*!< ADC channel */
+	ADC_CHANNEL_4,     /*!< ADC channel */
+	ADC_CHANNEL_5,     /*!< ADC channel */
+	ADC_CHANNEL_6,     /*!< ADC channel */
+	ADC_CHANNEL_7,     /*!< ADC channel */
+	ADC_CHANNEL_8,     /*!< ADC channel */
+	ADC_CHANNEL_9,     /*!< ADC channel */
+	ADC_CHANNEL_MAX,
+} adc_channel_t;
+
+typedef enum {
+	ADC_ATTEN_DB_0   = 0,  /*!<No input attenumation, ADC can measure up to approx. 800 mV. */
+	ADC_ATTEN_DB_2_5 = 1,  /*!<The input voltage of ADC will be attenuated extending the range of measurement by about 2.5 dB (1.33 x) */
+	ADC_ATTEN_DB_6   = 2,  /*!<The input voltage of ADC will be attenuated extending the range of measurement by about 6 dB (2 x) */
+	ADC_ATTEN_DB_11  = 3,  /*!<The input voltage of ADC will be attenuated extending the range of measurement by about 11 dB (3.55 x) */
+	ADC_ATTEN_MAX,
+} adc_atten_t;
+
+typedef enum {
+	ADC_WIDTH_BIT_12 = 3, /*!< ADC capture width is 12Bit. */
+	ADC_WIDTH_MAX,
+} adc_bits_width_t;
+
+typedef enum {
+	ADC_CONV_SINGLE_UNIT_1 = 1,  ///< Only use ADC1 for conversion
+	ADC_CONV_SINGLE_UNIT_2 = 2,  ///< Only use ADC2 for conversion
+	ADC_CONV_BOTH_UNIT     = 3,  ///< Use Both ADC1 and ADC2 for conversion simultaneously
+	ADC_CONV_ALTER_UNIT    = 7,  ///< Use both ADC1 and ADC2 for conversion by turn. e.g. ADC1 -> ADC2 -> ADC1 -> ADC2 .....
+	ADC_CONV_UNIT_MAX,
+} adc_digi_convert_mode_t;
+
+typedef enum {
+	ADC_DIGI_FORMAT_12BIT __attribute__((deprecated)),  /*!<ADC to DMA data format,                [15:12]-channel, [11: 0]-12 bits ADC data (`adc_digi_output_data_t`). Note: For single convert mode. */
+	ADC_DIGI_FORMAT_11BIT __attribute__((deprecated)),  /*!<ADC to DMA data format, [15]-adc unit, [14:11]-channel, [10: 0]-11 bits ADC data (`adc_digi_output_data_t`). Note: For multi or alter convert mode. */
+	ADC_DIGI_FORMAT_MAX   __attribute__((deprecated)),
+
+	ADC_DIGI_OUTPUT_FORMAT_TYPE1,   ///< See `adc_digi_output_data_t.type1`
+	ADC_DIGI_OUTPUT_FORMAT_TYPE2,   ///< See `adc_digi_output_data_t.type2`
+} adc_digi_output_format_t;
+
+typedef struct {
+	uint8_t atten;      ///< Attenuation of this ADC channel
+	uint8_t channel;    ///< ADC channel
+	uint8_t unit;       ///< ADC unit
+	uint8_t bit_width;  ///< ADC output bit width
+} adc_digi_pattern_config_t;
+
+typedef struct {
+	union {
+		struct {
+			uint16_t data:     12;  /*!<ADC real output data info. Resolution: 12 bit. */
+			uint16_t channel:   4;  /*!<ADC channel index info. */
+		} type1;                    /*!<ADC type1 */
+		struct {
+			uint16_t data:     11;  /*!<ADC real output data info. Resolution: 11 bit. */
+			uint16_t channel:   4;  /*!<ADC channel index info. For ESP32-S2:
+										If (channel < ADC_CHANNEL_MAX), The data is valid.
+										If (channel > ADC_CHANNEL_MAX), The data is invalid. */
+			uint16_t unit:      1;  /*!<ADC unit index info. 0: ADC1; 1: ADC2.  */
+		} type2;                    /*!<When the configured output format is 11bit. `ADC_DIGI_FORMAT_11BIT` */
+		uint16_t val;               /*!<Raw data value */
+	};
+} adc_digi_output_data_t;
 
 typedef enum {
 	ADC_NUM_1 = 0,          /*!< SAR ADC 1 */
