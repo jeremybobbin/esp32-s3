@@ -24,71 +24,62 @@
 #define ADC_LL_CLKM_DIV_A_DEFAULT   0
 
 typedef enum {
-    ADC_NUM_1 = 0,          /*!< SAR ADC 1 */
-    ADC_NUM_2 = 1,          /*!< SAR ADC 2 */
-    ADC_NUM_MAX,
+	ADC_NUM_1 = 0,          /*!< SAR ADC 1 */
+	ADC_NUM_2 = 1,          /*!< SAR ADC 2 */
+	ADC_NUM_MAX,
 } adc_ll_num_t;
 
 typedef enum {
-    ADC_POWER_BY_FSM,   /*!< ADC XPD controled by FSM. Used for polling mode */
-    ADC_POWER_SW_ON,    /*!< ADC XPD controled by SW. power on. Used for DMA mode */
-    ADC_POWER_SW_OFF,   /*!< ADC XPD controled by SW. power off. */
-    ADC_POWER_MAX,      /*!< For parameter check. */
+	ADC_POWER_BY_FSM,   /*!< ADC XPD controled by FSM. Used for polling mode */
+	ADC_POWER_SW_ON,    /*!< ADC XPD controled by SW. power on. Used for DMA mode */
+	ADC_POWER_SW_OFF,   /*!< ADC XPD controled by SW. power off. */
+	ADC_POWER_MAX,      /*!< For parameter check. */
 } adc_ll_power_t;
 
 typedef enum {
-    ADC_RTC_DATA_OK = 0,
-    ADC_RTC_CTRL_UNSELECTED = 1,
-    ADC_RTC_CTRL_BREAK = 2,
-    ADC_RTC_DATA_FAIL = -1,
+	ADC_RTC_DATA_OK = 0,
+	ADC_RTC_CTRL_UNSELECTED = 1,
+	ADC_RTC_CTRL_BREAK = 2,
+	ADC_RTC_DATA_FAIL = -1,
 } adc_ll_rtc_raw_data_t;
 
 typedef enum {
-    ADC_LL_CTRL_RTC = 0,    ///< For ADC1. Select RTC controller.
-    ADC_LL_CTRL_ULP = 1,    ///< For ADC1 and ADC2. Select ULP controller.
-    ADC_LL_CTRL_DIG = 2,    ///< For ADC1. Select DIG controller.
-    ADC_LL_CTRL_ARB = 3,    ///< For ADC2. The controller is selected by the arbiter.
+	ADC_LL_CTRL_RTC = 0,    ///< For ADC1. Select RTC controller.
+	ADC_LL_CTRL_ULP = 1,    ///< For ADC1 and ADC2. Select ULP controller.
+	ADC_LL_CTRL_DIG = 2,    ///< For ADC1. Select DIG controller.
+	ADC_LL_CTRL_ARB = 3,    ///< For ADC2. The controller is selected by the arbiter.
 } adc_ll_controller_t;
 
-/**
- * @brief ADC digital controller (DMA mode) work mode.
- *
- * @note  The conversion mode affects the sampling frequency:
- *        SINGLE_UNIT_1: When the measurement is triggered, only ADC1 is sampled once.
- *        SINGLE_UNIT_2: When the measurement is triggered, only ADC2 is sampled once.
- *        BOTH_UNIT    : When the measurement is triggered, ADC1 and ADC2 are sampled at the same time.
- *        ALTER_UNIT   : When the measurement is triggered, ADC1 or ADC2 samples alternately.
- */
 typedef enum {
-    ADC_LL_DIGI_CONV_ONLY_ADC1  = 0,    // Only use ADC1 for conversion
-    ADC_LL_DIGI_CONV_ONLY_ADC2  = 1,    // Only use ADC2 for conversion
-    ADC_LL_DIGI_CONV_BOTH_UNIT  = 2,    // Use Both ADC1 and ADC2 for conversion simultaneously
-    ADC_LL_DIGI_CONV_ALTER_UNIT = 3     // Use both ADC1 and ADC2 for conversion by turn. e.g. ADC1 -> ADC2 -> ADC1 -> ADC2 .....
+	ADC_LL_DIGI_CONV_ONLY_ADC1  = 0,    // Only use ADC1 for conversion
+	ADC_LL_DIGI_CONV_ONLY_ADC2  = 1,    // Only use ADC2 for conversion
+	ADC_LL_DIGI_CONV_BOTH_UNIT  = 2,    // Use Both ADC1 and ADC2 for conversion simultaneously
+	ADC_LL_DIGI_CONV_ALTER_UNIT = 3     // Use both ADC1 and ADC2 for conversion by turn. e.g. ADC1 -> ADC2 -> ADC1 -> ADC2 .....
 } adc_ll_digi_convert_mode_t;
 
 typedef struct {
-    union {
-        struct {
-            uint8_t atten:       2;
-            uint8_t channel:     4;
-            uint8_t reserved:    2;
-        };
-        uint8_t val;
-    };
+	union {
+		struct {
+			uint8_t atten:       2;
+			uint8_t channel:     4;
+			uint8_t reserved:    2;
+		};
+		uint8_t val;
+	};
 } __attribute__((packed)) adc_ll_digi_pattern_table_t;
 
 
 typedef struct {
-    union {
-        struct {
-            uint16_t data:     13;  /*!<ADC real output data info. Resolution: 13 bit. */
-            uint16_t reserved:  1;  /*!<reserved */
-            uint16_t flag:      2;  /*!<ADC data flag info.
-                                        If (flag == 0), The data is valid.
-                                        If (flag > 0), The data is invalid. */
-        };
-        uint16_t val;
-    };
+	union {
+		struct {
+			uint16_t data:     13;  /*!<ADC real output data info. Resolution: 13 bit. */
+			uint16_t reserved:  1;  /*!<reserved */
+			uint16_t flag:      2;  /*!<ADC data flag info.
+										If (flag == 0), The data is valid.
+										If (flag > 0), The data is invalid. */
+		};
+		uint16_t val;
+	};
 } adc_ll_rtc_output_data_t;
 
 typedef volatile struct apb_saradc_dev_s {

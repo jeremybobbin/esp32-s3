@@ -19,26 +19,26 @@
 //This workaround fixes the issue.
 static inline bool is_eco0(uint32_t minor_raw)
 {
-    return ((minor_raw & 0x7) == 0 &&
-            efuse_ll_get_blk_version_major() == 1 && efuse_ll_get_blk_version_minor() == 1);
+	return ((minor_raw & 0x7) == 0 &&
+			efuse_ll_get_blk_version_major() == 1 && efuse_ll_get_blk_version_minor() == 1);
 }
 
 uint32_t efuse_hal_get_major_chip_version(void)
 {
-    uint32_t minor_raw = efuse_ll_get_chip_wafer_version_minor();
+	uint32_t minor_raw = efuse_ll_get_chip_wafer_version_minor();
 
-    if (is_eco0(minor_raw)) {
-        return 0;
-    }
-    return efuse_ll_get_chip_wafer_version_major();
+	if (is_eco0(minor_raw)) {
+		return 0;
+	}
+	return efuse_ll_get_chip_wafer_version_major();
 }
 
 uint32_t efuse_hal_get_minor_chip_version(void)
 {
-    uint32_t minor_raw = efuse_ll_get_chip_wafer_version_minor();
+	uint32_t minor_raw = efuse_ll_get_chip_wafer_version_minor();
 
-    if (is_eco0(minor_raw)) {
-        return 0;
-    }
-    return minor_raw;
+	if (is_eco0(minor_raw)) {
+		return 0;
+	}
+	return minor_raw;
 }
