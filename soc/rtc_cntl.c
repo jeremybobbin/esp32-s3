@@ -1,3 +1,4 @@
+#include "soc/rtc_cntl.h"
 
 #define RTC_CNTL_HAL_LINK_BUF_SIZE_MIN  (SOC_RTC_CNTL_CPU_PD_DMA_BLOCK_SIZE) /* The minimum size of dma link buffer */
 #define RTC_CNTL_LL_RETENTION_TARGET_CPU         (1<<0)
@@ -6,6 +7,8 @@
 typedef struct rtc_cntl_link_buf_conf {
 	uint32_t cfg[4];    /* 4 word for dma link buffer configuration */
 } rtc_cntl_link_buf_conf_t;
+
+extern rtc_cntl_dev_t *RTCCNTL = (void*)0x60008000;
 
 void rtc_cntl_ll_set_wakeup_timer(uint64_t t)
 {

@@ -376,7 +376,7 @@ typedef volatile struct apb_saradc_dev_s {
 	uint32_t apb_ctrl_date;
 } apb_saradc_dev_t;
 
-extern apb_saradc_dev_t APB_SARADC;
+extern apb_saradc_dev_t *APB_SARADC;
 
 void adc_ll_digi_set_fsm_time(uint32_t rst_wait, uint32_t start_wait, uint32_t standby_wait);
 void adc_ll_set_sample_cycle(uint32_t sample_cycle);
