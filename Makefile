@@ -1,7 +1,7 @@
 CC=xtensa-esp32s3-elf-gcc
 AR=xtensa-esp32s3-elf-ar
-CFLAGS=-I./$(@D)/include/
-ASFLAGS=-I./$(@D)/include/
+CFLAGS=-I./$(@D)
+ASFLAGS=-I./$(@D)
 
 libxt_hal.a: \
 	xtensa/attribute.o \
