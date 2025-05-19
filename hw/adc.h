@@ -124,6 +124,21 @@ typedef enum {
 	ADC_LL_DIGI_CONV_ALTER_UNIT = 3     // Use both ADC1 and ADC2 for conversion by turn. e.g. ADC1 -> ADC2 -> ADC1 -> ADC2 .....
 } adc_ll_digi_convert_mode_t;
 
+typedef enum {
+	ADC_ARB_MODE_SHIELD,/*!<Force shield arbiter, Select the highest priority controller to work. */
+	ADC_ARB_MODE_FIX,   /*!<Fixed priority switch controller mode. */
+	ADC_ARB_MODE_LOOP,  /*!<Loop priority switch controller mode. Each controller has the same priority,
+							and the arbiter will switch to the next controller after the measurement is completed. */
+} adc_arbiter_mode_t;
+
+typedef struct {
+	adc_arbiter_mode_t mode; /*!<Refer to ``adc_arbiter_mode_t``. Note: only support ADC2. */
+	uint8_t rtc_pri;        /*!<RTC controller priority. Range: 0 ~ 2. */
+	uint8_t dig_pri;        /*!<Digital controller priority. Range: 0 ~ 2. */
+	uint8_t pwdet_pri;      /*!<Wi-Fi controller priority. Range: 0 ~ 2. */
+} adc_arbiter_t;
+
+
 typedef struct {
 	union {
 		struct {
