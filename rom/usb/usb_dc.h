@@ -18,9 +18,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * USB endpoint direction and number.
@@ -387,6 +384,3 @@ void usb_dw_isr_handler(void);
 int usb_dc_ep_write_would_block(const uint8_t ep);
 
 
-#ifdef __cplusplus
-}
-#endif

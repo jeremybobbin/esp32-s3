@@ -23,9 +23,6 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /** CDC Specification release number in BCD format */
 #define CDC_SRN_1_20            0x0120
@@ -169,6 +166,3 @@ struct cdc_ecm_descriptor {
     uint8_t bNumberPowerFilters;
 } __packed;
 
-#ifdef __cplusplus
-}
-#endif

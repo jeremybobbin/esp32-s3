@@ -40,9 +40,6 @@
 #include "usb_dc.h"
 #include "esp_assert.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*************************************************************************
  *  USB configuration
@@ -397,6 +394,3 @@ void usb_dev_resume(int configuration);
 int usb_dev_get_configuration(void);
 
 
-#ifdef __cplusplus
-}
-#endif

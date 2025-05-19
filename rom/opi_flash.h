@@ -11,9 +11,6 @@
 #include <stdbool.h>
 #include "spi_flash.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 
@@ -316,8 +313,5 @@ void esp_rom_opiflash_cache_mode_config(esp_rom_spiflash_read_mode_t mode, const
 esp_rom_spiflash_result_t esp_rom_opiflash_read_raw(uint32_t flash_addr, uint8_t* buf, int len);
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -45,9 +45,6 @@
 #include <stddef.h>
 #include "usb_device.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /** DFU Class Subclass */
 #define DFU_SUBCLASS            0x01
@@ -142,6 +139,3 @@ typedef void(*usb_dfu_detach_routine_t)(int delay);
 void usb_dfu_set_detach_cb(usb_dfu_detach_routine_t cb);
 
 
-#ifdef __cplusplus
-}
-#endif

@@ -68,9 +68,6 @@
 #define MINIZ_HAS_64BIT_REGISTERS 1
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // ------------------- zlib-style API Definitions.
 
@@ -752,6 +749,3 @@ mz_uint32 tdefl_get_adler32(tdefl_compressor *d);
 mz_uint tdefl_create_comp_flags_from_zip_params(int level, int window_bits, int strategy);
 #endif // #ifndef MINIZ_NO_ZLIB_APIS
 
-#ifdef __cplusplus
-}
-#endif

@@ -12,9 +12,6 @@
 #include "soc/rtc_cntl_reg.h"
 #include "soc/reset_reasons.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /** \defgroup rtc_apis, rtc registers and memory related apis
   * @brief rtc apis
@@ -239,6 +236,3 @@ void software_reset_cpu(int cpu_no);
   * @}
   */
 
-#ifdef __cplusplus
-}
-#endif

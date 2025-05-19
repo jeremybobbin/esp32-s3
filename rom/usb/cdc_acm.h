@@ -33,9 +33,6 @@
 #pragma once
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef void cdc_acm_device;
 extern cdc_acm_device *uart_acm_dev;
@@ -257,6 +254,3 @@ cdc_acm_device *cdc_acm_init(void *mem_chunk, int mem_chunk_size);
  */
 #define UART_ERROR_BREAK    (1 << 3)
 
-#ifdef __cplusplus
-}
-#endif

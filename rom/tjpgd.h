@@ -13,9 +13,6 @@
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* These types must be 16-bit, 32-bit or larger integer */
 typedef int             INT;
@@ -90,8 +87,5 @@ JRESULT jd_prepare (JDEC *, UINT(*)(JDEC *, BYTE *, UINT), void *, UINT, void *)
 JRESULT jd_decomp (JDEC *, UINT(*)(JDEC *, void *, JRECT *), BYTE);
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _TJPGDEC */

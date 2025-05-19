@@ -44,9 +44,6 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define BCD(x) ((((x) / 10) << 4) | ((x) / 10))
 
@@ -238,6 +235,3 @@ extern const struct rom_usb_descriptors acm_usb_descriptors;
 extern const struct rom_usb_descriptors dfu_usb_descriptors;
 extern const struct rom_usb_descriptors *rom_usb_curr_desc;
 
-#ifdef __cplusplus
-}
-#endif

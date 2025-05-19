@@ -12,9 +12,6 @@
 #include "rsa_pss.h"
 #include "esp_assert.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct ets_secure_boot_sig_block ets_secure_boot_sig_block_t;
 typedef struct ets_secure_boot_signature ets_secure_boot_signature_t;
@@ -100,6 +97,3 @@ struct ets_secure_boot_key_digests {
     bool allow_key_revoke;
 };
 
-#ifdef __cplusplus
-}
-#endif
