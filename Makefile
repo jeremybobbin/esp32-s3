@@ -5,8 +5,12 @@ ASFLAGS=-I./$(@D)
 
 build: libsoc.a libxtensa.a
 
+soc/adc.o: soc/adc.h
+soc/gpio.o: soc/gpio.h soc/usb_serial_jtag.h soc/rtc_cntl.h
+
 libsoc.a: \
-	soc/adc.o
+	soc/adc.o \
+	soc/gpio.o
 	$(AR) rcs $@ $?
 
 libxtensa.a: \
