@@ -37,31 +37,14 @@
 #define XTENSA_CONFIG_CORE_H
 
 /*  CONFIGURATION INDEPENDENT DEFINITIONS:  */
-#ifdef __XTENSA__
 #include <xtensa/hal.h>
 #include <xtensa/xtensa-versions.h>
-#else
-#include "../hal.h"
-#include "../xtensa-versions.h"
-#endif
-
-/*  CONFIGURATION SPECIFIC DEFINITIONS:  */
-#ifdef __XTENSA__
-#include <xtensa/config/core-isa.h>
-#include <xtensa/config/core-matmap.h>
-#include <xtensa/config/tie.h>
-#else
-#include "core-isa.h"
-#include "core-matmap.h"
-#include "tie.h"
-#endif
+#include <xtensa/core-isa.h>
+#include <xtensa/core-matmap.h>
+#include <xtensa/tie.h>
 
 #if defined (_ASMLANGUAGE) || defined (__ASSEMBLER__)
-#ifdef __XTENSA__
-#include <xtensa/config/tie-asm.h>
-#else
-#include "tie-asm.h"
-#endif
+#include <xtensa/tie-asm.h>
 #endif /*_ASMLANGUAGE or __ASSEMBLER__*/
 
 

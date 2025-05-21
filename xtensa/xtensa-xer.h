@@ -28,7 +28,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <xtensa/config/core.h>
+#include <xtensa/core.h>
 
 #define NUM_INTERRUPTS 27
 #define NUM_CORES       4

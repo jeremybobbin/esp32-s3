@@ -49,8 +49,8 @@
 #define _ASMLANGUAGE
 #endif
 
-#include <xtensa/config/core.h>
-#include <xtensa/config/specreg.h>
+#include <xtensa/core.h>
+#include <xtensa/specreg.h>
 
 /*
  *  Assembly-language specific definitions (assembly macros, etc.).

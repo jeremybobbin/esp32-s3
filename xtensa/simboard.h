@@ -26,8 +26,8 @@
 #ifndef _INC_SIMBOARD_H_
 #define _INC_SIMBOARD_H_
 
-#include <xtensa/config/core.h>
-#include <xtensa/config/system.h>
+#include <xtensa/core.h>
+#include <xtensa/system.h>
 
 
 /*

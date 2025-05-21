@@ -26,8 +26,8 @@
 #ifndef XTRUNTIME_H
 #define XTRUNTIME_H
 
-#include <xtensa/config/core.h>
-#include <xtensa/config/specreg.h>
+#include <xtensa/core.h>
+#include <xtensa/specreg.h>
 #include <xtensa/xtruntime-core-state.h>
 
 #ifndef XTSTR

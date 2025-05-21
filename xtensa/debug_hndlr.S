@@ -25,8 +25,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <xtensa/coreasm.h>
-#include <xtensa/config/specreg.h>
-#include <xtensa/config/system.h>
+#include <xtensa/specreg.h>
+#include <xtensa/system.h>
 
 #if XCHAL_HAVE_DEBUG && XCHAL_HAVE_EXCEPTIONS
 

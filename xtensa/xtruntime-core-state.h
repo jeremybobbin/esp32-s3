@@ -29,8 +29,8 @@
 
 /*  Import STRUCT_xxx macros for defining structures:  */
 #include <xtensa/xtruntime-frames.h>
-#include <xtensa/config/core.h>
-#include <xtensa/config/tie.h>
+#include <xtensa/core.h>
+#include <xtensa/tie.h>
 
 //#define XTOS_PSO_TEST	1		// uncommented for internal PSO testing only
 

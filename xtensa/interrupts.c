@@ -24,8 +24,8 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <xtensa/config/core.h>
-#include <xtensa/config/specreg.h>
+#include <xtensa/core.h>
+#include <xtensa/specreg.h>
 
 #if XCHAL_HAVE_INTERRUPTS
 

@@ -25,7 +25,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <xtensa/hal.h>
-#include <xtensa/config/core.h>
+#include <xtensa/core.h>
 
 #ifdef XCHAL_OP0_FORMAT_LENGTHS
 extern const unsigned char Xthal_op0_format_lengths[16];

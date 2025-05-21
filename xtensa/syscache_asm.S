@@ -39,7 +39,7 @@
 
 #include <xtensa/cacheasm.h>
 #include <xtensa/cacheattrasm.h>
-#include <xtensa/config/system.h>
+#include <xtensa/system.h>
 
 /***  Modify this for your particular board or system:  ***/
 #define CACHEATTR_DEFAULT	XSHAL_ISS_CACHEATTR_DEFAULT

@@ -1,5 +1,5 @@
 #include <xtensa/hal.h>
-#include <xtensa/config/core.h>
+#include <xtensa/core.h>
 
 #include "xtensa/xtensa_context.h"
 #include "freertos/FreeRTOSConfig.h"

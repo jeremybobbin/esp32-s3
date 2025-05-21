@@ -24,7 +24,7 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include <xtensa/config/core.h>
+#include <xtensa/core.h>
 
 
 // Software release info (not configuration-specific!):

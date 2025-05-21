@@ -1,4 +1,4 @@
-#include <xtensa/config/core.h>
+#include <xtensa/core.h>
 
 #define RSR(reg, at)         asm volatile ("rsr %0, %1" : "=r" (at) : "i" (reg))
 #define WSR(reg, at)         asm volatile ("wsr %0, %1" : : "r" (at), "i" (reg))

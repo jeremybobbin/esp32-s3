@@ -25,8 +25,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <xtensa/hal.h>
-#include <xtensa/config/specreg.h>
-#include <xtensa/config/core.h>
+#include <xtensa/specreg.h>
+#include <xtensa/core.h>
 
 
 /*  1 if debug option configured, 0 if not:  */
