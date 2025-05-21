@@ -1,106 +1,81 @@
-/*
- * xtensa/core-macros.h -- C specific definitions
- *                         that depend on CORE configuration
- */
-
-/*
- * Copyright (c) 2012 Tensilica Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-#ifndef XTENSA_CACHE_H
-#define XTENSA_CACHE_H
-
 #include <xtensa/config/core.h>
 
-/*  Only define things for C code.  */
+#define RSR(reg, at)         asm volatile ("rsr %0, %1" : "=r" (at) : "i" (reg))
+#define WSR(reg, at)         asm volatile ("wsr %0, %1" : : "r" (at), "i" (reg))
+#define XSR(reg, at)         asm volatile ("xsr %0, %1" : "+r" (at) : "i" (reg))
+
+#define RER(reg, at)         asm volatile ("rer %0, %1" : "=r" (at) : "r" (reg))
+
+#define WITLB(at, as)        asm volatile ("witlb  %0, %1; \n isync \n " : : "r" (at), "r" (as))
+#define WDTLB(at, as)        asm volatile ("wdtlb  %0, %1; \n dsync \n " : : "r" (at), "r" (as))
+
+#define EXTRA_SAVE_AREA_SIZE 32
+#define BASE_SAVE_AREA_SIZE  16
+#define SAVE_AREA_OFFSET (EXTRA_SAVE_AREA_SIZE + BASE_SAVE_AREA_SIZE)
+#define BASE_AREA_SP_OFFSET  12
+
+#ifdef __ASSEMBLER__
+    .macro SET_STACK  new_sp tmp1 tmp2
+    addi tmp1, new_sp, -SAVE_AREA_OFFSET
+    addi tmp2, tmp1, -BASE_AREA_SP_OFFSET
+    s32i new_sp, tmp2, 0
+    addi new_sp, tmp1, 0
+    rsr.ps \tmp1
+    movi \tmp2, ~(PS_WOE_MASK | PS_OWB_MASK | PS_CALLINC_MASK)
+    and \tmp1, \tmp1, \tmp2
+    wsr.ps \tmp1
+    rsync
+
+    rsr.windowbase \tmp1
+    ssl	\tmp1
+    movi \tmp1, 1
+    sll	\tmp1, \tmp1
+    wsr.windowstart \tmp1
+    rsync
+
+    mov sp, \new_sp
+
+    rsr.ps \tmp1
+    movi \tmp2, (PS_WOE)
+    or \tmp1, \tmp1, \tmp2
+    wsr.ps \tmp1
+    rsync
+    .endm
+#else
+
+#define SET_STACK(new_sp) \
+    do { \
+        uint32_t sp = (uint32_t)new_sp - SAVE_AREA_OFFSET; \
+        *(uint32_t*)(sp - BASE_AREA_SP_OFFSET) = (uint32_t)new_sp; \
+        uint32_t tmp1 = 0, tmp2 = 0; \
+        asm volatile ( \
+          "rsr.ps %1 \n"\
+          "movi %2, ~" XTSTR( PS_WOE_MASK | PS_OWB_MASK | PS_CALLINC_MASK ) " \n"\
+          "and %1, %1, %2 \n"\
+          "wsr.ps %1 \n"\
+          "rsync \n"\
+          " \n"\
+          "rsr.windowbase %1 \n"\
+          "ssl	%1 \n"\
+          "movi %1, 1 \n"\
+          "sll	%1, %1 \n"\
+          "wsr.windowstart %1 \n"\
+          "rsync \n"\
+          " \n"\
+          "mov sp, %0 \n"\
+          "rsr.ps %1 \n"\
+          " \n"\
+          "movi %2, " XTSTR( PS_WOE_MASK ) "\n"\
+          " \n"\
+          "or %1, %1, %2 \n"\
+          "wsr.ps %1 \n"\
+          "rsync \n"\
+          : "+r"(sp), "+r"(tmp1), "+r"(tmp2)); \
+    } while (0);
+#endif // __ASSEMBLER__
+
+
 #if !defined(_ASMLANGUAGE) && !defined(_NOCLANGUAGE) && !defined(__ASSEMBLER__)
-
-
-
-/***************************   CACHE   ***************************/
-
-/* All the macros are in the lower case now and some of them 
- * share the name with the existing functions from hal.h.
- * Including this header file will define XTHAL_USE_CACHE_MACROS 
- * which directs hal.h not to use the functions.
- *
-
-/*
- *  Single-cache-line operations in C-callable inline assembly.
- *  Essentially macro versions (uppercase) of:
- *
- *	xthal_icache_line_invalidate(void *addr);
- *	xthal_icache_line_lock(void *addr);
- *	xthal_icache_line_unlock(void *addr);
- *	xthal_icache_sync(void);
- *
- *  NOTE:  unlike the above functions, the following macros do NOT
- *  execute the xthal_icache_sync() as part of each line operation.
- *  This sync must be called explicitly by the caller.  This is to
- *  allow better optimization when operating on more than one line.
- *
- *	xthal_dcache_line_invalidate(void *addr);
- *	xthal_dcache_line_writeback(void *addr);
- *	xthal_dcache_line_writeback_inv(void *addr);
- *	xthal_dcache_line_lock(void *addr);
- *	xthal_dcache_line_unlock(void *addr);
- *	xthal_dcache_sync(void);
- *	xthal_dcache_line_prefetch_for_write(void *addr);
- *	xthal_dcache_line_prefetch_for_read(void *addr);
- *
- *  All are made memory-barriers, given that's how they're typically used
- *  (ops operate on a whole line, so clobbers all memory not just *addr).
- *
- *  NOTE:  All the block block cache ops and line prefetches are implemented
- *  using intrinsics so they are better optimized regarding memory barriers etc.
- *  
- * All block downgrade functions exist in two forms: with and without
- * the 'max' parameter: This parameter allows compiler to optimize
- * the functions whenever the parameter is smaller than the cache size.
- *
- *	xthal_dcache_block_invalidate(void *addr, unsigned size);
- *	xthal_dcache_block_writeback(void *addr, unsigned size);
- *	xthal_dcache_block_writeback_inv(void *addr, unsigned size);
- *	xthal_dcache_block_invalidate_max(void *addr, unsigned size, unsigned max);
- *	xthal_dcache_block_writeback_max(void *addr, unsigned size, unsigned max);
- *	xthal_dcache_block_writeback_inv_max(void *addr, unsigned size, unsigned max);
- *
- *      xthal_dcache_block_prefetch_for_read(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_for_write(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_modify(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_read_write(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_for_read_grp(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_for_write_grp(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_modify_grp(void *addr, unsigned size);
- *      xthal_dcache_block_prefetch_read_write_grp(void *addr, unsigned size)
- *
- *	xthal_dcache_block_wait();
- *	xthal_dcache_block_required_wait();
- *	xthal_dcache_block_abort();
- *	xthal_dcache_block_prefetch_end();
- *	xthal_dcache_block_newgrp();
- */
-
-/***   INSTRUCTION CACHE   ***/
 
 #define XTHAL_USE_CACHE_MACROS
 
@@ -124,17 +99,8 @@
 # define xthal_icache_line_unlock(addr)		do {/*nothing*/} while(0)
 #endif
 
-/*
- * Even if a config doesn't have caches, an isync is still needed
- * when instructions in any memory are modified, whether by a loader
- * or self-modifying code.  Therefore, this macro always produces
- * an isync, whether or not an icache is present.
- */
 #define xthal_icache_sync()							\
 		__asm__ __volatile__("isync":::"memory")
-
-
-/***   DATA CACHE   ***/
 
 #if XCHAL_DCACHE_SIZE > 0
 
@@ -158,7 +124,7 @@
 # define xthal_dcache_line_invalidate(addr)		do {/*nothing*/} while(0)
 # define xthal_dcache_line_writeback(addr)		do {/*nothing*/} while(0)
 # define xthal_dcache_line_writeback_inv(addr)		do {/*nothing*/} while(0)
-# define xthal_dcache_sync()				__asm__ __volatile__("":::"memory"")
+# define xthal_dcache_sync()				__asm__ __volatile__("":::"memory")
 # define xthal_dcache_line_prefetch_for_read(addr)	do {/*nothing*/} while(0)
 #endif
 
@@ -451,6 +417,3 @@ static inline void XTHAL_WER (unsigned reg, unsigned value)
 #endif /* XCHAL_HAVE_EXTERN_REGS */
 
 #endif /* C code */
-
-#endif /*XTENSA_CACHE_H*/
-
