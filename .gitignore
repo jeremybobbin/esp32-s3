@@ -1,2 +1,9 @@
-*.o
+bluetooth/bluetooth.o
+wifi/esp_adapter.o
+freertos/*.o
+heap/*.o
+rom/*.o
+soc/*.o
+timer/*.o
+xtensa/*.o
 *.a
