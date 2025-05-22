@@ -14,7 +14,6 @@
 
 // Provides strong definition for system time functions relied upon
 // by core components.
-#include "sdkconfig.h"
 
 #if CONFIG_ESP_TIME_FUNCS_USE_ESP_TIMER
 #include "esp_timer.h"

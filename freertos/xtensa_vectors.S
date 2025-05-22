@@ -92,7 +92,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xtensa_rtos.h"
 #include "esp_private/panic_reason.h"
-#include "sdkconfig.h"
 #include "soc/soc.h"
 
 /*

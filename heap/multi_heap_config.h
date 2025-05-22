@@ -14,7 +14,6 @@
 #pragma once
 
 #ifdef ESP_PLATFORM
-#include "sdkconfig.h"
 #include "soc/soc.h"
 #include "soc/soc_caps.h"
 #endif

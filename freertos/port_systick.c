@@ -12,7 +12,6 @@
 #include "esp_intr_alloc.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "sdkconfig.h"
 #ifdef CONFIG_FREERTOS_SYSTICK_USES_SYSTIMER
 #include "soc/periph_defs.h"
 #include "soc/system_reg.h"

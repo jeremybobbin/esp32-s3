@@ -1,32 +1,8 @@
-/*
- * SPDX-FileCopyrightText: 2019-2021 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-#ifndef BOOTLOADER_BUILD
-
 #include <stdint.h>
 #include <stdlib.h>
-#include "sdkconfig.h"
-#include "esp_attr.h"
+#include "heap/soc_memory_layout.h"
+#include "heap/esp_heap_caps.h"
 #include "soc/soc.h"
-#include "soc/dport_reg.h"
-#include "heap_memory_layout.h"
-#include "esp_heap_caps.h"
-
-/**
- * @brief Memory type descriptors. These describe the capabilities of a type of memory in the SoC.
- * Each type of memory map consists of one or more regions in the address space.
- * Each type contains an array of prioritized capabilities.
- * Types with later entries are only taken if earlier ones can't fulfill the memory request.
- *
- * - For a normal malloc (MALLOC_CAP_DEFAULT), give away the DRAM-only memory first, then pass off any dual-use IRAM regions, finally eat into the application memory.
- * - For a malloc where 32-bit-aligned-only access is okay, first allocate IRAM, then DRAM, finally application IRAM.
- * - Application mallocs (PIDx) will allocate IRAM first, if possible, then DRAM.
- * - Most other malloc caps only fit in one region anyway.
- *
- */
 
 /* Index of memory in `soc_memory_types[]` */
 enum {
@@ -59,17 +35,6 @@ const soc_memory_type_desc_t soc_memory_types[SOC_MEMORY_TYPE_NUM] = {
 
 const size_t soc_memory_type_count = sizeof(soc_memory_types) / sizeof(soc_memory_type_desc_t);
 
-/**
- * @brief Region descriptors. These describe all regions of memory available, and map them to a type in the above type.
- *
- * @note Because of requirements in the coalescing code which merges adjacent regions,
- *       this list should always be sorted from low to high by start address.
- *
- */
-
-/**
- * Register the shared buffer area of the last memory block into the heap during heap initialization
- */
 #define APP_USABLE_DRAM_END           (SOC_ROM_STACK_START - SOC_ROM_STACK_SIZE)
 
 const soc_memory_region_t soc_memory_regions[] = {
@@ -140,5 +105,3 @@ SOC_RESERVE_MEMORY_REGION(SOC_RTC_DRAM_LOW, (intptr_t)&_rtc_noinit_end, rtcram_d
 SOC_RESERVE_MEMORY_REGION(SOC_RTC_DRAM_LOW, (intptr_t)&_rtc_force_fast_end, rtcram_data);
 #endif
 #endif
-
-#endif // BOOTLOADER_BUILD

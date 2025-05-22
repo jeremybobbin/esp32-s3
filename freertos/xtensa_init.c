@@ -34,7 +34,6 @@ that are implemented in C.
 #endif
 
 #include "xtensa_rtos.h"
-#include "sdkconfig.h"
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/clk.h"
 #elif CONFIG_IDF_TARGET_ESP32S2

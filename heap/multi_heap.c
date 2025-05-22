@@ -19,16 +19,17 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/cdefs.h>
-#include "heap_tlsf.h"
-#include <multi_heap.h>
-#include "multi_heap_internal.h"
+#include "heap/soc_memory_layout.h"
+#include "heap/heap_tlsf.h"
+#include "heap/multi_heap.h"
+#include "heap/multi_heap_internal.h"
 
 /* Note: Keep platform-specific parts in this header, this source
    file should depend on libc only */
-#include "multi_heap_platform.h"
+#include "heap/multi_heap_platform.h"
 
 /* Defines compile-time configuration macros */
-#include "multi_heap_config.h"
+#include "heap/multi_heap_config.h"
 
 #ifndef MULTI_HEAP_POISONING
 /* if no heap poisoning, public API aliases directly to these implementations */
@@ -100,9 +101,6 @@ static void assert_valid_block(const heap_t *heap, const block_header_t *block)
     pool_t pool = tlsf_get_pool(heap->heap_data);
     void *ptr = block_to_ptr(block);
 
-    MULTI_HEAP_ASSERT((ptr >= pool) &&
-                    (ptr < pool + heap->pool_size),
-                    (uintptr_t)ptr);
 }
 
 void *multi_heap_get_block_address_impl(multi_heap_block_handle_t block)

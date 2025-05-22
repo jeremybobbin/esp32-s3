@@ -24,7 +24,6 @@
 */
 
 #include "xtensa_rtos.h"
-#include "sdkconfig.h"
 
 #define TOPOFSTACK_OFFS                 0x00    /* StackType_t *pxTopOfStack */
 #define CP_TOPOFSTACK_OFFS              0x04    /* xMPU_SETTINGS.coproc_area */

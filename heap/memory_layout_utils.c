@@ -13,22 +13,9 @@
 // limitations under the License.
 #include <stdint.h>
 #include <string.h>
-#include "sdkconfig.h"
-#include "esp_log.h"
-#include "soc/soc_memory_layout.h"
-
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-#include "esp32c3/rom/rom_layout.h"
-#define ROM_HAS_LAYOUT_TABLE 1
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rom_layout.h"
-#define ROM_HAS_LAYOUT_TABLE 1
-#elif CONFIG_IDF_TARGET_ESP32H2
-#include "esp32h2/rom/rom_layout.h"
-#define ROM_HAS_LAYOUT_TABLE 1
-#else
-#define ROM_HAS_LAYOUT_TABLE 0
-#endif
+#include <assert.h>
+#include "heap/soc_memory_layout.h"
+#include "rom/rom_layout.h"
 
 static const char *TAG = "memory_layout";
 

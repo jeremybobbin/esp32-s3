@@ -15,13 +15,12 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <errno.h>
 #include <sys/param.h>
-#include "esp_attr.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
-#include "esp_log.h"
 #include "heap_private.h"
-#include "esp_system.h"
+#include "soc_memory_layout.h"
 
 
 /* Forward declaration for base function, put in IRAM.
@@ -75,15 +74,15 @@ static void heap_caps_alloc_failed(size_t requested_size, uint32_t caps, const c
 #endif
 }
 
-esp_err_t heap_caps_register_failed_alloc_callback(esp_alloc_failed_hook_t callback)
+int heap_caps_register_failed_alloc_callback(esp_alloc_failed_hook_t callback)
 {
     if (callback == NULL) {
-        return ESP_ERR_INVALID_ARG;
+        return EINVAL;
     }
 
     alloc_failed_callback = callback;
 
-    return ESP_OK;
+    return 0;
 }
 
 bool heap_caps_match(const heap_t *heap, uint32_t caps)

@@ -15,12 +15,15 @@
 #include <assert.h>
 #include <string.h>
 #include <sys/lock.h>
+#include <errno.h>
 
-#include "esp_log.h"
 #include "multi_heap.h"
 #include "multi_heap_platform.h"
 #include "esp_heap_caps_init.h"
 #include "heap_memory_layout.h"
+
+#define ESP_EARLY_LOGD(...)
+#define ESP_EARLY_LOGI(...)
 
 static const char *TAG = "heap_init";
 
@@ -152,10 +155,10 @@ void heap_caps_init(void)
     }
 }
 
-esp_err_t heap_caps_add_region(intptr_t start, intptr_t end)
+int heap_caps_add_region(intptr_t start, intptr_t end)
 {
     if (start == 0) {
-        return ESP_ERR_INVALID_ARG;
+        return EINVAL;
     }
 
     for (size_t i = 0; i < soc_memory_region_count; i++) {
@@ -167,14 +170,14 @@ esp_err_t heap_caps_add_region(intptr_t start, intptr_t end)
         }
     }
 
-    return ESP_ERR_NOT_FOUND;
+    return ENOENT;
 }
 
-esp_err_t heap_caps_add_region_with_caps(const uint32_t caps[], intptr_t start, intptr_t end)
+int heap_caps_add_region_with_caps(const uint32_t caps[], intptr_t start, intptr_t end)
 {
-    esp_err_t err = ESP_FAIL;
+    int err = EPERM;
     if (caps == NULL || start == 0 || end == 0 || end <= start) {
-        return ESP_ERR_INVALID_ARG;
+        return EINVAL;
     }
 
     //Check if region overlaps the start and/or end of an existing region. If so, the
@@ -202,13 +205,13 @@ esp_err_t heap_caps_add_region_with_caps(const uint32_t caps[], intptr_t start, 
     SLIST_FOREACH(heap, &registered_heaps, next) {
         if ((start <= heap->start && end > heap->start)
                 || (start < heap->end && end > heap->end)) {
-            return ESP_FAIL;
+            return EPERM;
         }
     }
 
     heap_t *p_new = heap_caps_malloc(sizeof(heap_t), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);
     if (p_new == NULL) {
-        err = ESP_ERR_NO_MEM;
+        err = ENOMEM;
         goto done;
     }
     memcpy(p_new->caps, caps, sizeof(p_new->caps));
@@ -218,7 +221,7 @@ esp_err_t heap_caps_add_region_with_caps(const uint32_t caps[], intptr_t start, 
     p_new->heap = multi_heap_register((void *)start, end - start);
     SLIST_NEXT(p_new, next) = NULL;
     if (p_new->heap == NULL) {
-        err = ESP_ERR_INVALID_SIZE;
+        err = EINVAL;
         goto done;
     }
     multi_heap_set_lock(p_new->heap, &p_new->heap_mux);
@@ -231,10 +234,10 @@ esp_err_t heap_caps_add_region_with_caps(const uint32_t caps[], intptr_t start, 
     SLIST_INSERT_HEAD(&registered_heaps, p_new, next);
     MULTI_HEAP_UNLOCK(&registered_heaps_write_lock);
 
-    err = ESP_OK;
+    err = 0;
 
  done:
-    if (err != ESP_OK) {
+    if (err != 0) {
         free(p_new);
     }
     return err;

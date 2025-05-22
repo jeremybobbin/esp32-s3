@@ -1,5 +1,15 @@
-#pragma once
-#include "heap_memory_layout.h"
+//#pragma once
+#include "heap/heap_memory_layout.h"
+
+#define IRAM_ATTR _SECTION_ATTR_IMPL(".iram1", __COUNTER__)
+
+// Forces data into DRAM instead of flash
+#define DRAM_ATTR _SECTION_ATTR_IMPL(".dram1", __COUNTER__)
+#define _SECTION_ATTR_IMPL(SECTION, COUNTER) __attribute__((section(SECTION "." _COUNTER_STRINGIFY(COUNTER))))
+
+#define _COUNTER_STRINGIFY(COUNTER) #COUNTER
+
+
 
 /* Overall memory map */
 #define SOC_DROM_LOW    0x3C000000
@@ -59,15 +69,6 @@
 // Start (highest address) of ROM boot stack, only relevant during early boot
 #define SOC_ROM_STACK_START         0x3fceb710
 #define SOC_ROM_STACK_SIZE          0x2000
-
-#define IRAM_ATTR _SECTION_ATTR_IMPL(".iram1", __COUNTER__)
-
-// Forces data into DRAM instead of flash
-#define DRAM_ATTR _SECTION_ATTR_IMPL(".dram1", __COUNTER__)
-#define _SECTION_ATTR_IMPL(SECTION, COUNTER) __attribute__((section(SECTION "." _COUNTER_STRINGIFY(COUNTER))))
-
-#define _COUNTER_STRINGIFY(COUNTER) #COUNTER
-
 
 inline static bool IRAM_ATTR esp_ptr_dma_capable(const void *p)
 {

@@ -35,7 +35,6 @@
 #include "esp32h2/rtc.h"
 #endif
 
-#include "sdkconfig.h"
 
 #ifdef CONFIG_ESP_TIMER_PROFILING
 #define WITH_PROFILING 1

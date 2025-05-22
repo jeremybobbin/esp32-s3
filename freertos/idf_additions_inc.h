@@ -12,7 +12,6 @@
 extern "C" {
 #endif
 
-#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 
 #if ( INCLUDE_vTaskPrioritySet == 1 )
