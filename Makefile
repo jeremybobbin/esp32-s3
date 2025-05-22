@@ -1,9 +1,13 @@
 CC=xtensa-esp32s3-elf-gcc
 AR=xtensa-esp32s3-elf-ar
-CFLAGS=-I./$(@D) -I.
-ASFLAGS=-I./$(@D) -I.
+CFLAGS=-I.
+ASFLAGS=-I.
 
-build: libsoc.a libxtensa.a libbluetooth.a
+build: \
+	libbluetooth.a \
+	libsoc.a \
+	libwifi.a \
+	libxtensa.a
 
 soc/adc.o: soc/adc.h
 soc/gpio.o: soc/gpio.h soc/usb_serial_jtag.h soc/rtc_cntl.h
@@ -11,7 +15,113 @@ soc/gpio.o: soc/gpio.h soc/usb_serial_jtag.h soc/rtc_cntl.h
 libsoc.a: \
 	soc/adc.o \
 	soc/gpio.o
-	$(AR) rcs $@ $?
+
+libheap.a: \
+	heap/heap_caps_init.o \
+	heap/heap_caps.o \
+	heap/heap_tlsf.o \
+	heap/memory_layout.o \
+	heap/memory_layout_utils.o \
+	heap/multi_heap.o
+
+libwifi.a: \
+	wifi/coexist_api.o \
+	wifi/coexist_arbit.o \
+	wifi/coexist_core.o \
+	wifi/coexist_dbg.o \
+	wifi/coexist_hw.o \
+	wifi/coexist_param.o \
+	wifi/coexist_scheme.o \
+	wifi/coexist_timer.o \
+	wifi/esf_buf.o \
+	wifi/esp_adapter.o \
+	wifi/espnow.o \
+	wifi/hal_ampdu.o \
+	wifi/hal_coex.o \
+	wifi/hal_crypto.o \
+	wifi/hal_mac.o \
+	wifi/hal_mac_rx.o \
+	wifi/hal_mac_tx.o \
+	wifi/hal_sniffer.o \
+	wifi/hal_tsf.o \
+	wifi/ieee80211_action.o \
+	wifi/ieee80211_action_vendor.o \
+	wifi/ieee80211_api.o \
+	wifi/ieee80211_crypto_ccmp.o \
+	wifi/ieee80211_crypto_gcmp.o \
+	wifi/ieee80211_crypto.o \
+	wifi/ieee80211_crypto_sms4.o \
+	wifi/ieee80211_crypto_tkip.o \
+	wifi/ieee80211_crypto_wep.o \
+	wifi/ieee80211_debug.o \
+	wifi/ieee80211_ets.o \
+	wifi/ieee80211_ftm.o \
+	wifi/ieee80211_hostap.o \
+	wifi/ieee80211_ht.o \
+	wifi/ieee80211_hwmp.o \
+	wifi/ieee80211_ie_vendor.o \
+	wifi/ieee80211_input.o \
+	wifi/ieee80211_ioctl.o \
+	wifi/ieee80211_mesh.o \
+	wifi/ieee80211_mesh_quick.o \
+	wifi/ieee80211_node.o \
+	wifi/ieee80211_nvs.o \
+	wifi/ieee80211.o \
+	wifi/ieee80211_output.o \
+	wifi/ieee80211_phy.o \
+	wifi/ieee80211_power.o \
+	wifi/ieee80211_proto.o \
+	wifi/ieee80211_reg_db.o \
+	wifi/ieee80211_regdomain.o \
+	wifi/ieee80211_rfid.o \
+	wifi/ieee80211_scan.o \
+	wifi/ieee80211_sta.o \
+	wifi/ieee80211_supplicant.o \
+	wifi/ieee80211_timer.o \
+	wifi/if_eagle.o \
+	wifi/if_hwctrl.o \
+	wifi/lmac.o \
+	wifi/manatick.o \
+	wifi/mesh_common.o \
+	wifi/mesh_config.o \
+	wifi/mesh_input.o \
+	wifi/mesh_io.o \
+	wifi/mesh_main.o \
+	wifi/mesh_network.o \
+	wifi/mesh.o \
+	wifi/mesh_parent.o \
+	wifi/mesh_quick.o \
+	wifi/mesh_route.o \
+	wifi/mesh_schedule.o \
+	wifi/mesh_sleep.o \
+	wifi/mesh_timer.o \
+	wifi/mesh_utilities.o \
+	wifi/mesh_wifi.o \
+	wifi/misc_nvs.o \
+	wifi/pm_for_bcn_only_mode.o \
+	wifi/pm.o \
+	wifi/pp_debug.o \
+	wifi/pp.o \
+	wifi/pp_timer.o \
+	wifi/rate_control.o \
+	wifi/sc_airkiss.o \
+	wifi/sc_broadcast.o \
+	wifi/sc_crypt.o \
+	wifi/sc_esptouch.o \
+	wifi/sc_esptouch_v2.o \
+	wifi/sc_ht40.o \
+	wifi/sc_ieee80211.o \
+	wifi/sc_sniffer.o \
+	wifi/trc.o \
+	wifi/wapi_glue.o \
+	wifi/wapi.o \
+	wifi/wapi_sms4_algo.o \
+	wifi/wdev.o \
+	wifi/wl_chm.o \
+	wifi/wl_cnx.o \
+	wifi/wl_offchan.o
+
+
 
 libxtensa.a: \
 	xtensa/attribute.o \
@@ -36,7 +146,6 @@ libxtensa.a: \
 	xtensa/syscache_asm.o \
 	xtensa/windowspill_asm.o \
 	xtensa/xtensa_intr.o
-	$(AR) rcs $@ $?
 
 libbluetooth.a: \
 	bluetooth/arch_main.o \
@@ -94,7 +203,6 @@ libbluetooth.a: \
 	bluetooth/task.o \
 	bluetooth/vhci.o \
 	bluetooth/vshci_task.o
-	$(AR) rcs $@ $?
 
 clean:
-	rm -f soc/*.o xtensa/*.o libxtensa.a
+	rm -f *.a wifi/esp_adapter.o bluetooth/bluetooth.o heap/*.o soc/*.o xtensa/*.o libxtensa.a
