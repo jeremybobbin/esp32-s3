@@ -1,6 +1,5 @@
 #include <stdint.h>
-
-
+#include "heap/soc_memory_layout.h"
 
 uint32_t IRAM_ATTR cpu_ll_get_core_id(void);
 uint32_t IRAM_ATTR cpu_ll_get_cycle_count(void);

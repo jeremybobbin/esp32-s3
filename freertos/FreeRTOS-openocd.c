@@ -10,7 +10,6 @@
  */
 
 #include "FreeRTOS.h"
-#include "esp_attr.h"
 
 #ifdef __GNUC__
 #define USED __attribute__((used))

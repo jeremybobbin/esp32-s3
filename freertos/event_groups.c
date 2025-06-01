@@ -38,7 +38,6 @@
 #include "timers.h"
 #include "event_groups.h"
 
-#ifdef ESP_PLATFORM
 #define taskCRITICAL_MUX &pxEventBits->eventGroupMux
 #undef taskENTER_CRITICAL
 #undef taskEXIT_CRITICAL
@@ -48,7 +47,6 @@
 #define taskEXIT_CRITICAL( )            portEXIT_CRITICAL( taskCRITICAL_MUX )
 #define taskENTER_CRITICAL_ISR( )     portENTER_CRITICAL_ISR( taskCRITICAL_MUX )
 #define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( taskCRITICAL_MUX )
-#endif
 
 /* Lint e961, e750 and e9021 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
@@ -84,9 +82,7 @@ typedef struct EventGroupDef_t
         uint8_t ucStaticallyAllocated; /*< Set to pdTRUE if the event group is statically allocated to ensure no attempt is made to free the memory. */
     #endif
 
-#ifdef ESP_PLATFORM
     portMUX_TYPE eventGroupMux;     //Mutex required due to SMP
-#endif // ESP_PLATFORM
 } EventGroup_t;
 
 /*-----------------------------------------------------------*/
@@ -142,9 +138,7 @@ static BaseType_t prvTestWaitCondition( const EventBits_t uxCurrentEventBits,
             #endif /* configSUPPORT_DYNAMIC_ALLOCATION */
 
             traceEVENT_GROUP_CREATE( pxEventBits );
-#ifdef ESP_PLATFORM
             portMUX_INITIALIZE( &pxEventBits->eventGroupMux );
-#endif // ESP_PLATFORM
         }
         else
         {
@@ -195,9 +189,7 @@ static BaseType_t prvTestWaitCondition( const EventBits_t uxCurrentEventBits,
                 }
             #endif /* configSUPPORT_STATIC_ALLOCATION */
 
-#ifdef ESP_PLATFORM
             portMUX_INITIALIZE( &pxEventBits->eventGroupMux );
-#endif // ESP_PLATFORM
 
             traceEVENT_GROUP_CREATE( pxEventBits );
         }
@@ -219,9 +211,7 @@ EventBits_t xEventGroupSync( EventGroupHandle_t xEventGroup,
 {
     EventBits_t uxOriginalBitValue, uxReturn;
     EventGroup_t * pxEventBits = xEventGroup;
-#ifndef ESP_PLATFORM
     BaseType_t xAlreadyYielded;
-#endif // ESP_PLATFORM
     BaseType_t xTimeoutOccurred = pdFALSE;
 
     configASSERT( ( uxBitsToWaitFor & eventEVENT_BITS_CONTROL_BYTES ) == 0 );
@@ -232,11 +222,7 @@ EventBits_t xEventGroupSync( EventGroupHandle_t xEventGroup,
         }
     #endif
 
-#ifdef ESP_PLATFORM // IDF-3755
     taskENTER_CRITICAL();
-#else
-    vTaskSuspendAll();
-#endif // ESP_PLATFORM
     {
         uxOriginalBitValue = pxEventBits->uxEventBits;
 
@@ -279,27 +265,11 @@ EventBits_t xEventGroupSync( EventGroupHandle_t xEventGroup,
             }
         }
     }
-#ifdef ESP_PLATFORM // IDF-3755
     taskEXIT_CRITICAL();
-#else
-    xAlreadyYielded = xTaskResumeAll();
-#endif // ESP_PLATFORM
 
     if( xTicksToWait != ( TickType_t ) 0 )
     {
-#ifdef ESP_PLATFORM
         portYIELD_WITHIN_API();
-#else
-        if( xAlreadyYielded == pdFALSE )
-        {
-            portYIELD_WITHIN_API();
-        }
-        else
-        {
-            mtCOVERAGE_TEST_MARKER();
-        }
-#endif // ESP_PLATFORM
-
         /* The task blocked to wait for its required bits to be set - at this
          * point either the required bits were set or the block time expired.  If
          * the required bits were set they will have been stored in the task's
@@ -357,11 +327,7 @@ EventBits_t xEventGroupWaitBits( EventGroupHandle_t xEventGroup,
 {
     EventGroup_t * pxEventBits = xEventGroup;
     EventBits_t uxReturn, uxControlBits = 0;
-#ifdef ESP_PLATFORM
     BaseType_t xWaitConditionMet;
-#else
-    BaseType_t xWaitConditionMet, xAlreadyYielded;
-#endif // ESP_PLATFORM
     BaseType_t xTimeoutOccurred = pdFALSE;
 
     /* Check the user is not attempting to wait on the bits used by the kernel
@@ -375,11 +341,7 @@ EventBits_t xEventGroupWaitBits( EventGroupHandle_t xEventGroup,
         }
     #endif
 
-#ifdef ESP_PLATFORM // IDF-3755
     taskENTER_CRITICAL();
-#else
-    vTaskSuspendAll();
-#endif // ESP_PLATFORM
     {
         const EventBits_t uxCurrentEventBits = pxEventBits->uxEventBits;
 
@@ -447,26 +409,11 @@ EventBits_t xEventGroupWaitBits( EventGroupHandle_t xEventGroup,
             traceEVENT_GROUP_WAIT_BITS_BLOCK( xEventGroup, uxBitsToWaitFor );
         }
     }
-#ifdef ESP_PLATFORM // IDF-3755
     taskEXIT_CRITICAL();
-#else
-    xAlreadyYielded = xTaskResumeAll();
-#endif // ESP_PLATFORM
 
     if( xTicksToWait != ( TickType_t ) 0 )
     {
-#ifdef ESP_PLATFORM
         portYIELD_WITHIN_API();
-#else
-        if( xAlreadyYielded == pdFALSE )
-        {
-            portYIELD_WITHIN_API();
-        }
-        else
-        {
-            mtCOVERAGE_TEST_MARKER();
-        }
-#endif // ESP_PLATFORM
 
         /* The task blocked to wait for its required bits to be set - at this
          * point either the required bits were set or the block time expired.  If
@@ -598,15 +545,11 @@ EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup,
 
     pxList = &( pxEventBits->xTasksWaitingForBits );
     pxListEnd = listGET_END_MARKER( pxList ); /*lint !e826 !e740 !e9087 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
-#ifdef ESP_PLATFORM // IDF-3755
     taskENTER_CRITICAL();
     /* The critical section above only takes the event groups spinlock. However, we are about to traverse a task list.
      * Thus we need call the function below to take the task list spinlock located in tasks.c. Not doing so will risk
      * the task list's being changed while be are traversing it. */
     vTaskTakeEventListLock();
-#else
-    vTaskSuspendAll();
-#endif // ESP_PLATFORM
     {
         traceEVENT_GROUP_SET_BITS( xEventGroup, uxBitsToSet );
 
@@ -678,13 +621,9 @@ EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup,
          * bit was set in the control word. */
         pxEventBits->uxEventBits &= ~uxBitsToClear;
     }
-#ifdef ESP_PLATFORM // IDF-3755
     /* Release the previously held task list spinlock, then release the event group spinlock. */
     vTaskReleaseEventListLock();
     taskEXIT_CRITICAL();
-#else
-    ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
     return pxEventBits->uxEventBits;
 }
@@ -699,12 +638,10 @@ void vEventGroupDelete( EventGroupHandle_t xEventGroup )
 
     // IDF-3755
     taskENTER_CRITICAL();
-#ifdef ESP_PLATFORM
     /* The critical section above only takes the event groups spinlock. However, we are about to traverse a task list.
      * Thus we need call the function below to take the task list spinlock located in tasks.c. Not doing so will risk
      * the task list's being changed while be are traversing it. */
     vTaskTakeEventListLock();
-#endif
     {
         while( listCURRENT_LIST_LENGTH( pxTasksWaitingForBits ) > ( UBaseType_t ) 0 )
         {
@@ -714,10 +651,8 @@ void vEventGroupDelete( EventGroupHandle_t xEventGroup )
             vTaskRemoveFromUnorderedEventList( pxTasksWaitingForBits->xListEnd.pxNext, eventUNBLOCKED_DUE_TO_BIT_SET );
         }
     }
-#ifdef ESP_PLATFORM
     /* Release the previously held task list spinlock. */
     vTaskReleaseEventListLock();
-#endif
     taskEXIT_CRITICAL();
 
         #if ( ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) && ( configSUPPORT_STATIC_ALLOCATION == 0 ) )

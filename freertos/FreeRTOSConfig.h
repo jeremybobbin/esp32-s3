@@ -28,6 +28,9 @@
 #define portUSING_MPU_WRAPPERS                          0
 #define configUSE_MUTEX                                 1
 
+#define CONFIG_ESP_MAIN_TASK_STACK_SIZE 3584
+#define CONFIG_ESP_MAIN_TASK_AFFINITY 0x1
+
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS CONFIG_FREERTOS_THREAD_LOCAL_STORAGE_POINTERS
 #define configTHREAD_LOCAL_STORAGE_DELETE_CALLBACKS     1
 

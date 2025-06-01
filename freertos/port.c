@@ -1,82 +1,82 @@
-/*
- * SPDX-FileCopyrightText: 2017 Amazon.com, Inc. or its affiliates
- * SPDX-FileCopyrightText: 2015-2019 Cadence Design Systems, Inc.
- *
- * SPDX-License-Identifier: MIT
- *
- * SPDX-FileContributor: 2016-2022 Espressif Systems (Shanghai) CO LTD
- */
-/*
- * FreeRTOS Kernel V10.4.3
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. If you wish to use our Amazon
- * FreeRTOS name, please do so in a fair use way that does not cause confusion.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * https://www.FreeRTOS.org
- * https://github.com/FreeRTOS
- *
- * 1 tab == 4 spaces!
- */
-
-/*
- * Copyright (c) 2015-2019 Cadence Design Systems, Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <xtensa/config/core.h>
-#include <xtensa/xtensa_context.h>
-#include "soc/soc_caps.h"
-#include "esp_private/crosscore_int.h"
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_int_wdt.h"
-#include "esp_app_trace.h"    /* Required for esp_apptrace_init. [refactor-todo] */
-#include "esp_chip_info.h"
+#include <xtensa/core.h>
+//#include <xtensa/xtensa_context.h>
+//#include "soc/soc_caps.h"
+//#include "esp_private/crosscore_int.h"
+#include "soc/cross-int.h"
+//#include "esp_system.h"
+//#include "esp_log.h"
+//#include "esp_int_wdt.h"
+//#include "esp_app_trace.h"    /* Required for esp_apptrace_init. [refactor-todo] */
+//#include "esp_chip_info.h"
 #include "FreeRTOS.h"        /* This pulls in portmacro.h */
 #include "task.h"            /* Required for TaskHandle_t, tskNO_AFFINITY, and vTaskStartScheduler */
-#include "port_systick.h"
 
-_Static_assert(portBYTE_ALIGNMENT == 16, "portBYTE_ALIGNMENT must be set to 16");
+#define ESP_WATCHPOINT_LOAD 0x40000000
+#define ESP_WATCHPOINT_STORE 0x80000000
+#define ESP_WATCHPOINT_ACCESS 0xC0000000
 
-_Static_assert(tskNO_AFFINITY == CONFIG_FREERTOS_NO_AFFINITY, "incorrect tskNO_AFFINITY value");
+#define SOC_CPU_WATCHPOINTS_NUM         2
+#define XT_STK_NEXT1      sizeof(XtExcFrame)
+#define XT_STK_EXTRA            ALIGNUP(4, XT_STK_NEXT1)
+#define XT_STK_NEXT2            (XT_STK_EXTRA + XCHAL_EXTRA_SA_SIZE)
+#define XT_STK_FRMSZ            (ALIGNUP(0x10, XT_STK_NEXT2) + 0x20)
+
+
+//#include "port_systick.h"
+#define XT_CP0_SA   0
+#define XT_CP1_SA   ALIGNUP(XCHAL_CP1_SA_ALIGN, XT_CP0_SA + XCHAL_CP0_SA_SIZE)
+#define XT_CP2_SA   ALIGNUP(XCHAL_CP2_SA_ALIGN, XT_CP1_SA + XCHAL_CP1_SA_SIZE)
+#define XT_CP3_SA   ALIGNUP(XCHAL_CP3_SA_ALIGN, XT_CP2_SA + XCHAL_CP2_SA_SIZE)
+#define XT_CP4_SA   ALIGNUP(XCHAL_CP4_SA_ALIGN, XT_CP3_SA + XCHAL_CP3_SA_SIZE)
+#define XT_CP5_SA   ALIGNUP(XCHAL_CP5_SA_ALIGN, XT_CP4_SA + XCHAL_CP4_SA_SIZE)
+#define XT_CP6_SA   ALIGNUP(XCHAL_CP6_SA_ALIGN, XT_CP5_SA + XCHAL_CP5_SA_SIZE)
+#define XT_CP7_SA   ALIGNUP(XCHAL_CP7_SA_ALIGN, XT_CP6_SA + XCHAL_CP6_SA_SIZE)
+#define XT_CP_SA_SIZE   ALIGNUP(16, XT_CP7_SA + XCHAL_CP7_SA_SIZE)
+
+/*  Offsets within the overall save area:  */
+#define XT_CPENABLE 0   /* (2 bytes) coprocessors active for this thread */
+#define XT_CPSTORED 2   /* (2 bytes) coprocessors saved for this thread */
+#define XT_CP_CS_ST 4   /* (2 bytes) coprocessor callee-saved regs stored for this thread */
+#define XT_CP_ASA   8   /* (4 bytes) ptr to aligned save area */
+/*  Overall size allows for dynamic alignment:  */
+#define XT_CP_SIZE  (12 + XT_CP_SA_SIZE + XCHAL_TOTAL_SA_ALIGN)
+
+
+typedef struct {
+	long exit;
+	long pc;
+	long ps;
+	long a0;
+	long a1;
+	long a2;
+	long a3;
+	long a4;
+	long a5;
+	long a6;
+	long a7;
+	long a8;
+	long a9;
+	long a10;
+	long a11;
+	long a12;
+	long a13;
+	long a14;
+	long a15;
+	long sar;
+	long exccause;
+	long excvaddr;
+	long lbeg;
+	long lend;
+	long lcount;
+	long tmp0;
+	long tmp1;
+	long tmp2;
+} XtExcFrame;
+
 
 
 /* ---------------------------------------------------- Variables ------------------------------------------------------
@@ -475,12 +475,6 @@ void esp_startup_start_app_other_cores(void)
     while (port_xSchedulerRunning[0] == 0) {
         ;
     }
-
-#if CONFIG_APPTRACE_ENABLE
-    // [refactor-todo] move to esp_system initialization
-    esp_err_t err = esp_apptrace_init();
-    assert(err == ESP_OK && "Failed to init apptrace module on APP CPU!");
-#endif
 
 #if CONFIG_ESP_INT_WDT
     //Initialize the interrupt watch dog for CPU1.

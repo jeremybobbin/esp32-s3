@@ -39,7 +39,6 @@
 #include "timers.h"
 #include "stack_macros.h"
 
-#ifdef ESP_PLATFORM
 #define taskCRITICAL_MUX &xTaskQueueMutex
 #undef taskENTER_CRITICAL
 #undef taskEXIT_CRITICAL
@@ -51,7 +50,6 @@
 #define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( taskCRITICAL_MUX )
 #undef _REENT_INIT_PTR
 #define _REENT_INIT_PTR                 esp_reent_init
-#endif
 
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
@@ -145,26 +143,7 @@
 
 /*-----------------------------------------------------------*/
 
-#ifdef ESP_PLATFORM
     #define taskSELECT_HIGHEST_PRIORITY_TASK()  taskSelectHighestPriorityTaskSMP()
-#else   //ESP_PLATFORM
-    #define taskSELECT_HIGHEST_PRIORITY_TASK()                                \
-    {                                                                         \
-        UBaseType_t uxTopPriority = uxTopReadyPriority;                       \
-                                                                              \
-        /* Find the highest priority queue that contains ready tasks. */      \
-        while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopPriority ] ) ) ) \
-        {                                                                     \
-            configASSERT( uxTopPriority );                                    \
-            --uxTopPriority;                                                  \
-        }                                                                     \
-                                                                              \
-        /* listGET_OWNER_OF_NEXT_ENTRY indexes through the list, so the tasks of \
-         * the  same priority get an equal share of the processor time. */                    \
-        listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB[xPortGetCoreID()], &( pxReadyTasksLists[ uxTopPriority ] ) ); \
-        uxTopReadyPriority = uxTopPriority;                                                   \
-    } /* taskSELECT_HIGHEST_PRIORITY_TASK */
-#endif  //ESP_PLATFORM
 
 /*-----------------------------------------------------------*/
 
@@ -377,9 +356,7 @@ PRIVILEGED_DATA static List_t * volatile pxDelayedTaskList;              /*< Poi
 PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList;      /*< Points to the delayed task list currently being used to hold tasks that have overflowed the current tick count. */
 PRIVILEGED_DATA static List_t xPendingReadyList[ configNUM_CORES ];                      /*< Tasks that have been readied while the scheduler was suspended.  They will be moved to the ready list when the scheduler is resumed. */
 
-#ifdef ESP_PLATFORM
 PRIVILEGED_DATA static portMUX_TYPE xTaskQueueMutex = portMUX_INITIALIZER_UNLOCKED;
-#endif // ESP_PLATFORM
 
 #if ( INCLUDE_vTaskDelete == 1 )
 
@@ -1445,7 +1422,6 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB,
 /*-----------------------------------------------------------*/
 
 #if ( INCLUDE_xTaskDelayUntil == 1 )
-#ifdef ESP_PLATFORM
     // backward binary compatibility - remove later
     #undef vTaskDelayUntil
     void vTaskDelayUntil( TickType_t * const pxPreviousWakeTime,
@@ -1453,27 +1429,18 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB,
     {
         xTaskDelayUntil(pxPreviousWakeTime, xTimeIncrement);
     }
-#endif // ESP_PLATFORM
 
     BaseType_t xTaskDelayUntil( TickType_t * const pxPreviousWakeTime,
                                 const TickType_t xTimeIncrement )
     {
         TickType_t xTimeToWake;
-#ifdef ESP_PLATFORM
         BaseType_t xShouldDelay = pdFALSE;
-#else
-        BaseType_t xAlreadyYielded, xShouldDelay = pdFALSE;
-#endif // ESP_PLATFORM
 
         configASSERT( pxPreviousWakeTime );
         configASSERT( ( xTimeIncrement > 0U ) );
         configASSERT( xTaskGetSchedulerState() != taskSCHEDULER_SUSPENDED );
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         {
             /* Minor optimisation.  The tick count cannot change in this
              * block. */
@@ -1529,26 +1496,11 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB,
                 mtCOVERAGE_TEST_MARKER();
             }
         }
-#ifdef ESP_PLATFORM // IDF-3755
         taskEXIT_CRITICAL();
-#else
-        xAlreadyYielded = xTaskResumeAll();
-#endif // ESP_PLATFORM
 
         /* Force a reschedule if xTaskResumeAll has not already done so, we may
          * have put ourselves to sleep. */
-#ifdef ESP_PLATFORM
         portYIELD_WITHIN_API();
-#else
-        if( xAlreadyYielded == pdFALSE )
-        {
-            portYIELD_WITHIN_API();
-        }
-        else
-        {
-            mtCOVERAGE_TEST_MARKER();
-        }
-#endif // ESP_PLATFORM
         return xShouldDelay;
     }
 
@@ -1563,11 +1515,7 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB,
         if( xTicksToDelay > ( TickType_t ) 0U )
         {
             configASSERT( xTaskGetSchedulerState() != taskSCHEDULER_SUSPENDED );
-#ifdef ESP_PLATFORM // IDF-3755
             taskENTER_CRITICAL();
-#else
-            vTaskSuspendAll();
-#endif // ESP_PLATFORM
             {
                 traceTASK_DELAY();
 
@@ -1580,11 +1528,7 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB,
                  * executing task. */
                 prvAddCurrentTaskToDelayedList( xPortGetCoreID(), xTicksToDelay );
             }
-#ifdef ESP_PLATFORM // IDF-3755
             taskEXIT_CRITICAL();
-#else
-            xAlreadyYielded = xTaskResumeAll();
-#endif // ESP_PLATFORM
         }
         else
         {
@@ -2263,10 +2207,8 @@ void vTaskStartScheduler( void )
 {
     BaseType_t xReturn;
 
-#ifdef ESP_PLATFORM
     /* Create an IDLE task for each core */
     for(BaseType_t xCoreID = 0; xCoreID < configNUM_CORES; xCoreID++)
-#endif //ESP_PLATFORM
     /* Add the idle task at the lowest priority. */
     #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
         {
@@ -2772,11 +2714,7 @@ char * pcTaskGetName( TaskHandle_t xTaskToQuery ) /*lint !e971 Unqualified char 
         /* Task names will be truncated to configMAX_TASK_NAME_LEN - 1 bytes. */
         configASSERT( strlen( pcNameToQuery ) < configMAX_TASK_NAME_LEN );
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         {
             /* Search the ready lists. */
             do
@@ -2822,11 +2760,7 @@ char * pcTaskGetName( TaskHandle_t xTaskToQuery ) /*lint !e971 Unqualified char 
                 }
             #endif
         }
-#ifdef ESP_PLATFORM // IDF-3755
         taskEXIT_CRITICAL();
-#else
-        ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
         return pxTCB;
     }
@@ -2842,11 +2776,7 @@ char * pcTaskGetName( TaskHandle_t xTaskToQuery ) /*lint !e971 Unqualified char 
     {
         UBaseType_t uxTask = 0, uxQueue = configMAX_PRIORITIES;
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         {
             /* Is there a space in the array for each task in the system? */
             if( uxArraySize >= uxCurrentNumberOfTasks )
@@ -2905,11 +2835,7 @@ char * pcTaskGetName( TaskHandle_t xTaskToQuery ) /*lint !e971 Unqualified char 
                 mtCOVERAGE_TEST_MARKER();
             }
         }
-#ifdef ESP_PLATFORM // IDF-3755
         taskEXIT_CRITICAL();
-#else
-        ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
         return uxTask;
     }
@@ -2959,11 +2885,7 @@ char * pcTaskGetName( TaskHandle_t xTaskToQuery ) /*lint !e971 Unqualified char 
 
 BaseType_t xTaskCatchUpTicks( TickType_t xTicksToCatchUp )
 {
-#ifdef ESP_PLATFORM
     BaseType_t xYieldRequired = pdFALSE;
-#else
-    BaseType_t xYieldOccurred;
-#endif // ESP_PLATFORM
 
     /* Must not be called with the scheduler suspended as the implementation
      * relies on xPendedTicks being wound down to 0 in xTaskResumeAll(). */
@@ -2971,20 +2893,10 @@ BaseType_t xTaskCatchUpTicks( TickType_t xTicksToCatchUp )
 
     /* Use xPendedTicks to mimic xTicksToCatchUp number of ticks occuring when
      * the scheduler is suspended so the ticks are executed in xTaskResumeAll(). */
-#ifdef ESP_PLATFORM // IDF-3755
     taskENTER_CRITICAL();
-#else
-    vTaskSuspendAll();
-#endif // ESP_PLATFORM
     xPendedTicks += xTicksToCatchUp;
-#ifdef ESP_PLATFORM // IDF-3755
     taskEXIT_CRITICAL();
     return xYieldRequired;
-#else
-    xYieldOccurred = xTaskResumeAll();
-
-    return xYieldOccurred;
-#endif // ESP_PLATFORM
 }
 /*----------------------------------------------------------*/
 
@@ -2997,11 +2909,7 @@ BaseType_t xTaskCatchUpTicks( TickType_t xTicksToCatchUp )
 
         configASSERT( pxTCB );
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         {
             /* A task can only be prematurely removed from the Blocked state if
              * it is actually in the Blocked state. */
@@ -3068,11 +2976,7 @@ BaseType_t xTaskCatchUpTicks( TickType_t xTicksToCatchUp )
                 xReturn = pdFAIL;
             }
         }
-#ifdef ESP_PLATFORM // IDF-3755
         taskEXIT_CRITICAL();
-#else
-        ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
         return xReturn;
     }
@@ -3361,7 +3265,6 @@ BaseType_t xTaskIncrementTick( void )
 #endif /* configUSE_APPLICATION_TASK_TAG */
 /*-----------------------------------------------------------*/
 
-#ifdef ESP_PLATFORM
 #if ( configUSE_PORT_OPTIMISED_TASK_SELECTION == 0 )
 static void taskSelectHighestPriorityTaskSMP( void )
 {
@@ -3446,17 +3349,14 @@ get_next_task:
     assert( xTaskScheduled == pdTRUE ); /* At this point, a task MUST have been scheduled */
 }
 #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
-#endif   //ESP_PLATFORM
 
 void vTaskSwitchContext( void )
 {
-#ifdef ESP_PLATFORM
     /* vTaskSwitchContext is called either from:
      * - ISR dispatcher when return from an ISR (interrupts will already be disabled)
      * - vTaskSuspend() which is not in a critical section
      * Therefore, we enter a critical section ISR version to ensure safety */
     taskENTER_CRITICAL_ISR();
-#endif // ESP_PLATFORM
     if( uxSchedulerSuspended[ xPortGetCoreID() ] != ( UBaseType_t ) pdFALSE )
     {
         /* The scheduler is currently suspended - do not allow a context
@@ -3466,9 +3366,7 @@ void vTaskSwitchContext( void )
     else
     {
         xYieldPending[ xPortGetCoreID() ] = pdFALSE;
-#ifdef ESP_PLATFORM
         xSwitchingContext[ xPortGetCoreID() ] = pdTRUE;
-#endif // ESP_PLATFORM
         traceTASK_SWITCHED_OUT();
 
         #if ( configGENERATE_RUN_TIME_STATS == 1 )
@@ -3500,53 +3398,21 @@ void vTaskSwitchContext( void )
         #endif /* configGENERATE_RUN_TIME_STATS */
 
         /* Check for stack overflow, if configured. */
-#ifdef ESP_PLATFORM
         taskFIRST_CHECK_FOR_STACK_OVERFLOW();
         taskSECOND_CHECK_FOR_STACK_OVERFLOW();
-#else
-        taskCHECK_FOR_STACK_OVERFLOW();
-
-        /* Before the currently running task is switched out, save its errno. */
-        #if ( configUSE_POSIX_ERRNO == 1 )
-            {
-                pxCurrentTCB->iTaskErrno = FreeRTOS_errno;
-            }
-        #endif
-#endif // ESP_PLATFORM
 
         /* Select a new task to run using either the generic C or port
          * optimised asm code. */
         taskSELECT_HIGHEST_PRIORITY_TASK(); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
         traceTASK_SWITCHED_IN();
 
-#ifdef ESP_PLATFORM
         xSwitchingContext[ xPortGetCoreID() ] = pdFALSE;
         #if CONFIG_FREERTOS_WATCHPOINT_END_OF_STACK
         vPortSetStackWatchpoint(pxCurrentTCB[xPortGetCoreID()]->pxStack);
         #endif
-#else
-        /* After the new task is switched in, update the global errno. */
-        #if ( configUSE_POSIX_ERRNO == 1 )
-            {
-                FreeRTOS_errno = pxCurrentTCB->iTaskErrno;
-            }
-        #endif
-
-        #if ( configUSE_NEWLIB_REENTRANT == 1 )
-            {
-                /* Switch Newlib's _impure_ptr variable to point to the _reent
-                 * structure specific to this task.
-                 * See the third party link http://www.nadler.com/embedded/newlibAndFreeRTOS.html
-                 * for additional information. */
-                _impure_ptr = &( pxCurrentTCB->xNewLib_reent );
-            }
-        #endif /* configUSE_NEWLIB_REENTRANT */
-#endif // ESP_PLATFORM
     }
-#ifdef ESP_PLATFORM
     /* Exit the critical section previously entered */
     taskEXIT_CRITICAL_ISR();
-#endif // ESP_PLATFORM
 }
 /*-----------------------------------------------------------*/
 
@@ -3733,7 +3599,6 @@ BaseType_t xTaskRemoveFromEventList( const List_t * const pxEventList )
 }
 /*-----------------------------------------------------------*/
 
-#ifdef ESP_PLATFORM
 void vTaskTakeEventListLock( void )
 {
     /* We call the tasks.c critical section macro to take xTaskQueueMutex */
@@ -3745,7 +3610,6 @@ void vTaskReleaseEventListLock( void )
     /* We call the tasks.c critical section macro to release xTaskQueueMutex */
     taskEXIT_CRITICAL();
 }
-#endif // ESP_PLATFORM
 
 void vTaskRemoveFromUnorderedEventList( ListItem_t * pxEventListItem,
                                         const TickType_t xItemValue )
@@ -4011,11 +3875,7 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
 
                 if( xExpectedIdleTime >= configEXPECTED_IDLE_TIME_BEFORE_SLEEP )
                 {
-#ifdef ESP_PLATFORM // IDF-3755
                     taskENTER_CRITICAL();
-#else
-                    vTaskSuspendAll();
-#endif // ESP_PLATFORM
                     {
                         /* Now the scheduler is suspended, the expected idle
                          * time can be sampled again, and this time its value can
@@ -4039,11 +3899,7 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
                             mtCOVERAGE_TEST_MARKER();
                         }
                     }
-#ifdef ESP_PLATFORM // IDF-3755
                     taskEXIT_CRITICAL();
-#else
-                    ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
                 }
                 else
                 {
@@ -4344,22 +4200,14 @@ static void prvCheckTasksWaitingTermination( void )
                          *  it should be reported as being in the Blocked state. */
                         if( eState == eSuspended )
                         {
-#ifdef ESP_PLATFORM // IDF-3755
                             taskENTER_CRITICAL();
-#else
-                            vTaskSuspendAll();
-#endif // ESP_PLATFORM
                             {
                                 if( listLIST_ITEM_CONTAINER( &( pxTCB->xEventListItem ) ) != NULL )
                                 {
                                     pxTaskStatus->eCurrentState = eBlocked;
                                 }
                             }
-#ifdef ESP_PLATFORM // IDF-3755
                             taskEXIT_CRITICAL();
-#else
-                            ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
                         }
                     }
                 #endif /* INCLUDE_vTaskSuspend */
@@ -5351,7 +5199,6 @@ TickType_t uxTaskResetEventItemValue( void )
 
 #if ( configUSE_TASK_NOTIFICATIONS == 1 )
 
-#ifdef ESP_PLATFORM // IDF-3851
     // included here for backward binary compatibility
     #undef ulTaskNotifyTake
     uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit,
@@ -5359,7 +5206,6 @@ TickType_t uxTaskResetEventItemValue( void )
     {
         return ulTaskGenericNotifyTake(tskDEFAULT_INDEX_TO_NOTIFY, xClearCountOnExit, xTicksToWait);
     }
-#endif // ESP-PLATFORM
 
     uint32_t ulTaskGenericNotifyTake( UBaseType_t uxIndexToWait,
                                       BaseType_t xClearCountOnExit,
@@ -5433,7 +5279,6 @@ TickType_t uxTaskResetEventItemValue( void )
 
 #if ( configUSE_TASK_NOTIFICATIONS == 1 )
 
-#ifdef ESP_PLATFORM // IDF-3851
     // included for backward compatibility
     #undef xTaskNotifyWait
     BaseType_t xTaskNotifyWait( uint32_t ulBitsToClearOnEntry,
@@ -5443,7 +5288,6 @@ TickType_t uxTaskResetEventItemValue( void )
     {
         return xTaskGenericNotifyWait(tskDEFAULT_INDEX_TO_NOTIFY, ulBitsToClearOnEntry, ulBitsToClearOnExit, pulNotificationValue, xTicksToWait);
     }
-#endif // ESP-PLATFORM
 
     BaseType_t xTaskGenericNotifyWait( UBaseType_t uxIndexToWait,
                                        uint32_t ulBitsToClearOnEntry,

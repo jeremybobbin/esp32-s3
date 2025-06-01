@@ -42,15 +42,15 @@ Should be included by all Xtensa generic and RTOS port-specific sources.
 #ifndef XTENSA_RTOS_H
 #define XTENSA_RTOS_H
 
-#ifdef __ASSEMBLER__
-#include    <xtensa/coreasm.h>
-#else
-#include    <xtensa/config/core.h>
-#endif
+//#ifdef __ASSEMBLER__
+//#include    <xtensa/coreasm.h>
+//#else
+//#include    <xtensa/config/core.h>
+//#endif
 
 #include    <xtensa/corebits.h>
-#include    <xtensa/config/system.h>
-#include    "sdkconfig.h"
+//#include    <xtensa/config/system.h>
+//#include    "sdkconfig.h"
 
 /*
 Include any RTOS specific definitions that are needed by this header.

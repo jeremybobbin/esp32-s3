@@ -8,27 +8,15 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "portmacro.h"
-#include "esp_system.h"
-#include "esp_heap_caps_init.h"
-#include "esp_int_wdt.h"
-#include "esp_task_wdt.h"
-#include "esp_task.h"
-#include "esp_private/crosscore_int.h"
-#include "esp_private/startup_internal.h"    /* Required by g_spiram_ok. [refactor-todo] for g_spiram_ok */
-#include "esp_log.h"
-#include "soc/soc_memory_types.h"
-#include "soc/dport_access.h"
-#include "esp_freertos_hooks.h"
+#include "soc/cross-int.h"
+//#include "esp_private/startup_internal.h"    /* Required by g_spiram_ok. [refactor-todo] for g_spiram_ok */
+//#include "esp_log.h"
+#include "heap/esp_heap_caps.h"
+//#include "soc/soc_memory_types.h"
+//#include "soc/dport_access.h"
+//#include "esp_freertos_hooks.h"
 
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/spiram.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/spiram.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/spiram.h"
-#elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32H2
-// SPIRAM is not supported on ESP32-C3
-#endif
+//#include "esp32s3/spiram.h"
 
 #if CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL
 static const char* TAG = "cpu_start";

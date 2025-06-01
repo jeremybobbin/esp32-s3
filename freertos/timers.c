@@ -41,7 +41,6 @@
     #error configUSE_TIMERS must be set to 1 to make the xTimerPendFunctionCall() function available.
 #endif
 
-#ifdef ESP_PLATFORM
 #define taskCRITICAL_MUX &xTimerMux
 #undef taskENTER_CRITICAL
 #undef taskEXIT_CRITICAL
@@ -51,7 +50,6 @@
 #define taskEXIT_CRITICAL( )            portEXIT_CRITICAL( taskCRITICAL_MUX )
 #define taskENTER_CRITICAL_ISR( )     portENTER_CRITICAL_ISR( taskCRITICAL_MUX )
 #define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( taskCRITICAL_MUX )
-#endif
 
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
@@ -152,10 +150,8 @@
     PRIVILEGED_DATA static QueueHandle_t xTimerQueue = NULL;
     PRIVILEGED_DATA static TaskHandle_t xTimerTaskHandle = NULL;
 
-#ifdef ESP_PLATFORM
 /* Mux. We use a single mux for all the timers for now. ToDo: maybe increase granularity here? */
 PRIVILEGED_DATA portMUX_TYPE xTimerMux = portMUX_INITIALIZER_UNLOCKED;
-#endif // ESP_PLATFORM
 
 /*lint -restore */
 
@@ -608,11 +604,7 @@ PRIVILEGED_DATA portMUX_TYPE xTimerMux = portMUX_INITIALIZER_UNLOCKED;
         TickType_t xTimeNow;
         BaseType_t xTimerListsWereSwitched;
 
-#ifdef ESP_PLATFORM
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         {
             /* Obtain the time now to make an assessment as to whether the timer
              * has expired or not.  If obtaining the time causes the lists to switch
@@ -626,11 +618,7 @@ PRIVILEGED_DATA portMUX_TYPE xTimerMux = portMUX_INITIALIZER_UNLOCKED;
                 /* The tick count has not overflowed, has the timer expired? */
                 if( ( xListWasEmpty == pdFALSE ) && ( xNextExpireTime <= xTimeNow ) )
                 {
-#ifdef ESP_PLATFORM
                     taskEXIT_CRITICAL();
-#else
-                    ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
                     prvProcessExpiredTimer( xNextExpireTime, xTimeNow );
                 }
                 else
@@ -650,11 +638,7 @@ PRIVILEGED_DATA portMUX_TYPE xTimerMux = portMUX_INITIALIZER_UNLOCKED;
 
                     vQueueWaitForMessageRestricted( xTimerQueue, ( xNextExpireTime - xTimeNow ), xListWasEmpty );
 
-#ifdef ESP_PLATFORM // IDF-3755
                     taskEXIT_CRITICAL();
-#else
-                    if( xTaskResumeAll() == pdFALSE )
-#endif // ESP_PLATFORM
                     {
                         /* Yield to wait for either a command to arrive, or the
                          * block time to expire.  If a command arrived between the
@@ -662,21 +646,11 @@ PRIVILEGED_DATA portMUX_TYPE xTimerMux = portMUX_INITIALIZER_UNLOCKED;
                          * will not cause the task to block. */
                         portYIELD_WITHIN_API();
                     }
-#ifndef ESP_PLATFORM // IDF-3755
-                    else
-                    {
-                        mtCOVERAGE_TEST_MARKER();
-                    }
-#endif // ESP_PLATFORM
                 }
             }
             else
             {
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
             }
         }
     }

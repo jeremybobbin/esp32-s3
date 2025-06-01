@@ -40,7 +40,6 @@
     #include "croutine.h"
 #endif
 
-#ifdef ESP_PLATFORM
 #define taskCRITICAL_MUX &((Queue_t *)pxQueue)->mux
 #undef taskENTER_CRITICAL
 #undef taskEXIT_CRITICAL
@@ -50,7 +49,6 @@
 #define taskEXIT_CRITICAL( )            portEXIT_CRITICAL( taskCRITICAL_MUX )
 #define taskENTER_CRITICAL_ISR( )     portENTER_CRITICAL_ISR( taskCRITICAL_MUX )
 #define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( taskCRITICAL_MUX )
-#endif
 
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
@@ -140,9 +138,7 @@ typedef struct QueueDefinition /* The old naming convention is used to prevent b
         UBaseType_t uxQueueNumber;
         uint8_t ucQueueType;
     #endif
-#ifdef ESP_PLATFORM
     portMUX_TYPE mux;       //Mutex required due to SMP
-#endif // ESP_PLATFORM
 } xQUEUE;
 
 /* The old xQUEUE name is maintained above then typedefed to the new Queue_t
@@ -175,10 +171,8 @@ typedef xQUEUE Queue_t;
  * The pcQueueName member of a structure being NULL is indicative of the
  * array position being vacant. */
     PRIVILEGED_DATA QueueRegistryItem_t xQueueRegistry[ configQUEUE_REGISTRY_SIZE ];
-#ifdef ESP_PLATFORM
     //Need to add queue registry mutex to protect against simultaneous access
     static portMUX_TYPE queue_registry_spinlock = portMUX_INITIALIZER_UNLOCKED;
-#endif // ESP_PLATFORM
 #endif /* configQUEUE_REGISTRY_SIZE */
 
 /*
@@ -286,12 +280,10 @@ BaseType_t xQueueGenericReset( QueueHandle_t xQueue,
 
     configASSERT( pxQueue );
 
-#ifdef ESP_PLATFORM
     if( xNewQueue == pdTRUE )
     {
         portMUX_INITIALIZE(&pxQueue->mux);
     }
-#endif // ESP_PLATFORM
 
     taskENTER_CRITICAL();
     {
@@ -537,9 +529,7 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength,
 
             /* In case this is a recursive mutex. */
             pxNewQueue->u.xSemaphore.uxRecursiveCallCount = 0;
-#ifdef ESP_PLATFORM
             portMUX_INITIALIZE(&pxNewQueue->mux);
-#endif // ESP_PLATFORM
             traceCREATE_MUTEX( pxNewQueue );
 
             /* Start with the semaphore in the expected state. */
@@ -603,9 +593,7 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength,
          * calling task is the mutex holder, but not a good way of determining the
          * identity of the mutex holder, as the holder may change between the
          * following critical section exiting and the function returning. */
-#ifdef ESP_PLATFORM
         Queue_t * const pxQueue = (Queue_t *)pxSemaphore;
-#endif
         taskENTER_CRITICAL();
         {
             if( pxSemaphore->uxQueueType == queueQUEUE_IS_MUTEX )
@@ -978,11 +966,7 @@ BaseType_t xQueueGenericSend( QueueHandle_t xQueue,
         /* Interrupts and other tasks can send to and receive from the queue
          * now the critical section has been exited. */
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         prvLockQueue( pxQueue );
 
         /* Update the timeout state to see if it has expired yet. */
@@ -1005,11 +989,7 @@ BaseType_t xQueueGenericSend( QueueHandle_t xQueue,
                  * task is already in the ready list before it yields - in which
                  * case the yield will not cause a context switch unless there
                  * is also a higher priority task in the pending ready list. */
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                if( xTaskResumeAll() == pdFALSE )
-#endif // ESP_PLATFORM
                 {
                     portYIELD_WITHIN_API();
                 }
@@ -1019,22 +999,14 @@ BaseType_t xQueueGenericSend( QueueHandle_t xQueue,
             {
                 /* Try again. */
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
             }
         }
         else
         {
             /* The timeout has expired. */
             prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
             taskEXIT_CRITICAL();
-#else
-            ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
             traceQUEUE_SEND_FAILED( pxQueue );
             return errQUEUE_FULL;
@@ -1461,11 +1433,7 @@ BaseType_t xQueueReceive( QueueHandle_t xQueue,
         /* Interrupts and other tasks can send to and receive from the queue
          * now the critical section has been exited. */
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         prvLockQueue( pxQueue );
 
         /* Update the timeout state to see if it has expired yet. */
@@ -1478,31 +1446,17 @@ BaseType_t xQueueReceive( QueueHandle_t xQueue,
                 traceBLOCKING_ON_QUEUE_RECEIVE( pxQueue );
                 vTaskPlaceOnEventList( &( pxQueue->xTasksWaitingToReceive ), xTicksToWait );
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                if( xTaskResumeAll() == pdFALSE )
-#endif // ESP_PLATFORM
                 {
                     portYIELD_WITHIN_API();
                 }
-#ifndef ESP_PLATFORM
-                else
-                {
-                    mtCOVERAGE_TEST_MARKER();
-                }
-#endif // ESP_PLATFORM
             }
             else
             {
                 /* The queue contains data again.  Loop back to try and read the
                  * data. */
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
             }
         }
         else
@@ -1510,11 +1464,7 @@ BaseType_t xQueueReceive( QueueHandle_t xQueue,
             /* Timed out.  If there is no data in the queue exit, otherwise loop
              * back and attempt to read the data. */
             prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
             taskEXIT_CRITICAL();
-#else
-            ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
             if( prvIsQueueEmpty( pxQueue ) != pdFALSE )
             {
@@ -1641,11 +1591,7 @@ BaseType_t xQueueSemaphoreTake( QueueHandle_t xQueue,
         /* Interrupts and other tasks can give to and take from the semaphore
          * now the critical section has been exited. */
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         prvLockQueue( pxQueue );
 
         /* Update the timeout state to see if it has expired yet. */
@@ -1678,42 +1624,24 @@ BaseType_t xQueueSemaphoreTake( QueueHandle_t xQueue,
 
                 vTaskPlaceOnEventList( &( pxQueue->xTasksWaitingToReceive ), xTicksToWait );
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                if( xTaskResumeAll() == pdFALSE )
-#endif // ESP_PLATFORM
                 {
                     portYIELD_WITHIN_API();
                 }
-#ifndef ESP_PLATFORM
-                else
-                {
-                    mtCOVERAGE_TEST_MARKER();
-                }
-#endif // ESP_PLATFORM
             }
             else
             {
                 /* There was no timeout and the semaphore count was not 0, so
                  * attempt to take the semaphore again. */
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
             }
         }
         else
         {
             /* Timed out. */
             prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
             taskEXIT_CRITICAL();
-#else
-            ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
             /* If the semaphore count is 0 exit now as the timeout has
              * expired.  Otherwise return to attempt to take the semaphore that is
@@ -1856,11 +1784,7 @@ BaseType_t xQueuePeek( QueueHandle_t xQueue,
         /* Interrupts and other tasks can send to and receive from the queue
          * now the critical section has been exited. */
 
-#ifdef ESP_PLATFORM // IDF-3755
         taskENTER_CRITICAL();
-#else
-        vTaskSuspendAll();
-#endif // ESP_PLATFORM
         prvLockQueue( pxQueue );
 
         /* Update the timeout state to see if it has expired yet. */
@@ -1873,31 +1797,17 @@ BaseType_t xQueuePeek( QueueHandle_t xQueue,
                 traceBLOCKING_ON_QUEUE_PEEK( pxQueue );
                 vTaskPlaceOnEventList( &( pxQueue->xTasksWaitingToReceive ), xTicksToWait );
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                if( xTaskResumeAll() == pdFALSE )
-#endif // ESP_PLATFORM
                 {
                     portYIELD_WITHIN_API();
                 }
-#ifndef ESP_PLATFORM
-                else
-                {
-                    mtCOVERAGE_TEST_MARKER();
-                }
-#endif // ESP_PLATFORM
             }
             else
             {
                 /* There is data in the queue now, so don't enter the blocked
                  * state, instead return to try and obtain the data. */
                 prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
                 taskEXIT_CRITICAL();
-#else
-                ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
             }
         }
         else
@@ -1905,11 +1815,7 @@ BaseType_t xQueuePeek( QueueHandle_t xQueue,
             /* The timeout has expired.  If there is still no data in the queue
              * exit, otherwise go back and try to read the data again. */
             prvUnlockQueue( pxQueue );
-#ifdef ESP_PLATFORM // IDF-3755
             taskEXIT_CRITICAL();
-#else
-            ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 
             if( prvIsQueueEmpty( pxQueue ) != pdFALSE )
             {
@@ -2973,9 +2879,7 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
                                QueueSetHandle_t xQueueSet )
     {
         BaseType_t xReturn;
-#ifdef ESP_PLATFORM
         Queue_t * pxQueue = (Queue_t * )xQueueOrSemaphore;
-#endif
 
         taskENTER_CRITICAL();
         {
@@ -3026,9 +2930,7 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
         }
         else
         {
-#ifdef ESP_PLATFORM
             Queue_t* pxQueue = (Queue_t*)pxQueueOrSemaphore;
-#endif
             taskENTER_CRITICAL();
             {
                 /* The queue is no longer contained in the set. */

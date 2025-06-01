@@ -33,9 +33,7 @@
 #endif
 
 #include "list.h"
-#ifdef ESP_PLATFORM // IDF-3793
 #include "freertos/portmacro.h"
-#endif // ESP_PLATFORM
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
@@ -82,11 +80,7 @@
  * \ingroup Tasks
  */
 struct tskTaskControlBlock;     /* The old naming convention is used to prevent breaking kernel aware debuggers. */
-#ifdef ESP_PLATFORM // IDF-3769
 typedef void* TaskHandle_t;
-#else
-typedef struct tskTaskControlBlock* TaskHandle_t;
-#endif // ESP_PLATFORM
 /**
  * Defines the prototype to which the application task hook function must
  * conform.
@@ -201,35 +195,9 @@ typedef enum
  * \ingroup SchedulerControl
  */
 #define taskYIELD()                        portYIELD()
-
-/**
- * @cond !DOC_EXCLUDE_HEADER_SECTION
- * task. h
- * @endcond
- *
- * Macro to mark the start of a critical code region.  Preemptive context
- * switches cannot occur when in a critical region.
- *
- * @note This may alter the stack (depending on the portable implementation)
- * so must be used with care!
- *
- * @cond !DOC_SINGLE_GROUP
- * \defgroup taskENTER_CRITICAL taskENTER_CRITICAL
- * @endcond
- * \ingroup SchedulerControl
- */
-#ifdef ESP_PLATFORM
 #define taskENTER_CRITICAL( x )   portENTER_CRITICAL( x )
-#else
-#define taskENTER_CRITICAL( )     portENTER_CRITICAL( )
-#endif //  ESP_PLATFORM
 #define taskENTER_CRITICAL_FROM_ISR( ) portSET_INTERRUPT_MASK_FROM_ISR()
-
-#ifdef ESP_PLATFORM
 #define taskENTER_CRITICAL_ISR( x )   portENTER_CRITICAL_ISR( x )
-#else
-#define taskENTER_CRITICAL_ISR( )     portENTER_CRITICAL_ISR( )
-#endif //  ESP_PLATFORM
 
 /**
  * @cond !DOC_EXCLUDE_HEADER_SECTION
@@ -248,18 +216,10 @@ typedef enum
  * \ingroup SchedulerControl
  */
 
-#ifdef ESP_PLATFORM
 #define taskEXIT_CRITICAL( x )          portEXIT_CRITICAL( x )
-#else
-#define taskEXIT_CRITICAL( )            portEXIT_CRITICAL( )
-#endif // ESP_PLATFORM
 #define taskEXIT_CRITICAL_FROM_ISR( x ) portCLEAR_INTERRUPT_MASK_FROM_ISR( x )
 
-#ifdef ESP_PLATFORM
 #define taskEXIT_CRITICAL_ISR( x )      portEXIT_CRITICAL_ISR( x )
-#else
-#define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( )
-#endif // ESP_PLATFORM
 /**
  * @cond !DOC_EXCLUDE_HEADER_SECTION
  * task. h
@@ -3368,7 +3328,6 @@ void vTaskPlaceOnEventListRestricted( List_t * const pxEventList,
                                       TickType_t xTicksToWait,
                                       const BaseType_t xWaitIndefinitely ) PRIVILEGED_FUNCTION;
 
-#ifdef ESP_PLATFORM
 /*
  * THIS FUNCTION MUST NOT BE USED FROM APPLICATION CODE.  IT IS AN
  * INTERFACE WHICH IS FOR THE EXCLUSIVE USE OF THE SCHEDULER.
@@ -3385,7 +3344,6 @@ void vTaskPlaceOnEventListRestricted( List_t * const pxEventList,
  */
 void vTaskTakeEventListLock( void );
 void vTaskReleaseEventListLock( void );
-#endif //  ESP_PLATFORM
 
 /*
  * THIS FUNCTION MUST NOT BE USED FROM APPLICATION CODE.  IT IS AN
@@ -3521,10 +3479,8 @@ TaskHandle_t pvTaskIncrementMutexHeldCount( void ) PRIVILEGED_FUNCTION;
  */
 void vTaskInternalSetTimeOutState( TimeOut_t * const pxTimeOut ) PRIVILEGED_FUNCTION;
 
-#ifdef ESP_PLATFORM
 /* TODO: IDF-3683 */
 #include "freertos/task_snapshot.h"
-#endif // ESP_PLATFORM
 
 /** @endcond */
 

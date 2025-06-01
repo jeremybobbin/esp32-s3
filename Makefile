@@ -1,13 +1,19 @@
-CC=xtensa-esp32s3-elf-gcc
+.SUFFIXES: .c .o .a .S
+CC=xtensa-esp32s3-elf-gcc -fdiagnostics-color=always
 AR=xtensa-esp32s3-elf-ar
 CFLAGS=-I.
 ASFLAGS=-I.
 
+.o.a:
+	$(AR) rcs $@ $?
+
 build: \
 	libbluetooth.a \
 	libsoc.a \
-	libwifi.a \
+	librtos.a \
 	libxtensa.a
+
+#libwifi.a \
 
 soc/adc.o: soc/adc.h
 soc/gpio.o: soc/gpio.h soc/usb_serial_jtag.h soc/rtc_cntl.h
@@ -23,6 +29,23 @@ libheap.a: \
 	heap/memory_layout.o \
 	heap/memory_layout_utils.o \
 	heap/multi_heap.o
+
+librtos.a: \
+	freertos/croutine.o \
+	freertos/event_groups.o \
+	freertos/FreeRTOS-openocd.o \
+	freertos/list.o \
+	freertos/port.o \
+	freertos/port_common.o \
+	freertos/port_systick.o \
+	freertos/queue.o \
+	freertos/stream_buffer.o \
+	freertos/tasks.o \
+	freertos/task_snapshot.o \
+	freertos/timers.o \
+	freertos/xtensa_init.o \
+	freertos/xtensa_overlay_os_hook.o
+	$(AR) rcs $@ $?
 
 libwifi.a: \
 	wifi/coexist_api.o \
@@ -205,4 +228,4 @@ libbluetooth.a: \
 	bluetooth/vshci_task.o
 
 clean:
-	rm -f *.a wifi/esp_adapter.o bluetooth/bluetooth.o heap/*.o soc/*.o xtensa/*.o libxtensa.a
+	rm -f *.a wifi/esp_adapter.o bluetooth/bluetooth.o heap/*.o soc/*.o xtensa/*.o freertos/*.o libxtensa.a

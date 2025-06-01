@@ -38,7 +38,6 @@
 #include "task.h"
 #include "stream_buffer.h"
 
-#ifdef ESP_PLATFORM
 #define taskCRITICAL_MUX &pxStreamBuffer->xStreamBufferMux
 #undef taskENTER_CRITICAL
 #undef taskEXIT_CRITICAL
@@ -48,7 +47,6 @@
 #define taskEXIT_CRITICAL( )            portEXIT_CRITICAL( taskCRITICAL_MUX )
 #define taskENTER_CRITICAL_ISR( )     portENTER_CRITICAL_ISR( taskCRITICAL_MUX )
 #define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( taskCRITICAL_MUX )
-#endif
 
 #if ( configUSE_TASK_NOTIFICATIONS != 1 )
     #error configUSE_TASK_NOTIFICATIONS must be set to 1 to build stream_buffer.c
@@ -66,7 +64,6 @@
 /*lint -save -e9026 Function like macros allowed and needed here so they can be overridden. */
 
 #ifndef sbRECEIVE_COMPLETED
-#ifdef ESP_PLATFORM // IDF-3775
     #define sbRECEIVE_COMPLETED( pxStreamBuffer )                         \
     taskENTER_CRITICAL();                                                 \
     {                                                                     \
@@ -79,20 +76,6 @@
         }                                                                 \
     }                                                                     \
     taskEXIT_CRITICAL();
-#else
-    #define sbRECEIVE_COMPLETED( pxStreamBuffer )                         \
-    vTaskSuspendAll();                                                    \
-    {                                                                     \
-        if( ( pxStreamBuffer )->xTaskWaitingToSend != NULL )              \
-        {                                                                 \
-            ( void ) xTaskNotify( ( pxStreamBuffer )->xTaskWaitingToSend, \
-                                  ( uint32_t ) 0,                         \
-                                  eNoAction );                            \
-            ( pxStreamBuffer )->xTaskWaitingToSend = NULL;                \
-        }                                                                 \
-    }                                                                     \
-    ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 #endif /* sbRECEIVE_COMPLETED */
 
 #ifndef sbRECEIVE_COMPLETED_FROM_ISR
@@ -120,7 +103,6 @@
  * or #defined the notification macro away, them provide a default implementation
  * that uses task notifications. */
 #ifndef sbSEND_COMPLETED
-#ifdef ESP_PLATFORM // IDF-3755
     #define sbSEND_COMPLETED( pxStreamBuffer )                               \
     taskENTER_CRITICAL();                                                    \
     {                                                                        \
@@ -133,20 +115,6 @@
         }                                                                    \
     }                                                                        \
     taskEXIT_CRITICAL();
-#else
-    #define sbSEND_COMPLETED( pxStreamBuffer )                               \
-    vTaskSuspendAll();                                                       \
-    {                                                                        \
-        if( ( pxStreamBuffer )->xTaskWaitingToReceive != NULL )              \
-        {                                                                    \
-            ( void ) xTaskNotify( ( pxStreamBuffer )->xTaskWaitingToReceive, \
-                                  ( uint32_t ) 0,                            \
-                                  eNoAction );                               \
-            ( pxStreamBuffer )->xTaskWaitingToReceive = NULL;                \
-        }                                                                    \
-    }                                                                        \
-    ( void ) xTaskResumeAll();
-#endif // ESP_PLATFORM
 #endif /* sbSEND_COMPLETED */
 
 #ifndef sbSEND_COMPLETE_FROM_ISR
@@ -194,10 +162,7 @@ typedef struct StreamBufferDef_t                 /*lint !e9058 Style convention 
     #if ( configUSE_TRACE_FACILITY == 1 )
         UBaseType_t uxStreamBufferNumber; /* Used for tracing purposes. */
     #endif
-#ifdef ESP_PLATFORM
-    /* Mutex required due to SMP. This field shall be the last one of the structure. */
     portMUX_TYPE xStreamBufferMux;
-#endif // ESP_PLATFORM
 } StreamBuffer_t;
 
 /*
@@ -260,7 +225,6 @@ static void prvInitialiseNewStreamBuffer( StreamBuffer_t * const pxStreamBuffer,
                                           size_t xTriggerLevelBytes,
                                           uint8_t ucFlags ) PRIVILEGED_FUNCTION;
 
-#ifdef ESP_PLATFORM
 /**
  * Called by xStreamBufferReset() to reset the members of the StreamBuffer, excluding
  * its spinlock.
@@ -270,7 +234,6 @@ static void prvResetStreamBufferFields( StreamBuffer_t * const pxStreamBuffer,
                                         size_t xBufferSizeBytes,
                                         size_t xTriggerLevelBytes,
                                         uint8_t ucFlags ) PRIVILEGED_FUNCTION;
-#endif
 /*-----------------------------------------------------------*/
 
 #if ( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
@@ -484,7 +447,6 @@ BaseType_t xStreamBufferReset( StreamBufferHandle_t xStreamBuffer )
         {
             if( pxStreamBuffer->xTaskWaitingToSend == NULL )
             {
-                #ifdef ESP_PLATFORM
                     /* As we just entered a critical section, we must NOT reset the spinlock field.
                      * Thus, call `prvResetStreamBufferFields` instead of `prvInitialiseNewStreamBuffer`
                      */
@@ -494,13 +456,6 @@ BaseType_t xStreamBufferReset( StreamBufferHandle_t xStreamBuffer )
                                                 pxStreamBuffer->xTriggerLevelBytes,
                                                 pxStreamBuffer->ucFlags );
 
-                #else  // ESP_PLATFORM
-                    prvInitialiseNewStreamBuffer( pxStreamBuffer,
-                                                  pxStreamBuffer->pucBuffer,
-                                                  pxStreamBuffer->xLength,
-                                                  pxStreamBuffer->xTriggerLevelBytes,
-                                                  pxStreamBuffer->ucFlags );
-                #endif // ESP_PLATFORM
                 xReturn = pdPASS;
 
                 #if ( configUSE_TRACE_FACILITY == 1 )
@@ -1350,13 +1305,9 @@ static void prvInitialiseNewStreamBuffer( StreamBuffer_t * const pxStreamBuffer,
     pxStreamBuffer->xLength = xBufferSizeBytes;
     pxStreamBuffer->xTriggerLevelBytes = xTriggerLevelBytes;
     pxStreamBuffer->ucFlags = ucFlags;
-#ifdef ESP_PLATFORM
     portMUX_INITIALIZE( &pxStreamBuffer->xStreamBufferMux );
-#endif // ESP_PLATFORM
 }
 
-
-#ifdef ESP_PLATFORM
 
     /** The goal of this function is to (re)set all the fields of the given StreamBuffer, except
      * its lock.
@@ -1388,8 +1339,6 @@ static void prvInitialiseNewStreamBuffer( StreamBuffer_t * const pxStreamBuffer,
         pxStreamBuffer->xTriggerLevelBytes = xTriggerLevelBytes;
         pxStreamBuffer->ucFlags = ucFlags;
     }
-
-#endif // ESP_PLATFORM
 
 
 #if ( configUSE_TRACE_FACILITY == 1 )
