@@ -1,15 +1,16 @@
 #include <stdint.h>
-#include "esp_attr.h"
-#include "esp_err.h"
-#include "esp_intr_alloc.h"
-#include "esp_debug_helpers.h"
-#include "soc/periph_defs.h"
+//#include "esp_attr.h"
+//#include "esp_err.h"
+//#include "esp_intr_alloc.h"
+//#include "esp_debug_helpers.h"
+//#include "soc/periph_defs.h"
 
-#include "hal/cpu_hal.h"
+//#include "hal/cpu_hal.h"
+#include "soc/cpu.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/portmacro.h"
 
-#include "soc/system_reg.h"
+//#include "soc/system_reg.h"
 
 #define REASON_YIELD            1<<0
 #define REASON_FREQ_SWITCH      1<<1

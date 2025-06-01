@@ -1,8 +1,9 @@
-
 #include <stdint.h>
-
-
-
+#include <stdbool.h>
+#include "heap/soc_memory_layout.h"
+#include "xtensa/core-macros.h"
+#include "xtensa/specreg.h"
+#include "xtensa/extreg.h"
 
 uint32_t IRAM_ATTR cpu_ll_get_core_id(void)
 {
@@ -54,7 +55,7 @@ void cpu_ll_set_breakpoint(int id, uint32_t pc)
 
 	// Enable the breakpoint using the break enable register
 	RSR(IBREAKENABLE, en);
-	en |= BIT(id);
+	en |= (1<<id);
 	WSR(IBREAKENABLE, en);
 }
 
@@ -72,7 +73,7 @@ void cpu_ll_clear_breakpoint(int id)
 
 	// Enable the breakpoint using the break enable register
 	RSR(IBREAKENABLE, en);
-	en &= ~BIT(id);
+	en &= ~(1<<(id));
 	WSR(IBREAKENABLE, en);
 }
 
@@ -105,11 +106,11 @@ void cpu_ll_set_watchpoint(int id,
 	dbreakc = (dbreakc & 0x3F);
 
 	if (on_read) {
-		dbreakc |= BIT(30);
+		dbreakc |= (1<<(30));
 	}
 
 	if (on_write) {
-		dbreakc |= BIT(31);
+		dbreakc |= (1<<(31));
 	}
 
 	// Write the break address register and the size to control
@@ -158,27 +159,30 @@ void cpu_ll_waiti(void)
 	asm volatile ("waiti 0\n");
 }
 
-uint32_t cpu_ll_read_dedic_gpio_in(void)
+/*
+static uint32_t cpu_ll_read_dedic_gpio_in(void)
 {
 	uint32_t value = 0;
 	asm volatile("ee.get_gpio_in %0" : "=r"(value) : :);
 	return value;
 }
+*/
 
-uint32_t cpu_ll_read_dedic_gpio_out(void)
+static uint32_t cpu_ll_read_dedic_gpio_out(void)
 {
 	uint32_t value = 0;
 	asm volatile("rur.gpio_out %0" : "=r"(value) : :);
 	return value;
 }
 
-void cpu_ll_write_dedic_gpio_all(uint32_t value)
+static void cpu_ll_write_dedic_gpio_all(uint32_t value)
 {
 	asm volatile("wur.gpio_out %0"::"r"(value):);
 }
 
-void cpu_ll_write_dedic_gpio_mask(uint32_t mask, uint32_t value)
+/*
+static void cpu_ll_write_dedic_gpio_mask(uint32_t mask, uint32_t value)
 {
 	asm volatile("ee.wr_mask_gpio_out %0, %1" : : "r"(value), "r"(mask):);
 }
-
+*/
