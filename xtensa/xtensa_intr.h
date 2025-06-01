@@ -1,3 +1,6 @@
+#ifndef XTENSA_INTR_H
+#define XTENSA_INTR_H 1
+
 #include "xtensa/hal.h"
 #include "freertos/FreeRTOSConfig.h"
 #include "heap/soc_memory_layout.h"
@@ -14,3 +17,5 @@ void IRAM_ATTR xt_unhandled_interrupt(void * arg);
 bool xt_int_has_handler(int intr, int cpu);
 xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
 void *xt_get_interrupt_handler_arg(int n);
+
+#endif
