@@ -1,26 +1,30 @@
 #include <stdint.h>
-//#include "esp_attr.h"
-//#include "esp_err.h"
-//#include "esp_intr_alloc.h"
-//#include "esp_debug_helpers.h"
-//#include "soc/periph_defs.h"
-
-//#include "hal/cpu_hal.h"
 #include "soc/cpu.h"
+#include "soc/peripherals.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/portmacro.h"
 
-//#include "soc/system_reg.h"
+#include "soc/intr-alloc.h"
 
 #define REASON_YIELD            1<<0
 #define REASON_FREQ_SWITCH      1<<1
 
 #define REASON_PRINT_BACKTRACE  1<<2
 
+#define DR_REG_SYSTEM_BASE                      0x600c0000
+#define SYSTEM_CPU_INTR_FROM_CPU_0_REG          (DR_REG_SYSTEM_BASE + 0x30)
+#define SYSTEM_CPU_INTR_FROM_CPU_1_REG          (DR_REG_SYSTEM_BASE + 0x34)
+
+#define SYSTEM_CPU_INTR_FROM_CPU_0          1<<0
+#define SYSTEM_CPU_INTR_FROM_CPU_1          1<<0
+
+#define ESP_INTR_FLAG_IRAM          (1<<10)
+
+
 static portMUX_TYPE reason_spinlock = portMUX_INITIALIZER_UNLOCKED;
 static volatile uint32_t reason[portNUM_PROCESSORS];
 
-static inline void IRAM_ATTR esp_crosscore_isr_handle_yield(void)
+void IRAM_ATTR esp_crosscore_isr_handle_yield(void)
 {
 	portYIELD_FROM_ISR();
 }
@@ -31,23 +35,11 @@ static void IRAM_ATTR esp_crosscore_isr(void *arg) {
 	volatile uint32_t *my_reason=arg;
 
 	//Clear the interrupt first.
-#if CONFIG_IDF_TARGET_ESP32
-	if (cpu_hal_get_core_id()==0) {
-		DPORT_WRITE_PERI_REG(DPORT_CPU_INTR_FROM_CPU_0_REG, 0);
-	} else {
-		DPORT_WRITE_PERI_REG(DPORT_CPU_INTR_FROM_CPU_1_REG, 0);
-	}
-#elif CONFIG_IDF_TARGET_ESP32S2
-	DPORT_WRITE_PERI_REG(DPORT_CPU_INTR_FROM_CPU_0_REG, 0);
-#elif CONFIG_IDF_TARGET_ESP32S3
-	if (cpu_hal_get_core_id()==0) {
+	if (cpu_ll_get_core_id()==0) {
 		WRITE_PERI_REG(SYSTEM_CPU_INTR_FROM_CPU_0_REG, 0);
 	} else {
 		WRITE_PERI_REG(SYSTEM_CPU_INTR_FROM_CPU_1_REG, 0);
 	}
-#elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32H2
-	WRITE_PERI_REG(SYSTEM_CPU_INTR_FROM_CPU_0_REG, 0);
-#endif
 
 	//Grab the reason and clear it.
 	portENTER_CRITICAL_ISR(&reason_spinlock);
@@ -76,10 +68,10 @@ static void IRAM_ATTR esp_crosscore_isr(void *arg) {
 //on each active core.
 void esp_crosscore_int_init(void) {
 	portENTER_CRITICAL(&reason_spinlock);
-	reason[cpu_hal_get_core_id()]=0;
+	reason[cpu_ll_get_core_id()]=0;
 	portEXIT_CRITICAL(&reason_spinlock);
-	esp_err_t err __attribute__((unused)) = ESP_OK;
-	if (cpu_hal_get_core_id()==0) {
+	int err = 0;
+	if (cpu_ll_get_core_id()==0) {
 		err = esp_intr_alloc(ETS_FROM_CPU_INTR0_SOURCE, ESP_INTR_FLAG_IRAM, esp_crosscore_isr, (void*)&reason[0], NULL);
 	} else {
 		err = esp_intr_alloc(ETS_FROM_CPU_INTR1_SOURCE, ESP_INTR_FLAG_IRAM, esp_crosscore_isr, (void*)&reason[1], NULL);
@@ -101,7 +93,7 @@ static void IRAM_ATTR esp_crosscore_int_send(int core_id, uint32_t reason_mask) 
 	}
 }
 
-void IRAM_ATTR esp_crosscore_int_send_yield(int core_id)
+static void IRAM_ATTR esp_crosscore_int_send_yield(int core_id)
 {
 	esp_crosscore_int_send(core_id, REASON_YIELD);
 }
