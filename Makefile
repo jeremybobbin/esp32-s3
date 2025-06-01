@@ -20,7 +20,52 @@ soc/gpio.o: soc/gpio.h soc/usb_serial_jtag.h soc/rtc_cntl.h
 
 libsoc.a: \
 	soc/adc.o \
-	soc/gpio.o
+	soc/aes.o \
+	soc/brownout.o \
+	soc/clk_gate.o \
+	soc/cpu.o \
+	soc/cross-int.o \
+	soc/ds.o \
+	soc/efuse.o \
+	soc/gdma.o \
+	soc/gpio.o \
+	soc/gpspi_flash.o \
+	soc/hmac.o \
+	soc/i2c.o \
+	soc/i2s.o \
+	soc/interrupt_controller.o \
+	soc/interrupt_descriptor_table.o \
+	soc/lcd.o \
+	soc/ledc.o \
+	soc/mcpwm.o \
+	soc/mpu.o \
+	soc/mwdt.o \
+	soc/pcnt.o \
+	soc/peripherals.o \
+	soc/rmt.o \
+	soc/rtc_cntl.o \
+	soc/rtc_io.o \
+	soc/rwdt.o \
+	soc/sens.o \
+	soc/sha.o \
+	soc/sigmadelta.o \
+	soc/soc.o \
+	soc/spi_flash_encrypted.o \
+	soc/spi_flash.o \
+	soc/spimem_flash.o \
+	soc/spi.o \
+	soc/systimer.o \
+	soc/timer.o \
+	soc/touch_sensor.o \
+	soc/trace.o \
+	soc/twai.o \
+	soc/uart.o \
+	soc/uhci.o \
+	soc/usb.o \
+	soc/usb_phy.o \
+	soc/usb_serial_jtag.o \
+	soc/xt_wdt.o
+	$(AR) rcs $@ $?
 
 libheap.a: \
 	heap/heap_caps_init.o \
