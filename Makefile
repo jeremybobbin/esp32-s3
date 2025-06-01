@@ -143,6 +143,7 @@ libwifi.a: \
 	wifi/wl_chm.o \
 	wifi/wl_cnx.o \
 	wifi/wl_offchan.o
+	$(AR) rcs $@ $?
 
 
 
