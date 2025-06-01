@@ -1,4 +1,6 @@
-//#pragma once
+#ifndef SOC_MEMORY_LAYOUT_H
+#define SOC_MEMORY_LAYOUT_H
+
 #include "heap/heap_memory_layout.h"
 
 #define IRAM_ATTR _SECTION_ATTR_IMPL(".iram1", __COUNTER__)
@@ -232,3 +234,4 @@ inline static bool IRAM_ATTR esp_stack_ptr_is_sane(uint32_t sp)
         ;
 }
 
+#endif
