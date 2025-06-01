@@ -7,6 +7,17 @@ typedef enum {
 	ESP_AES_STATE_DONE,     /* Transform completed */
 } esp_aes_state_t;
 
+typedef enum {
+    ESP_AES_BLOCK_MODE_ECB = 0,
+    ESP_AES_BLOCK_MODE_CBC,
+    ESP_AES_BLOCK_MODE_OFB,
+    ESP_AES_BLOCK_MODE_CTR,
+    ESP_AES_BLOCK_MODE_CFB8,
+    ESP_AES_BLOCK_MODE_CFB128,
+    ESP_AES_BLOCK_MODE_GCM,
+    ESP_AES_BLOCK_MODE_MAX,
+} esp_aes_mode_t;
+
 uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len);
 void aes_ll_set_mode(int mode, uint8_t key_bytes);
 void aes_ll_write_block(const void *input);

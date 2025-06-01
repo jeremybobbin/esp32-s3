@@ -1,11 +1,49 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdint.h>
+#include "aes.h"
+#include "gpio.h"
 
-typedef enum {
-	ESP_AES_STATE_IDLE = 0, /* AES accelerator is idle */
-	ESP_AES_STATE_BUSY,     /* Transform in progress */
-	ESP_AES_STATE_DONE,     /* Transform completed */
-} esp_aes_state_t;
+#define ESP_AES_ENCRYPT     1
+#define AES_BLOCK_WORDS     4
+#define DR_REG_AES_BASE                         0x6003A000
+#define IV_WORDS            (4)
+/* AES Block operation modes (used with DMA) */
+#define AES_BLOCK_MODE_ECB     0
+#define AES_BLOCK_MODE_CBC     1
+#define AES_BLOCK_MODE_OFB     2
+#define AES_BLOCK_MODE_CTR     3
+#define AES_BLOCK_MODE_CFB8    4
+#define AES_BLOCK_MODE_CFB128  5
+
+/* AES acceleration registers */
+#define AES_MODE_REG            ((DR_REG_AES_BASE) + 0x40)
+#define AES_ENDIAN_REG          ((DR_REG_AES_BASE) + 0x44)
+#define AES_TRIGGER_REG         ((DR_REG_AES_BASE) + 0x48)
+#define AES_STATE_REG           ((DR_REG_AES_BASE) + 0x4c)
+#define AES_DMA_ENABLE_REG      ((DR_REG_AES_BASE) + 0x90)
+#define AES_BLOCK_MODE_REG      ((DR_REG_AES_BASE) + 0x94)
+#define AES_BLOCK_NUM_REG       ((DR_REG_AES_BASE) + 0x98)
+#define AES_INC_SEL_REG         ((DR_REG_AES_BASE) + 0x9C)
+#define AES_CONTINUE_REG        ((DR_REG_AES_BASE) + 0xA8)
+#define AES_INT_CLR_REG         ((DR_REG_AES_BASE) + 0xAC)
+#define AES_INT_ENA_REG         ((DR_REG_AES_BASE) + 0xB0)
+#define AES_DATE_REG            ((DR_REG_AES_BASE) + 0xB4)
+#define AES_DMA_EXIT_REG        ((DR_REG_AES_BASE) + 0xB8)
+
+#define AES_DMA_ENABLE_REG      ((DR_REG_AES_BASE) + 0x90)
+#define AES_BLOCK_MODE_REG      ((DR_REG_AES_BASE) + 0x94)
+#define AES_BLOCK_NUM_REG       ((DR_REG_AES_BASE) + 0x98)
+#define AES_INC_SEL_REG         ((DR_REG_AES_BASE) + 0x9C)
+#define AES_AAD_BLOCK_NUM_REG   ((DR_REG_AES_BASE) + 0xA0)
+#define AES_BIT_VALID_NUM_REG   ((DR_REG_AES_BASE) + 0xA4)
+#define AES_CONTINUE_REG        ((DR_REG_AES_BASE) + 0xA8)
+
+#define AES_KEY_BASE            ((DR_REG_AES_BASE) + 0x00)
+#define AES_TEXT_IN_BASE        ((DR_REG_AES_BASE) + 0x20)
+#define AES_TEXT_OUT_BASE       ((DR_REG_AES_BASE) + 0x30)
+#define AES_IV_BASE             ((DR_REG_AES_BASE) + 0x50)
+
 
 
 uint8_t aes_ll_write_key(const uint8_t *key, size_t key_word_len)
