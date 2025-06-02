@@ -1,6 +1,425 @@
-
 #include <stdint.h>
 #include <stdbool.h>
+
+typedef volatile struct gdma_dev_s {
+	struct {
+		struct {
+			union {
+				struct {
+					uint32_t in_rst                        :    1;
+					uint32_t in_loop_test                  :    1;
+					uint32_t indscr_burst_en               :    1;
+					uint32_t in_data_burst_en              :    1;
+					uint32_t mem_trans_en                  :    1;
+					uint32_t reserved5                     :    1;
+					uint32_t reserved6                     :    26;
+				};
+				uint32_t val;
+			} conf0;
+			union {
+				struct {
+					uint32_t dma_infifo_full_thrs          :    12;
+					uint32_t in_check_owner                :    1;
+					uint32_t in_ext_mem_bk_size            :    2;
+					uint32_t reserved15                    :    17;
+				};
+				uint32_t val;
+			} conf1;
+			union {
+				struct {
+					uint32_t in_done                       :    1;
+					uint32_t in_suc_eof                    :    1;
+					uint32_t in_err_eof                    :    1;
+					uint32_t in_dscr_err                   :    1;
+					uint32_t in_dscr_empty                 :    1;
+					uint32_t infifo_full_wm                :    1;
+					uint32_t infifo_ovf_l1                 :    1;
+					uint32_t infifo_udf_l1                 :    1;
+					uint32_t infifo_ovf_l3                 :    1;
+					uint32_t infifo_udf_l3                 :    1;
+					uint32_t reserved10                    :    22;
+				};
+				uint32_t val;
+			} int_raw;
+			union {
+				struct {
+					uint32_t in_done                       :    1;
+					uint32_t in_suc_eof                    :    1;
+					uint32_t in_err_eof                    :    1;
+					uint32_t in_dscr_err                   :    1;
+					uint32_t in_dscr_empty                 :    1;
+					uint32_t infifo_full_wm                :    1;
+					uint32_t infifo_ovf_l1                 :    1;
+					uint32_t infifo_udf_l1                 :    1;
+					uint32_t infifo_ovf_l3                 :    1;
+					uint32_t infifo_udf_l3                 :    1;
+					uint32_t reserved10                    :    22;
+				};
+				uint32_t val;
+			} int_st;
+			union {
+				struct {
+					uint32_t in_done                       :    1;
+					uint32_t in_suc_eof                    :    1;
+					uint32_t in_err_eof                    :    1;
+					uint32_t in_dscr_err                   :    1;
+					uint32_t in_dscr_empty                 :    1;
+					uint32_t infifo_full_wm                :    1;
+					uint32_t infifo_ovf_l1                 :    1;
+					uint32_t infifo_udf_l1                 :    1;
+					uint32_t infifo_ovf_l3                 :    1;
+					uint32_t infifo_udf_l3                 :    1;
+					uint32_t reserved10                    :    22;
+				};
+				uint32_t val;
+			} int_ena;
+			union {
+				struct {
+					uint32_t in_done                       :    1;
+					uint32_t in_suc_eof                    :    1;
+					uint32_t in_err_eof                    :    1;
+					uint32_t in_dscr_err                   :    1;
+					uint32_t in_dscr_empty                 :    1;
+					uint32_t dma_infifo_full_wm            :    1;
+					uint32_t infifo_ovf_l1                 :    1;
+					uint32_t infifo_udf_l1                 :    1;
+					uint32_t infifo_ovf_l3                 :    1;
+					uint32_t infifo_udf_l3                 :    1;
+					uint32_t reserved10                    :    22;
+				};
+				uint32_t val;
+			} int_clr;
+			union {
+				struct {
+					uint32_t infifo_full_l1                :    1;
+					uint32_t infifo_empty_l1               :    1;
+					uint32_t infifo_full_l2                :    1;
+					uint32_t infifo_empty_l2               :    1;
+					uint32_t infifo_full_l3                :    1;
+					uint32_t infifo_empty_l3               :    1;
+					uint32_t infifo_cnt_l1                 :    6;
+					uint32_t infifo_cnt_l2                 :    7;
+					uint32_t infifo_cnt_l3                 :    5;
+					uint32_t in_remain_under_1b_l3         :    1;
+					uint32_t in_remain_under_2b_l3         :    1;
+					uint32_t in_remain_under_3b_l3         :    1;
+					uint32_t in_remain_under_4b_l3         :    1;
+					uint32_t in_buf_hungry                 :    1;
+					uint32_t reserved29                    :    3;
+				};
+				uint32_t val;
+			} infifo_status;
+			union {
+				struct {
+					uint32_t infifo_rdata                  :    12;
+					uint32_t infifo_pop                    :    1;
+					uint32_t reserved13                    :    19;
+				};
+				uint32_t val;
+			} pop;
+			union {
+				struct {
+					uint32_t addr                          :    20;
+					uint32_t auto_ret                      :    1;
+					uint32_t stop                          :    1;
+					uint32_t start                         :    1;
+					uint32_t restart                       :    1;
+					uint32_t park                          :    1;
+					uint32_t reserved25                    :    7;
+				};
+				uint32_t val;
+			} link;
+			union {
+				struct {
+					uint32_t dscr_addr                     :    18;
+					uint32_t in_dscr_state                 :    2;
+					uint32_t in_state                      :    3;
+					uint32_t reserved23                    :    9;
+				};
+				uint32_t val;
+			} state;
+			uint32_t suc_eof_des_addr;
+			uint32_t err_eof_des_addr;
+			uint32_t dscr;
+			uint32_t dscr_bf0;
+			uint32_t dscr_bf1;
+			union {
+				struct {
+					uint32_t reserved0                     :    8;
+					uint32_t rx_weight                     :    4;
+					uint32_t reserved12                    :    20;
+				};
+				uint32_t val;
+			} wight;
+			uint32_t reserved_40;
+			union {
+				struct {
+					uint32_t rx_pri                        :    4;
+					uint32_t reserved4                     :    28;
+				};
+				uint32_t val;
+			} pri;
+			union {
+				struct {
+					uint32_t sel                           :    6;
+					uint32_t reserved6                     :    26;
+				};
+				uint32_t val;
+			} peri_sel;
+			uint32_t reserved_4c;
+			uint32_t reserved_50;
+			uint32_t reserved_54;
+			uint32_t reserved_58;
+			uint32_t reserved_5c;
+		} in;
+		struct {
+			union {
+				struct {
+					uint32_t out_rst                       :    1;
+					uint32_t out_loop_test                 :    1;
+					uint32_t out_auto_wrback               :    1;
+					uint32_t out_eof_mode                  :    1;
+					uint32_t outdscr_burst_en              :    1;
+					uint32_t out_data_burst_en             :    1;
+					uint32_t reserved6                     :    1;
+					uint32_t reserved7                     :    25;
+				};
+				uint32_t val;
+			} conf0;
+			union {
+				struct {
+					uint32_t reserved0                     :    12;
+					uint32_t out_check_owner               :    1;
+					uint32_t out_ext_mem_bk_size           :    2;
+					uint32_t reserved15                    :    17;
+				};
+				uint32_t val;
+			} conf1;
+			union {
+				struct {
+					uint32_t out_done                      :    1;
+					uint32_t out_eof                       :    1;
+					uint32_t out_dscr_err                  :    1;
+					uint32_t out_total_eof                 :    1;
+					uint32_t outfifo_ovf_l1                :    1;
+					uint32_t outfifo_udf_l1                :    1;
+					uint32_t outfifo_ovf_l3                :    1;
+					uint32_t outfifo_udf_l3                :    1;
+					uint32_t reserved8                     :    24;
+				};
+				uint32_t val;
+			} int_raw;
+			union {
+				struct {
+					uint32_t out_done                      :    1;
+					uint32_t out_eof                       :    1;
+					uint32_t out_dscr_err                  :    1;
+					uint32_t out_total_eof                 :    1;
+					uint32_t outfifo_ovf_l1                :    1;
+					uint32_t outfifo_udf_l1                :    1;
+					uint32_t outfifo_ovf_l3                :    1;
+					uint32_t outfifo_udf_l3                :    1;
+					uint32_t reserved8                     :    24;
+				};
+				uint32_t val;
+			} int_st;
+			union {
+				struct {
+					uint32_t out_done                      :    1;
+					uint32_t out_eof                       :    1;
+					uint32_t out_dscr_err                  :    1;
+					uint32_t out_total_eof                 :    1;
+					uint32_t outfifo_ovf_l1                :    1;
+					uint32_t outfifo_udf_l1                :    1;
+					uint32_t outfifo_ovf_l3                :    1;
+					uint32_t outfifo_udf_l3                :    1;
+					uint32_t reserved8                     :    24;
+				};
+				uint32_t val;
+			} int_ena;
+			union {
+				struct {
+					uint32_t out_done                      :    1;
+					uint32_t out_eof                       :    1;
+					uint32_t out_dscr_err                  :    1;
+					uint32_t out_total_eof                 :    1;
+					uint32_t outfifo_ovf_l1                :    1;
+					uint32_t outfifo_udf_l1                :    1;
+					uint32_t outfifo_ovf_l3                :    1;
+					uint32_t outfifo_udf_l3                :    1;
+					uint32_t reserved8                     :    24;
+				};
+				uint32_t val;
+			} int_clr;
+			union {
+				struct {
+					uint32_t outfifo_full_l1               :    1;
+					uint32_t outfifo_empty_l1              :    1;
+					uint32_t outfifo_full_l2               :    1;
+					uint32_t outfifo_empty_l2              :    1;
+					uint32_t outfifo_full_l3               :    1;
+					uint32_t outfifo_empty_l3              :    1;
+					uint32_t outfifo_cnt_l1                :    5;
+					uint32_t outfifo_cnt_l2                :    7;
+					uint32_t outfifo_cnt_l3                :    5;
+					uint32_t out_remain_under_1b_l3        :    1;
+					uint32_t out_remain_under_2b_l3        :    1;
+					uint32_t out_remain_under_3b_l3        :    1;
+					uint32_t out_remain_under_4b_l3        :    1;
+					uint32_t reserved27                    :    5;
+				};
+				uint32_t val;
+			} outfifo_status;
+			union {
+				struct {
+					uint32_t outfifo_wdata                 :    9;
+					uint32_t outfifo_push                  :    1;
+					uint32_t reserved10                    :    22;
+				};
+				uint32_t val;
+			} push;
+			union {
+				struct {
+					uint32_t addr                          :    20;
+					uint32_t stop                          :    1;
+					uint32_t start                         :    1;
+					uint32_t restart                       :    1;
+					uint32_t park                          :    1;
+					uint32_t reserved24                    :    8;
+				};
+				uint32_t val;
+			} link;
+			union {
+				struct {
+					uint32_t dscr_addr                     :    18;
+					uint32_t out_dscr_state                :    2;
+					uint32_t out_state                     :    3;
+					uint32_t reserved23                    :    9;
+				};
+				uint32_t val;
+			} state;
+			uint32_t eof_des_addr;
+			uint32_t eof_bfr_des_addr;
+			uint32_t dscr;
+			uint32_t dscr_bf0;
+			uint32_t dscr_bf1;
+			union {
+				struct {
+					uint32_t reserved0                     :    8;
+					uint32_t tx_weight                     :    4;
+					uint32_t reserved12                    :    20;
+				};
+				uint32_t val;
+			} wight;
+			uint32_t reserved_a0;
+			union {
+				struct {
+					uint32_t tx_pri                        :    4;
+					uint32_t reserved4                     :    28;
+				};
+				uint32_t val;
+			} pri;
+			union {
+				struct {
+					uint32_t sel                           :    6;
+					uint32_t reserved6                     :    26;
+				};
+				uint32_t val;
+			} peri_sel;
+			uint32_t reserved_ac;
+			uint32_t reserved_b0;
+			uint32_t reserved_b4;
+			uint32_t reserved_b8;
+			uint32_t reserved_bc;
+		} out;
+	} channel[5];
+	union {
+		struct {
+			uint32_t ahb_testmode                  :    3;
+			uint32_t reserved3                     :    1;
+			uint32_t ahb_testaddr                  :    2;
+			uint32_t reserved6                     :    26;
+		};
+		uint32_t val;
+	} ahb_test;
+	union {
+		struct {
+			uint32_t reserved0                     :    4;
+			uint32_t dma_ram_force_pd              :    1;
+			uint32_t dma_ram_force_pu              :    1;
+			uint32_t dma_ram_clk_fo                :    1;
+			uint32_t reserved7                     :    25;
+		};
+		uint32_t val;
+	} pd_conf;
+	union {
+		struct {
+			uint32_t ahbm_rst_inter                :    1;
+			uint32_t ahbm_rst_exter                :    1;
+			uint32_t arb_pri_dis                   :    1;
+			uint32_t reserved3                     :    1;
+			uint32_t clk_en                        :    1;
+			uint32_t reserved5                     :    27;
+		};
+		uint32_t val;
+	} misc_conf;
+	struct {
+		union {
+			struct {
+				uint32_t in_size                       :    7;
+				uint32_t reserved7                     :    25;
+			};
+			uint32_t val;
+		} in;
+		union {
+			struct {
+				uint32_t out_size                      :    7;
+				uint32_t reserved7                     :    25;
+			};
+			uint32_t val;
+		} out;
+	} sram_size[5];
+	uint32_t extmem_reject_addr;
+	union {
+		struct {
+			uint32_t extmem_reject_attr            :    2;
+			uint32_t extmem_reject_channel_num     :    4;
+			uint32_t extmem_reject_peri_num        :    6;
+			uint32_t reserved12                    :    20;
+		};
+		uint32_t val;
+	} extmem_reject_st;
+	union {
+		struct {
+			uint32_t extmem_reject                 :    1;
+			uint32_t reserved1                     :    31;
+		};
+		uint32_t val;
+	} extmem_reject_int_raw;
+	union {
+		struct {
+			uint32_t extmem_reject                 :    1;
+			uint32_t reserved1                     :    31;
+		};
+		uint32_t val;
+	} extmem_reject_int_st;
+	union {
+		struct {
+			uint32_t extmem_reject                 :    1;
+			uint32_t reserved1                     :    31;
+		};
+		uint32_t val;
+	} extmem_reject_int_ena;
+	union {
+		struct {
+			uint32_t extmem_reject                 :    1;
+			uint32_t reserved1                     :    31;
+		};
+		uint32_t val;
+	} extmem_reject_int_clr;
+	uint32_t date;
+} gdma_dev_t;
+extern gdma_dev_t GDMA;
 
 
 #define GDMA_LL_GET_HW(id) (((id) == 0) ? (&GDMA) : NULL)
