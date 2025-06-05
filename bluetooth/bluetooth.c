@@ -18,26 +18,148 @@
 #include "rom/rom_layout.h"
 #include "soc/rtc.h"
 #include "soc/peripherals.h"
-//#include "esp_types.h"
-//#include "esp_system.h"
-//#include "esp_task.h"
-//#include "esp_attr.h"
-//#include "esp_phy_init.h"
-//#include "esp_bt.h"
-//#include "esp_err.h"
-//#include "esp_log.h"
-//#include "esp_pm.h"
-//#include "esp_ipc.h"
-//#include "driver/periph_ctrl.h"
-//#include "soc/rtc.h"
-//#include "soc/rtc_cntl_reg.h"
-//#include "soc/soc_memory_layout.h"
-//#include "esp32c3/clk.h"
-//#include "esp_coexist_internal.h"
-//#include "esp_timer.h"
-//#include "esp_sleep.h"
-//#include "esp_rom_sys.h"
-//#include "esp32s3/rom/rom_layout.h"
+#include "rom/ets_sys.h"
+
+#define ESP_MAC_ADDRESS_LEN 8
+
+typedef enum {
+	ESP_MAC_WIFI_STA,
+	ESP_MAC_WIFI_SOFTAP,
+	ESP_MAC_BT,
+	ESP_MAC_ETH,
+	ESP_MAC_IEEE802154,
+} esp_mac_type_t;
+#define MAC_ADDR_UNIVERSE_BT_OFFSET 2
+#define ESP_MAC_ADDRESS_LEN 8
+static uint8_t base_mac_addr[ESP_MAC_ADDRESS_LEN] = { 0 };
+
+int esp_base_mac_addr_set(const uint8_t *mac)
+{
+	if (mac == NULL) {
+		return EINVAL;
+	}
+	if (mac[0] & 0x01) {
+		return EINVAL;
+	}
+
+	memcpy(base_mac_addr, mac, ESP_MAC_ADDRESS_LEN);
+
+	return 0;
+}
+
+int esp_base_mac_addr_get(uint8_t *mac)
+{
+	if (mac == NULL) {
+		return EINVAL;
+	}
+	if (base_mac_addr[0] == 0 && memcmp(base_mac_addr, &base_mac_addr[1], ESP_MAC_ADDRESS_LEN - 1) == 0) {
+		return EINVAL;
+	}
+
+	memcpy(mac, base_mac_addr, ESP_MAC_ADDRESS_LEN);
+
+	return 0;
+}
+
+int esp_efuse_mac_get_custom(uint8_t *mac)
+{
+	size_t size_bits = esp_efuse_get_field_size(ESP_EFUSE_USER_DATA_MAC_CUSTOM);
+	assert((size_bits % 8) == 0);
+	int err = esp_efuse_read_field_blob(ESP_EFUSE_USER_DATA_MAC_CUSTOM, mac, size_bits);
+	if (err != 0) {
+		return err;
+	}
+	size_t size = size_bits / 8;
+	if (mac[0] == 0 && memcmp(mac, &mac[1], size - 1) == 0) {
+		return EINVAL;
+	}
+	err = esp_efuse_read_field_blob(ESP_EFUSE_MAC_EXT, &mac[6], ESP_MAC_ADDRESS_LEN * 8 - size_bits);
+	if (err != 0) {
+		return err;
+	}
+	return 0;
+}
+
+int esp_efuse_mac_get_default(uint8_t *mac)
+{
+	size_t size_bits = esp_efuse_get_field_size(ESP_EFUSE_MAC_FACTORY);
+	assert((size_bits % 8) == 0);
+	int err = esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac, size_bits);
+	if (err != 0) {
+		return err;
+	}
+	err = esp_efuse_read_field_blob(ESP_EFUSE_MAC_EXT, &mac[6], ESP_MAC_ADDRESS_LEN * 8 - size_bits);
+	if (err != 0) {
+		return err;
+	}
+	return 0;
+}
+
+int esp_derive_local_mac(uint8_t *local_mac, const uint8_t *universal_mac)
+{
+	if (local_mac == NULL || universal_mac == NULL) {
+		return EINVAL;
+	}
+
+	memcpy(local_mac, universal_mac, 6);
+
+	const unsigned UL_BIT = 0x2;
+	local_mac[0] |= UL_BIT;
+
+	if (local_mac[0] == universal_mac[0]) {
+		// universal_mac was already local, so flip this bit instead
+		// (this is kept to be compatible with the previous behaviour of this function)
+		local_mac[0] ^= 0x4;
+	}
+
+	return 0;
+}
+
+
+int esp_read_mac(uint8_t *mac, esp_mac_type_t type) {
+	uint8_t efuse_mac[ESP_MAC_ADDRESS_LEN];
+
+	if (mac == NULL) {
+		return ESP_ERR_INVALID_ARG;
+	}
+
+	if (type < ESP_MAC_WIFI_STA || type > ESP_MAC_IEEE802154) {
+		return ESP_ERR_INVALID_ARG;
+	}
+
+	// if base mac address is not set, read one from EFUSE and then write back
+	if (esp_base_mac_addr_get(efuse_mac) != ESP_OK) {
+		ESP_LOGI(TAG, "read default base MAC address from EFUSE");
+		esp_efuse_mac_get_default(efuse_mac);
+		esp_base_mac_addr_set(efuse_mac);
+	}
+
+	switch (type) {
+	case ESP_MAC_WIFI_STA:
+		memcpy(mac, efuse_mac, 6);
+		break;
+	case ESP_MAC_WIFI_SOFTAP:
+		esp_derive_local_mac(mac, efuse_mac);
+		break;
+	case ESP_MAC_BT:
+		memcpy(mac, efuse_mac, 6);
+		break;
+	case ESP_MAC_ETH:
+		efuse_mac[5] += 1;
+		esp_derive_local_mac(mac, efuse_mac);
+		break;
+	case ESP_MAC_IEEE802154:
+		memcpy(mac, efuse_mac, 8);
+		break;
+	default:
+		ESP_LOGE(TAG, "unsupported mac type");
+		break;
+	}
+
+	return ESP_OK;
+}
+
+
 
 #define MAC_BT ((uint8_t[6]){0xf1, 0xf1, 0xf1, 0xf1, 0xf1, 0xf1})
 #define BT_LOG_TAG                        "BT_INIT"
@@ -646,7 +768,6 @@ static void *malloc_internal_wrapper(size_t size)
 {
 	void *p = heap_caps_malloc(size, MALLOC_CAP_DEFAULT|MALLOC_CAP_INTERNAL|MALLOC_CAP_DMA);
 	if(p == NULL) {
-		ESP_LOGE(BT_LOG_TAG, "Malloc failed");
 	}
 	return p;
 }
@@ -654,8 +775,6 @@ static void *malloc_internal_wrapper(size_t size)
 static int IRAM_ATTR read_mac_wrapper(uint8_t mac[6])
 {
 	int ret = esp_read_mac(mac, MAC_BT);
-	ESP_LOGI(BT_LOG_TAG, "Bluetooth MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-			   mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
 	return ret;
 }
@@ -729,7 +848,6 @@ static void btdm_sleep_enter_phase1_wrapper(uint32_t lpcycles)
 	if (esp_timer_start_once(s_btdm_slp_tmr, us_to_sleep - uncertainty) == 0) {
 		s_lp_stat.wakeup_timer_started = 1;
 	} else {
-		ESP_LOGE(BT_LOG_TAG, "timer start failed");
 		assert(0);
 	}
 }
@@ -932,21 +1050,18 @@ int esp_bt_controller_mem_release(esp_bt_mode_t mode)
 			mem_start = (intptr_t)ets_rom_layout_p->data_start_btdm;
 			mem_end = (intptr_t)ets_rom_layout_p->bss_end_btdm;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release rom btdm [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		} else {
 			mem_start = (intptr_t)ets_rom_layout_p->bss_start_btdm;
 			mem_end = (intptr_t)ets_rom_layout_p->bss_end_btdm;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release rom btdm BSS [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 
 			mem_start = (intptr_t)ets_rom_layout_p->data_start_btdm;
 			mem_end = (intptr_t)ets_rom_layout_p->data_end_btdm;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release rom btdm Data [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		}
@@ -957,21 +1072,18 @@ int esp_bt_controller_mem_release(esp_bt_mode_t mode)
 			mem_start = (intptr_t)ets_rom_layout_p->data_start_interface_btdm;
 			mem_end = (intptr_t)ets_rom_layout_p->bss_end_interface_btdm;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release rom interface btdm [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		} else {
 			mem_start = (intptr_t)ets_rom_layout_p->data_start_interface_btdm;
 			mem_end = (intptr_t)ets_rom_layout_p->data_end_interface_btdm;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release rom interface btdm Data [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 
 			mem_start = (intptr_t)ets_rom_layout_p->bss_start_interface_btdm;
 			mem_end = (intptr_t)ets_rom_layout_p->bss_end_interface_btdm;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release rom interface btdm BSS [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		}
@@ -998,21 +1110,18 @@ int esp_bt_mem_release(esp_bt_mode_t mode)
 			mem_start = (intptr_t)&_bt_bss_start;
 			mem_end = (intptr_t)&_btdm_bss_end;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release BSS [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		} else {
 			mem_start = (intptr_t)&_bt_bss_start;
 			mem_end = (intptr_t)&_bt_bss_end;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release BT BSS [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 
 			mem_start = (intptr_t)&_btdm_bss_start;
 			mem_end = (intptr_t)&_btdm_bss_end;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release BTDM BSS [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		}
@@ -1023,21 +1132,18 @@ int esp_bt_mem_release(esp_bt_mode_t mode)
 			mem_start = (intptr_t)&_bt_data_start;
 			mem_end = (intptr_t)&_btdm_data_end;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release data [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		} else {
 			mem_start = (intptr_t)&_bt_data_start;
 			mem_end = (intptr_t)&_bt_data_end;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release BT Data [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 
 			mem_start = (intptr_t)&_btdm_data_start;
 			mem_end = (intptr_t)&_btdm_data_end;
 			if (mem_start != mem_end) {
-				ESP_LOGD(BT_LOG_TAG, "Release BTDM Data [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 				ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 			}
 		}
@@ -1045,13 +1151,11 @@ int esp_bt_mem_release(esp_bt_mode_t mode)
 		mem_start = (intptr_t)&_nimble_bss_start;
 		mem_end = (intptr_t)&_nimble_bss_end;
 		if (mem_start != mem_end) {
-			ESP_LOGD(BT_LOG_TAG, "Release NimBLE BSS [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 			ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 		}
 		mem_start = (intptr_t)&_nimble_data_start;
 		mem_end = (intptr_t)&_nimble_data_end;
 		if (mem_start != mem_end) {
-			ESP_LOGD(BT_LOG_TAG, "Release NimBLE Data [0x%08x] - [0x%08x], len %d", mem_start, mem_end, mem_end - mem_start);
 			ESP_ERROR_CHECK(try_heap_caps_add_region(mem_start, mem_end));
 		}
 	}
@@ -1104,25 +1208,21 @@ int esp_bt_controller_init(esp_bt_controller_config_t *cfg)
 
 	if (cfg->controller_task_prio != ESP_TASK_BT_CONTROLLER_PRIO
 		|| cfg->controller_task_stack_size < ESP_TASK_BT_CONTROLLER_STACK) {
-		ESP_LOGE(BT_LOG_TAG, "Invalid controller task prioriy or stack size");
 		return EINVAL;
 	}
 
 	if (cfg->bluetooth_mode != ESP_BT_MODE_BLE) {
-		ESP_LOGE(BT_LOG_TAG, "%s controller only support BLE only mode", __func__);
 		return ENOTSUP;
 	}
 
 	if (cfg->bluetooth_mode & ESP_BT_MODE_BLE) {
 		if ((cfg->ble_max_act <= 0) || (cfg->ble_max_act > BT_CTRL_BLE_MAX_ACT_LIMIT)) {
-			ESP_LOGE(BT_LOG_TAG, "Invalid value of ble_max_act");
 			return EINVAL;
 		}
 	}
 
 	if (cfg->sleep_mode == ESP_BT_SLEEP_MODE_1) {
 		if (cfg->sleep_clock == ESP_BT_SLEEP_CLOCK_NONE) {
-			ESP_LOGE(BT_LOG_TAG, "SLEEP_MODE_1 enabled but sleep clock not configured");
 			return EINVAL;
 		}
 	}
@@ -1159,8 +1259,6 @@ int esp_bt_controller_init(esp_bt_controller_config_t *cfg)
 	if (btdm_osi_funcs_register(osi_funcs_p) != 0) {
 		return EINVAL;
 	}
-
-	ESP_LOGI(BT_LOG_TAG, "BT controller compile version [%s]", btdm_controller_get_compile_version());
 
 	// init low-power control resources
 	do {
@@ -1217,13 +1315,11 @@ int esp_bt_controller_init(esp_bt_controller_config_t *cfg)
 		if (rtc_clk_slow_freq_get() == RTC_SLOW_FREQ_32K_XTAL) {
 			s_lp_cntl.lpclk_sel = BTDM_LPCLK_SEL_XTAL32K; // External 32 kHz XTAL
 		} else {
-			ESP_LOGW(BT_LOG_TAG, "32.768kHz XTAL not detected, fall back to main XTAL as Bluetooth sleep clock");
 #if !CONFIG_BT_CTRL_MAIN_XTAL_PU_DURING_LIGHT_SLEEP
 			s_lp_cntl.no_light_sleep = 1;
 #endif
 		}
 #elif CONFIG_BT_CTRL_LPCLK_SEL_MAIN_XTAL
-		ESP_LOGI(BT_LOG_TAG, "Bluetooth will use main XTAL as Bluetooth sleep clock.");
 #if !CONFIG_BT_CTRL_MAIN_XTAL_PU_DURING_LIGHT_SLEEP
 			s_lp_cntl.no_light_sleep = 1;
 #endif
@@ -1231,10 +1327,7 @@ int esp_bt_controller_init(esp_bt_controller_config_t *cfg)
 		// check whether or not internal 150 kHz RC oscillator is working
 		if (rtc_clk_slow_freq_get() == RTC_SLOW_FREQ_RTC) {
 			s_lp_cntl.lpclk_sel = BTDM_LPCLK_SEL_RTC_SLOW; // Internal 150 kHz RC oscillator
-			ESP_LOGW(BT_LOG_TAG, "Internal 150kHz RC osciallator. The accuracy of this clock is a lot larger than 500ppm which is "
-				 "required in Bluetooth communication, so don't select this option in scenarios such as BLE connection state.");
 		} else {
-			ESP_LOGW(BT_LOG_TAG, "Internal 150kHz RC oscillator not detected.");
 			assert(0);
 		}
 #endif
@@ -1279,7 +1372,6 @@ int esp_bt_controller_init(esp_bt_controller_config_t *cfg)
 				err = ENOMEM;
 				goto error;
 			}
-			ESP_LOGW(BT_LOG_TAG, "light sleep mode will not be able to apply when bluetooth is enabled.");
 		}
 		if ((err = esp_pm_lock_create(ESP_PM_APB_FREQ_MAX, 0, "bt", &s_pm_lock)) != 0) {
 			err = ENOMEM;
@@ -1474,7 +1566,6 @@ int esp_bt_controller_enable(esp_bt_mode_t mode)
 
 	//As the history reason, mode should be equal to the mode which set in esp_bt_controller_init()
 	if (mode != btdm_controller_get_mode()) {
-		ESP_LOGE(BT_LOG_TAG, "invalid mode %d, controller support mode is %d", mode, btdm_controller_get_mode());
 		return EINVAL;
 	}
 

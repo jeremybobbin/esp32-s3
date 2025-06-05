@@ -17,5 +17,7 @@ void IRAM_ATTR xt_unhandled_interrupt(void * arg);
 bool xt_int_has_handler(int intr, int cpu);
 xt_handler xt_set_interrupt_handler(int n, xt_handler f, void * arg);
 void *xt_get_interrupt_handler_arg(int n);
+unsigned int xt_ints_off ( unsigned int mask );
+unsigned int xt_ints_on ( unsigned int mask );
 
 #endif

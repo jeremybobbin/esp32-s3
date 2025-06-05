@@ -11,7 +11,7 @@
 #include "freertos/spinlock.h"
 #include "soc/cross-int.h"
 #include "heap/esp_heap_caps.h"
-//#include "portbenchmark.h"
+#include "portbenchmark.h"
 
 #include <limits.h>
 #include <xtensa/system.h>
