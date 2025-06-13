@@ -19,8 +19,25 @@
 #include "soc/rtc.h"
 #include "soc/peripherals.h"
 #include "rom/ets_sys.h"
+#include "soc/gpio.h"
+#include "soc/hmac.h"
 
 #define ESP_MAC_ADDRESS_LEN 8
+#define ESP_ERROR_CHECK(...)
+
+#define MAC_BT ((uint8_t[6]){0xf1, 0xf1, 0xf1, 0xf1, 0xf1, 0xf1})
+#define BT_LOG_TAG                        "BT_INIT"
+
+const char *TAG = "bluetooth";
+
+#define BTDM_INIT_PERIOD                    (5000)    /* ms */
+
+/* Low Power Clock Selection */
+#define BTDM_LPCLK_SEL_XTAL      (0)
+#define BTDM_LPCLK_SEL_XTAL32K   (1)
+#define BTDM_LPCLK_SEL_RTC_SLOW  (2)
+#define BTDM_LPCLK_SEL_8M        (3)
+
 
 typedef enum {
 	ESP_MAC_WIFI_STA,
@@ -29,9 +46,42 @@ typedef enum {
 	ESP_MAC_ETH,
 	ESP_MAC_IEEE802154,
 } esp_mac_type_t;
+
 #define MAC_ADDR_UNIVERSE_BT_OFFSET 2
 #define ESP_MAC_ADDRESS_LEN 8
 static uint8_t base_mac_addr[ESP_MAC_ADDRESS_LEN] = { 0 };
+
+typedef enum {
+    EFUSE_BLK0              = 0,
+    EFUSE_BLK1              = 1,
+    EFUSE_BLK_KEY0          = 1,
+    EFUSE_BLK_ENCRYPT_FLASH = 1,
+    EFUSE_BLK2              = 2,
+    EFUSE_BLK_KEY1          = 2,
+    EFUSE_BLK_SECURE_BOOT   = 2,
+    EFUSE_BLK3              = 3,
+    EFUSE_BLK_KEY2          = 3,
+    EFUSE_BLK_KEY_MAX       = 4,
+    EFUSE_BLK_MAX           = 4,
+} esp_efuse_block_t;
+
+
+typedef struct {
+	esp_efuse_block_t   efuse_block: 8; /**< Block of eFuse */
+	uint8_t             bit_start;      /**< Start bit [0..255] */
+	uint16_t            bit_count;      /**< Length of bit field [1..-]*/
+} esp_efuse_desc_t;
+
+
+static const esp_efuse_desc_t MAC_FACTORY[] = {
+	{EFUSE_BLK1, 40, 8}, 	 // Factory MAC addr [0],
+	{EFUSE_BLK1, 32, 8}, 	 // Factory MAC addr [1],
+	{EFUSE_BLK1, 24, 8}, 	 // Factory MAC addr [2],
+	{EFUSE_BLK1, 16, 8}, 	 // Factory MAC addr [3],
+	{EFUSE_BLK1, 8, 8}, 	 // Factory MAC addr [4],
+	{EFUSE_BLK1, 0, 8}, 	 // Factory MAC addr [5],
+};
+
 
 int esp_base_mac_addr_set(const uint8_t *mac)
 {
@@ -60,6 +110,11 @@ int esp_base_mac_addr_get(uint8_t *mac)
 
 	return 0;
 }
+
+extern const esp_efuse_desc_t* ESP_EFUSE_USER_DATA_MAC_CUSTOM[];
+extern const esp_efuse_desc_t* ESP_EFUSE_MAC_EXT[];
+extern const esp_efuse_desc_t* ESP_EFUSE_MAC_FACTORY[];
+
 
 int esp_efuse_mac_get_custom(uint8_t *mac)
 {
@@ -120,15 +175,15 @@ int esp_read_mac(uint8_t *mac, esp_mac_type_t type) {
 	uint8_t efuse_mac[ESP_MAC_ADDRESS_LEN];
 
 	if (mac == NULL) {
-		return ESP_ERR_INVALID_ARG;
+		return EINVAL;
 	}
 
 	if (type < ESP_MAC_WIFI_STA || type > ESP_MAC_IEEE802154) {
-		return ESP_ERR_INVALID_ARG;
+		return EINVAL;
 	}
 
 	// if base mac address is not set, read one from EFUSE and then write back
-	if (esp_base_mac_addr_get(efuse_mac) != ESP_OK) {
+	if (esp_base_mac_addr_get(efuse_mac) != 0) {
 		ESP_LOGI(TAG, "read default base MAC address from EFUSE");
 		esp_efuse_mac_get_default(efuse_mac);
 		esp_base_mac_addr_set(efuse_mac);
@@ -156,21 +211,10 @@ int esp_read_mac(uint8_t *mac, esp_mac_type_t type) {
 		break;
 	}
 
-	return ESP_OK;
+	return 0;
 }
 
 
-
-#define MAC_BT ((uint8_t[6]){0xf1, 0xf1, 0xf1, 0xf1, 0xf1, 0xf1})
-#define BT_LOG_TAG                        "BT_INIT"
-
-#define BTDM_INIT_PERIOD                    (5000)    /* ms */
-
-/* Low Power Clock Selection */
-#define BTDM_LPCLK_SEL_XTAL      (0)
-#define BTDM_LPCLK_SEL_XTAL32K   (1)
-#define BTDM_LPCLK_SEL_RTC_SLOW  (2)
-#define BTDM_LPCLK_SEL_8M        (3)
 
 // wakeup request sources
 enum {
@@ -774,7 +818,7 @@ static void *malloc_internal_wrapper(size_t size)
 
 static int IRAM_ATTR read_mac_wrapper(uint8_t mac[6])
 {
-	int ret = esp_read_mac(mac, MAC_BT);
+	int ret = esp_read_mac(mac, ESP_MAC_BT);
 
 	return ret;
 }

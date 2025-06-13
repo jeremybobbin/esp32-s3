@@ -17,6 +17,58 @@
 #define I2C_LL_SLAVE_RX_INT           (I2C_RXFIFO_WM_INT_ENA_M | I2C_TRANS_COMPLETE_INT_ENA_M)
 #define I2C_LL_CLK_SRC_FREQ(src_clk)  (((src_clk) == I2C_SCLK_RTC) ? 8*1000*1000 : 40*1000*1000); // Another clock is XTAL clock
 #define I2C_LL_MAX_TIMEOUT I2C_TIME_OUT_VALUE_V
+#define SOC_I2C_FIFO_LEN 32
+
+#define I2C_NACK_INT_ENA    (1<<10)
+#define I2C_NACK_INT_ENA_M  (I2C_NACK_INT_ENA_V << I2C_NACK_INT_ENA_S)
+#define I2C_NACK_INT_ENA_V  0x00000001U
+#define I2C_NACK_INT_ENA_S  10
+#define I2C_TRANS_COMPLETE_INT_ENA    (1<<7)
+#define I2C_TRANS_COMPLETE_INT_ENA_M  (I2C_TRANS_COMPLETE_INT_ENA_V << I2C_TRANS_COMPLETE_INT_ENA_S)
+#define I2C_TRANS_COMPLETE_INT_ENA_V  0x00000001U
+#define I2C_TRANS_COMPLETE_INT_ENA_S  7
+#define I2C_TIME_OUT_INT_ENA    (BIT(8))
+#define I2C_TIME_OUT_INT_ENA_M  (I2C_TIME_OUT_INT_ENA_V << I2C_TIME_OUT_INT_ENA_S)
+#define I2C_TIME_OUT_INT_ENA_V  0x00000001U
+#define I2C_TIME_OUT_INT_ENA_S  8
+#define I2C_ARBITRATION_LOST_INT_ENA    (1<<5)
+#define I2C_ARBITRATION_LOST_INT_ENA_M  (I2C_ARBITRATION_LOST_INT_ENA_V << I2C_ARBITRATION_LOST_INT_ENA_S)
+#define I2C_ARBITRATION_LOST_INT_ENA_V  0x00000001U
+#define I2C_ARBITRATION_LOST_INT_ENA_S  5
+#define I2C_TXFIFO_WM_INT_RAW    (1<<1)
+#define I2C_TXFIFO_WM_INT_RAW_M  (I2C_TXFIFO_WM_INT_RAW_V << I2C_TXFIFO_WM_INT_RAW_S)
+#define I2C_TXFIFO_WM_INT_RAW_V  0x00000001U
+#define I2C_TXFIFO_WM_INT_RAW_S  1
+#define I2C_INT_ENA_REG (DR_REG_I2C_BASE + 0x28)
+#define I2C_RXFIFO_WM_INT_ENA    (1<<0)
+#define I2C_RXFIFO_WM_INT_ENA_M  (I2C_RXFIFO_WM_INT_ENA_V << I2C_RXFIFO_WM_INT_ENA_S)
+#define I2C_RXFIFO_WM_INT_ENA_V  0x00000001U
+#define I2C_RXFIFO_WM_INT_ENA_S  0
+#define I2C_END_DETECT_INT_ENA    (1<<3)
+#define I2C_END_DETECT_INT_ENA_M  (I2C_END_DETECT_INT_ENA_V << I2C_END_DETECT_INT_ENA_S)
+#define I2C_END_DETECT_INT_ENA_V  0x00000001U
+#define I2C_END_DETECT_INT_ENA_S  3
+#define I2C_TXFIFO_WM_INT_ENA    (1<<1)
+#define I2C_TXFIFO_WM_INT_ENA_M  (I2C_TXFIFO_WM_INT_ENA_V << I2C_TXFIFO_WM_INT_ENA_S)
+#define I2C_TXFIFO_WM_INT_ENA_V  0x00000001U
+#define I2C_TXFIFO_WM_INT_ENA_S  1
+
+#define HAL_FORCE_MODIFY_U32_REG_FIELD(base_reg, reg_field, field_val) { \
+	uint32_t temp_val = base_reg.val;                                \
+	typeof(base_reg) temp_reg;                                       \
+	temp_reg.val = temp_val;                                         \
+	temp_reg.reg_field = (field_val);                                \
+	(base_reg).val = temp_reg.val;                                   \
+}
+
+#define HAL_FORCE_READ_U32_REG_FIELD(base_reg, reg_field) ({    \
+	uint32_t temp_val = base_reg.val;                       \
+	typeof(base_reg) temp_reg;                              \
+	temp_reg.val = temp_val;                                \
+	temp_reg.reg_field;                                     \
+})
+
+
 
 typedef enum {
 	I2C_DATA_MODE_MSB_FIRST = 0,  /*!< I2C data msb first */

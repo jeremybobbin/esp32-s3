@@ -1,4 +1,6 @@
 // The LL layer for I2C register operations
+#include <stdint.h>
+#include "i2c.h"
 
 #define I2C_SAR_ADC            0X69
 #define I2C_SAR_ADC_HOSTID     1
@@ -67,6 +69,7 @@
 #define REGI2C_ANA_CALI_BYTE_NUM         8
 
 #define I2C_LL_INTR_MASK          (0x3fff) /*!< I2C all interrupt bitmap */
+/*
 typedef union {
 	struct {
 		uint32_t byte_num:    8,
@@ -80,29 +83,31 @@ typedef union {
 	uint32_t val;
 } i2c_hw_cmd_t;
 
+
 typedef enum {
 	I2C_INTR_EVENT_ERR,
-	I2C_INTR_EVENT_ARBIT_LOST,   /*!< I2C arbition lost event */
-	I2C_INTR_EVENT_NACK,         /*!< I2C NACK event */
-	I2C_INTR_EVENT_TOUT,         /*!< I2C time out event */
-	I2C_INTR_EVENT_END_DET,      /*!< I2C end detected event */
-	I2C_INTR_EVENT_TRANS_DONE,   /*!< I2C trans done event */
-	I2C_INTR_EVENT_RXFIFO_FULL,  /*!< I2C rxfifo full event */
-	I2C_INTR_EVENT_TXFIFO_EMPTY, /*!< I2C txfifo empty event */
+	I2C_INTR_EVENT_ARBIT_LOST,
+	I2C_INTR_EVENT_NACK,
+	I2C_INTR_EVENT_TOUT,
+	I2C_INTR_EVENT_END_DET,
+	I2C_INTR_EVENT_TRANS_DONE,
+	I2C_INTR_EVENT_RXFIFO_FULL,
+	I2C_INTR_EVENT_TXFIFO_EMPTY,
 } i2c_intr_event_t;
 
 typedef struct {
-	uint16_t clkm_div;          /*!< I2C core clock divider */
-	uint16_t scl_low;           /*!< I2C scl low period */
-	uint16_t scl_high;          /*!< I2C scl hight period */
-	uint16_t scl_wait_high;     /*!< I2C scl wait_high period */
-	uint16_t sda_hold;          /*!< I2C scl low period */
-	uint16_t sda_sample;        /*!< I2C sda sample time */
-	uint16_t setup;             /*!< I2C start and stop condition setup period */
-	uint16_t hold;              /*!< I2C start and stop condition hold period  */
-	uint16_t tout;              /*!< I2C bus timeout period */
+	uint16_t clkm_div;
+	uint16_t scl_low;
+	uint16_t scl_high;
+	uint16_t scl_wait_high;
+	uint16_t sda_hold;
+	uint16_t sda_sample;
+	uint16_t setup;
+	uint16_t hold;
+	uint16_t tout;
 } i2c_clk_cal_t;
 
+*/
 // I2C operation mode command
 #define I2C_LL_CMD_RESTART    6    /*!<I2C restart command */
 #define I2C_LL_CMD_WRITE      1    /*!<I2C write command */

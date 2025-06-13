@@ -2,6 +2,7 @@
 // The LL layer for I2S register operations
 
 #include <stdbool.h>
+#include "soc/i2s.h"
 
 
 
