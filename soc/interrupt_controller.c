@@ -1,5 +1,9 @@
 #include <stdint.h>
+#include <stdbool.h>
+#include "xtensa/specreg.h"
+#include "xtensa/xtensa_intr.h"
 
+typedef void (*interrupt_handler_t)(void *arg);
 
 void intr_cntrl_ll_enable_interrupts(uint32_t mask)
 {

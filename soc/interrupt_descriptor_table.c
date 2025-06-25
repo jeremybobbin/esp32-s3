@@ -15,6 +15,35 @@
 #define INT15RES INTDESC_SPECIAL
 #endif
 
+#define SOC_CPU_CORES_NUM               2
+
+typedef enum {
+	ESP_CPU_INTR_TYPE_LEVEL = 0,
+	ESP_CPU_INTR_TYPE_EDGE,
+	ESP_CPU_INTR_TYPE_NA,
+} esp_cpu_intr_type_t;
+
+typedef enum {
+	INTDESC_NORMAL = 0,
+	INTDESC_RESVD,
+	INTDESC_SPECIAL,
+} int_desc_flag_t;
+
+typedef enum {
+	INTTP_LEVEL = ESP_CPU_INTR_TYPE_LEVEL,
+	INTTP_EDGE = ESP_CPU_INTR_TYPE_EDGE,
+	INTTP_NA = ESP_CPU_INTR_TYPE_NA,
+} int_type_t;
+
+typedef struct {
+	int level;
+	int_type_t type;
+	int_desc_flag_t cpuflags[SOC_CPU_CORES_NUM];
+} int_desc_t;
+
+typedef void (*interrupt_handler_t)(void *arg);
+
+
 //This is basically a software-readable version of the interrupt usage table in include/soc/soc.h
 const static int_desc_t interrupt_descriptor_table [32]={
 	{ 1, INTTP_LEVEL, {INTDESC_RESVD,  INTDESC_RESVD } }, //0

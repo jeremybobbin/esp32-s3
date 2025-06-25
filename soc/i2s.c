@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "soc/i2s.h"
+#include "soc/i2c.h"
 
 
 
