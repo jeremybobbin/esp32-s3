@@ -1,7 +1,8 @@
-
 #include <stddef.h> /* For NULL declaration */
 #include <stdint.h>
 #include <stdbool.h>
+#include "soc/lcd.h"
+#include "soc/i2c.h"
 
 
 #define LCD_LL_GET_HW(id) (((id) == 0) ? (&LCD_CAM) : NULL)
