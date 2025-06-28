@@ -24,6 +24,15 @@
  *
  */
 
+#define traceISR_ENTER(...)
+#define traceISR_EXIT(...)
+#define traceQUEUE_GIVE_FROM_ISR(...)
+#define traceQUEUE_TAKE_FROM_ISR(...)
+#define traceQUEUE_GIVE_FROM_ISR_FAILED(...)
+#define traceQUEUE_RECEIVE_FAILED(...)
+#define traceQUEUE_SEMAPHORE_RECEIVE(...)
+
+
 #include <stdlib.h>
 #include <string.h>
 

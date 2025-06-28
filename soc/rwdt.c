@@ -6,6 +6,9 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include "soc/rtc_cntl.h"
+#include "soc/rwdt.h"
+#include "soc/i2c.h"
 
 #define RWDT_LL_STG_SEL_OFF             0
 #define RWDT_LL_STG_SEL_INT             1

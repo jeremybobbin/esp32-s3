@@ -1,5 +1,9 @@
 
 
+#define SOC_CPU_CORES_NUM               2
+
+#include "soc/gpio.h"
+#include "soc/rtc_cntl.h"
 
 void soc_ll_stall_core(int core)
 {

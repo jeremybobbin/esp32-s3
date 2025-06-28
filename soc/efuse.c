@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/param.h>
+
 #include "soc/efuse.h"
 
 efuse_dev_t *EFUSE = (void*)0x60007000;
@@ -13,40 +15,6 @@ efuse_dev_t *EFUSE = (void*)0x60007000;
 
 #define EFUSE_WRITE_OP_CODE 0x5a5a
 #define EFUSE_READ_OP_CODE 0x5aa5
-
-
-typedef enum {
-	ETS_EFUSE_KEY_PURPOSE_USER = 0,
-	ETS_EFUSE_KEY_PURPOSE_RESERVED = 1,
-	ETS_EFUSE_KEY_PURPOSE_XTS_AES_256_KEY_1 = 2,
-	ETS_EFUSE_KEY_PURPOSE_XTS_AES_256_KEY_2 = 3,
-	ETS_EFUSE_KEY_PURPOSE_XTS_AES_128_KEY = 4,
-	ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_ALL = 5,
-	ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_JTAG = 6,
-	ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_DIGITAL_SIGNATURE = 7,
-	ETS_EFUSE_KEY_PURPOSE_HMAC_UP = 8,
-	ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST0 = 9,
-	ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST1 = 10,
-	ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST2 = 11,
-	ETS_EFUSE_KEY_PURPOSE_MAX,
-} ets_efuse_purpose_t;
-
-typedef enum {
-	ETS_EFUSE_BLOCK0 = 0,
-	ETS_EFUSE_MAC_SPI_SYS_0 = 1,
-	ETS_EFUSE_BLOCK_SYS_DATA = 2,
-	ETS_EFUSE_BLOCK_USR_DATA = 3,
-	ETS_EFUSE_BLOCK_KEY0 = 4,
-	ETS_EFUSE_BLOCK_KEY1 = 5,
-	ETS_EFUSE_BLOCK_KEY2 = 6,
-	ETS_EFUSE_BLOCK_KEY3 = 7,
-	ETS_EFUSE_BLOCK_KEY4 = 8,
-	ETS_EFUSE_BLOCK_KEY5 = 9,
-	ETS_EFUSE_BLOCK_KEY6 = 10,
-	ETS_EFUSE_BLOCK_MAX,
-} ets_efuse_block_t;
-
-
 
 uint32_t efuse_ll_get_flash_crypt_cnt(void) {
 	return EFUSE->rd_repeat_data1.reg_spi_boot_crypt_cnt;
@@ -114,7 +82,6 @@ void efuse_ll_set_read_cmd(void) {
 }
 
 void efuse_ll_set_pgm_cmd(uint32_t block) {
-	HAL_ASSERT(block < ETS_EFUSE_BLOCK_MAX);
 	EFUSE->cmd.val = ((block << EFUSE_BLK_NUM_S) & EFUSE_BLK_NUM_M) | EFUSE_PGM_CMD;
 }
 
@@ -129,8 +96,6 @@ void efuse_ll_set_conf_write_op_code(void) {
 void efuse_ll_set_pwr_off_num(uint16_t value) {
 	EFUSE->wr_tim_conf2.pwr_off_num = value;
 }
-
-#include <sys/param.h>
 
 #define ESP_EFUSE_BLOCK_ERROR_BITS(error_reg, block) ((error_reg) & (0x0F << (4 * (block))))
 

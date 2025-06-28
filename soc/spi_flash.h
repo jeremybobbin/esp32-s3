@@ -1,3 +1,5 @@
+//#include "soc/spimem_flash.h"
+/*
 
 #define SPI_FLASH_LL_CLKREG_VAL_5MHZ   {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_5MHZ}
 #define SPI_FLASH_LL_CLKREG_VAL_10MHZ  {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_10MHZ}
@@ -20,6 +22,7 @@ typedef union  {
 	gpspi_flash_ll_clock_reg_t gpspi;
 	spimem_flash_ll_clock_reg_t spimem;
 } spi_flash_ll_clock_reg_t;
+*/
 
 #define spi_flash_ll_reset(dev)                              gpspi_flash_ll_reset((spi_dev_t*)dev)
 #define spi_flash_ll_cmd_is_done(dev)                        gpspi_flash_ll_cmd_is_done((spi_dev_t*)dev)

@@ -1,52 +1,21 @@
+#include "soc/uart.h"
+#include "soc/i2c.h"
+#include "soc/gpio.h"
 
-// The LL layer for UART register operations.
-// Note that most of the register operations in this layer are non-atomic operations.
+#define SOC_UART_FIFO_LEN          (128)      /*!< The UART hardware FIFO length */
 
-
-
-
-
-// The default fifo depth
 #define UART_LL_FIFO_DEF_LEN  (SOC_UART_FIFO_LEN)
-// Get UART hardware instance with giving uart num
 #define UART_LL_GET_HW(num) (((num) == 0) ? (&UART0) : (((num) == 1) ? (&UART1) : (&UART2)))
-
 #define UART_LL_MIN_WAKEUP_THRESH (2)
-#define UART_LL_INTR_MASK         (0x7ffff) //All interrupt mask
-
+#define UART_LL_INTR_MASK         (0x7ffff)
 #define UART_LL_FSM_IDLE          (0x0)
 #define UART_LL_FSM_TX_WAIT_SEND  (0xf)
 
-// Define UART interrupts
-typedef enum {
-	UART_INTR_RXFIFO_FULL      = (0x1 << 0),
-	UART_INTR_TXFIFO_EMPTY     = (0x1 << 1),
-	UART_INTR_PARITY_ERR       = (0x1 << 2),
-	UART_INTR_FRAM_ERR         = (0x1 << 3),
-	UART_INTR_RXFIFO_OVF       = (0x1 << 4),
-	UART_INTR_DSR_CHG          = (0x1 << 5),
-	UART_INTR_CTS_CHG          = (0x1 << 6),
-	UART_INTR_BRK_DET          = (0x1 << 7),
-	UART_INTR_RXFIFO_TOUT      = (0x1 << 8),
-	UART_INTR_SW_XON           = (0x1 << 9),
-	UART_INTR_SW_XOFF          = (0x1 << 10),
-	UART_INTR_GLITCH_DET       = (0x1 << 11),
-	UART_INTR_TX_BRK_DONE      = (0x1 << 12),
-	UART_INTR_TX_BRK_IDLE      = (0x1 << 13),
-	UART_INTR_TX_DONE          = (0x1 << 14),
-	UART_INTR_RS485_PARITY_ERR = (0x1 << 15),
-	UART_INTR_RS485_FRM_ERR    = (0x1 << 16),
-	UART_INTR_RS485_CLASH      = (0x1 << 17),
-	UART_INTR_CMD_CHAR_DET     = (0x1 << 18),
-} uart_intr_t;
-
-void uart_ll_set_reset_core(uart_dev_t *hw, bool core_rst_en)
-{
+void uart_ll_set_reset_core(uart_dev_t *hw, bool core_rst_en) {
 	hw->clk_conf.rst_core = core_rst_en;
 }
 
-void uart_ll_set_sclk(uart_dev_t *hw, uart_sclk_t source_clk)
-{
+void uart_ll_set_sclk(uart_dev_t *hw, uart_sclk_t source_clk) {
 	switch (source_clk) {
 		default:
 		case UART_SCLK_APB:
@@ -94,7 +63,7 @@ void uart_ll_set_baudrate(uart_dev_t *hw, uint32_t baud)
 {
 #define DIV_UP(a, b)    (((a) + (b) - 1) / (b))
 	uint32_t sclk_freq = uart_ll_get_sclk_freq(hw);
-	const uint32_t max_div = BIT(12) - 1;   // UART divider integer part only has 12 bits
+	const uint32_t max_div = (1<<(12)) - 1;   // UART divider integer part only has 12 bits
 	int sclk_div = DIV_UP(sclk_freq, max_div * baud);
 
 	uint32_t clk_div = ((sclk_freq) << 4) / (baud * sclk_div);

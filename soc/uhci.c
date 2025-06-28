@@ -1,19 +1,8 @@
 
-// The LL layer for UHCI register operations.
-// Note that most of the register operations in this layer are non-atomic operations.
-
-
 #include <stdio.h>
 
+#include "soc/uhci.h"
 
-#define UHCI_LL_GET_HW(num) (((num) == 0) ? (&UHCI0) : (NULL))
-
-typedef enum {
-	UHCI_RX_BREAK_CHR_EOF = 0x1,
-	UHCI_RX_IDLE_EOF      = 0x2,
-	UHCI_RX_LEN_EOF       = 0x4,
-	UHCI_RX_EOF_MAX       = 0x7,
-} uhci_rxeof_cfg_t;
 
 void uhci_ll_init(uhci_dev_t *hw)
 {

@@ -5,64 +5,22 @@
 
 #include <stdlib.h> //for abs()
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "soc/gpspi_flash.h"
+#include "soc/i2c.h"
+#include "soc/gpio.h"
+#include "soc/spiram.h"
+#include "soc/spi.h"
 
 
-/// Interrupt not used. Don't use in app.
-#define SPI_LL_UNUSED_INT_MASK  (SPI_TRANS_DONE_INT_ENA | SPI_SLV_WR_DMA_DONE_INT_ENA | SPI_SLV_RD_DMA_DONE_INT_ENA | SPI_SLV_WR_BUF_DONE_INT_ENA | SPI_SLV_RD_BUF_DONE_INT_ENA)
-/// These 2 masks together will set SPI transaction to one line mode
-#define SPI_LL_ONE_LINE_CTRL_MASK (SPI_FREAD_OCT | SPI_FREAD_QUAD | SPI_FREAD_DUAL | SPI_FCMD_OCT | \
-		SPI_FCMD_QUAD | SPI_FCMD_DUAL | SPI_FADDR_OCT | SPI_FADDR_QUAD | SPI_FADDR_DUAL)
-#define SPI_LL_ONE_LINE_USER_MASK (SPI_FWRITE_OCT | SPI_FWRITE_QUAD | SPI_FWRITE_DUAL)
-
-/// Swap the bit order to its correct place to send
-#define HAL_SPI_SWAP_DATA_TX(data, len) HAL_SWAP32((uint32_t)(data) << (32 - len))
-/// This is the expected clock frequency
 #define SPI_LL_PERIPH_CLK_FREQ (80 * 1000000)
-#define SPI_LL_GET_HW(ID) ((ID)==0? ({abort();NULL;}):((ID)==1? &GPSPI2 : &GPSPI3))
-
+//#define SPI_LL_GET_HW(ID) ((ID)==0? ({abort();NULL;}):((ID)==1? GPSPI2 : GPSPI3))
 #define SPI_LL_DATA_MAX_BIT_LEN (1 << 18)
 
 typedef uint32_t spi_ll_clock_val_t;
 typedef spi_dev_t spi_dma_dev_t;
-
-// Type definition of all supported interrupts
-typedef enum {
-	SPI_LL_INTR_TRANS_DONE =    BIT(0),     ///< A transaction has done
-	SPI_LL_INTR_RDBUF =         BIT(6),     ///< Has received RDBUF command. Only available in slave HD.
-	SPI_LL_INTR_WRBUF =         BIT(7),     ///< Has received WRBUF command. Only available in slave HD.
-	SPI_LL_INTR_RDDMA =         BIT(8),     ///< Has received RDDMA command. Only available in slave HD.
-	SPI_LL_INTR_WRDMA =         BIT(9),     ///< Has received WRDMA command. Only available in slave HD.
-	SPI_LL_INTR_CMD7 =          BIT(10),    ///< Has received CMD7 command. Only available in slave HD.
-	SPI_LL_INTR_CMD8 =          BIT(11),    ///< Has received CMD8 command. Only available in slave HD.
-	SPI_LL_INTR_CMD9 =          BIT(12),    ///< Has received CMD9 command. Only available in slave HD.
-	SPI_LL_INTR_CMDA =          BIT(13),    ///< Has received CMDA command. Only available in slave HD.
-	SPI_LL_INTR_SEG_DONE =      BIT(14),
-} spi_ll_intr_t;
-FLAG_ATTR(spi_ll_intr_t)
-
-// Flags for conditions under which the transaction length should be recorded
-typedef enum {
-	SPI_LL_TRANS_LEN_COND_WRBUF =   BIT(0), ///< WRBUF length will be recorded
-	SPI_LL_TRANS_LEN_COND_RDBUF =   BIT(1), ///< RDBUF length will be recorded
-	SPI_LL_TRANS_LEN_COND_WRDMA =   BIT(2), ///< WRDMA length will be recorded
-	SPI_LL_TRANS_LEN_COND_RDDMA =   BIT(3), ///< RDDMA length will be recorded
-} spi_ll_trans_len_cond_t;
-FLAG_ATTR(spi_ll_trans_len_cond_t)
-
-// SPI base command in esp32s3
-typedef enum {
-	 /* Slave HD Only */
-	SPI_LL_BASE_CMD_HD_WRBUF    = 0x01,
-	SPI_LL_BASE_CMD_HD_RDBUF    = 0x02,
-	SPI_LL_BASE_CMD_HD_WRDMA    = 0x03,
-	SPI_LL_BASE_CMD_HD_RDDMA    = 0x04,
-	SPI_LL_BASE_CMD_HD_SEG_END  = 0x05,
-	SPI_LL_BASE_CMD_HD_EN_QPI   = 0x06,
-	SPI_LL_BASE_CMD_HD_WR_END   = 0x07,
-	SPI_LL_BASE_CMD_HD_INT0     = 0x08,
-	SPI_LL_BASE_CMD_HD_INT1     = 0x09,
-	SPI_LL_BASE_CMD_HD_INT2     = 0x0A,
-} spi_ll_base_command_t;
 
 void spi_ll_master_init(spi_dev_t *hw)
 {
@@ -213,10 +171,6 @@ void spi_ll_write_buffer(spi_dev_t *hw, const uint8_t *buffer_to_send, size_t bi
 
 void spi_ll_write_buffer_byte(spi_dev_t *hw, int byte_id, uint8_t *data, int len)
 {
-	HAL_ASSERT(byte_id + len <= 64);
-	HAL_ASSERT(len > 0);
-	HAL_ASSERT(byte_id >= 0);
-
 	while (len > 0) {
 		uint32_t word;
 		int offset = byte_id % 4;
@@ -366,7 +320,7 @@ void spi_ll_slave_set_seg_mode(spi_dev_t *hw, bool seg_trans)
 
 void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
 {
-	if (hw == &GPSPI2) {
+	if (hw == GPSPI2) {
 		hw->misc.cs0_dis = (cs_id == 0) ? 0 : 1;
 		hw->misc.cs1_dis = (cs_id == 1) ? 0 : 1;
 		hw->misc.cs2_dis = (cs_id == 2) ? 0 : 1;
@@ -375,7 +329,7 @@ void spi_ll_master_select_cs(spi_dev_t *hw, int cs_id)
 		hw->misc.cs5_dis = (cs_id == 5) ? 0 : 1;
 	}
 
-	if (hw == &GPSPI3) {
+	if (hw == GPSPI3) {
 		hw->misc.cs0_dis = (cs_id == 0) ? 0 : 1;
 		hw->misc.cs1_dis = (cs_id == 1) ? 0 : 1;
 		hw->misc.cs2_dis = (cs_id == 2) ? 0 : 1;
@@ -399,7 +353,7 @@ int spi_ll_freq_for_pre_n(int fapb, int pre, int n)
 
 int spi_ll_master_cal_clock(int fapb, int hz, int duty_cycle, spi_ll_clock_val_t *out_reg)
 {
-	typeof(GPSPI2.clock) reg;
+	gpspi_flash_ll_clock_reg_t reg;
 	int eff_clk;
 
 	//In hw, n, h and l are 1-64, pre is 1-8K. Value written to register is one lower than used value.
@@ -534,7 +488,7 @@ void spi_ll_set_address(spi_dev_t *hw, uint64_t addr, int addrlen, uint32_t lsbf
 		* addr[0] -> addr[7]
 		* So swap the byte order to let the LSB sent first.
 		*/
-		addr = HAL_SWAP32(addr);
+		addr = __builtin_bswap32(addr);
 		//otherwise only addr register is sent
 		hw->addr = addr;
 	} else {
@@ -710,8 +664,7 @@ uint8_t spi_ll_get_slave_hd_base_command(spi_command_t cmd_t)
 	case SPI_CMD_HD_INT2:
 		cmd_base = SPI_LL_BASE_CMD_HD_INT2;
 		break;
-	default:
-		HAL_ASSERT(cmd_base);
+	//default:
 	}
 	return cmd_base;
 }
@@ -745,4 +698,416 @@ int spi_ll_get_slave_hd_dummy_bits(spi_line_mode_t line_mode)
 {
 	return 8;
 }
+
+
+
+
+
+
+
+#include "rom/cache.h"
+
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+const static char *TAG = "MSPI Timing";
+static spi_timing_tuning_param_t s_flash_best_timing_tuning_config;
+static spi_timing_tuning_param_t s_psram_best_timing_tuning_config;
+#endif
+
+
+void spi_timing_set_pin_drive_strength(void)
+{
+	SET_PERI_REG_MASK(SPI_MEM_DATE_REG(0), SPI_MEM_SPICLK_PAD_DRV_CTL_EN);
+	REG_SET_FIELD(SPI_MEM_DATE_REG(0), SPI_MEM_SPI_SMEM_SPICLK_FUN_DRV, 3);
+	REG_SET_FIELD(SPI_MEM_DATE_REG(0), SPI_MEM_SPI_FMEM_SPICLK_FUN_DRV, 3);
+	uint32_t regs[] = {IO_MUX_GPIO27_REG, IO_MUX_GPIO28_REG,
+					   IO_MUX_GPIO31_REG, IO_MUX_GPIO32_REG,
+					   IO_MUX_GPIO33_REG, IO_MUX_GPIO34_REG,
+					   IO_MUX_GPIO35_REG, IO_MUX_GPIO36_REG,
+					   IO_MUX_GPIO37_REG};
+	for (int i = 0; i < ARRAY_SIZE(regs); i++) {
+		PIN_SET_DRV(regs[i], 3);
+	}
+}
+
+
+static spi_timing_config_core_clock_t get_mspi_core_clock(void)
+{
+	return spi_timing_config_get_core_clock();
+}
+
+static uint32_t get_flash_clock_divider(void)
+{
+#if CONFIG_ESPTOOLPY_FLASHFREQ_20M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 20;
+#elif CONFIG_ESPTOOLPY_FLASHFREQ_40M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 40;
+#elif CONFIG_ESPTOOLPY_FLASHFREQ_80M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 80;
+#elif CONFIG_ESPTOOLPY_FLASHFREQ_120M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 120;
+#else
+	abort();
+#endif
+}
+
+static uint32_t get_psram_clock_divider(void)
+{
+#if CONFIG_SPIRAM_SPEED_40M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 40;
+#elif CONFIG_SPIRAM_SPEED_80M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 80;
+#elif CONFIG_SPIRAM_SPEED_120M
+	return SPI_TIMING_CORE_CLOCK_MHZ / 120;
+#else
+	return 0;
+#endif
+}
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+
+
+static void init_spi1_for_tuning(bool is_flash)
+{
+	spi_timing_config_core_clock_t core_clock = get_mspi_core_clock();
+	spi_timing_config_set_core_clock(0, core_clock);
+	if (is_flash) {
+		uint32_t flash_div = get_flash_clock_divider();
+		spi_timing_config_set_flash_clock(1, flash_div);
+		REG_SET_BIT(SPI_MEM_TIMING_CALI_REG(0), SPI_MEM_TIMING_CLK_ENA);
+	} else {
+		uint32_t psram_div = get_psram_clock_divider();
+		spi_timing_config_set_flash_clock(1, psram_div);
+		REG_SET_BIT(SPI_MEM_SPI_SMEM_TIMING_CALI_REG(0), SPI_MEM_SPI_SMEM_TIMING_CLK_ENA);
+	}
+}
+
+
+static void sweep_for_success_sample_points(uint8_t *reference_data, const spi_timing_config_t *config, bool is_flash, uint8_t *out_array)
+{
+	uint32_t config_idx = 0;
+	uint8_t read_data[SPI_TIMING_TEST_DATA_LEN] = {0};
+
+	for (config_idx = 0; config_idx < config->available_config_num; config_idx++) {
+		memset(read_data, 0, SPI_TIMING_TEST_DATA_LEN);
+#if SPI_TIMING_FLASH_NEEDS_TUNING
+		if (is_flash) {
+			spi_timing_config_flash_tune_din_num_mode(config->tuning_config_table[config_idx].spi_din_mode, config->tuning_config_table[config_idx].spi_din_num);
+			spi_timing_config_flash_tune_dummy(config->tuning_config_table[config_idx].extra_dummy_len);
+			spi_timing_config_flash_read_data(1, read_data, SPI_TIMING_FLASH_TEST_DATA_ADDR, sizeof(read_data));
+		}
+#endif
+#if SPI_TIMING_PSRAM_NEEDS_TUNING
+		if (!is_flash) {
+			spi_timing_config_psram_tune_din_num_mode(config->tuning_config_table[config_idx].spi_din_mode, config->tuning_config_table[config_idx].spi_din_num);
+			spi_timing_config_psram_tune_dummy(config->tuning_config_table[config_idx].extra_dummy_len);
+			spi_timing_config_psram_read_data(1, read_data, SPI_TIMING_PSRAM_TEST_DATA_ADDR, SPI_TIMING_TEST_DATA_LEN);
+		}
+#endif
+		if (memcmp(reference_data, read_data, sizeof(read_data)) == 0) {
+			out_array[config_idx] = 1;
+		}
+	}
+}
+
+
+static void find_max_consecutive_success_points(uint8_t *array, uint32_t size, uint32_t *out_length, uint32_t *out_end_index)
+{
+	uint32_t max = 0;
+	uint32_t match_num = 0;
+	uint32_t i = 0;
+	uint32_t end = 0;
+
+	while (i < size) {
+		if (array[i]) {
+			match_num++;
+		} else {
+			if (match_num > max) {
+				max = match_num;
+				end = i - 1;
+			}
+			match_num = 0;
+		}
+		i++;
+	}
+
+	*out_length = match_num > max ? match_num : max;
+	*out_end_index = match_num == size ? size : end;
+}
+
+#if SPI_TIMING_FLASH_DTR_MODE || SPI_TIMING_PSRAM_DTR_MODE
+static uint32_t select_best_tuning_config_dtr(spi_timing_config_t *config, uint32_t consecutive_length, uint32_t end)
+{
+#if (SPI_TIMING_CORE_CLOCK_MHZ == 160)
+	uint32_t best_point;
+
+	if (consecutive_length <= 2 || consecutive_length >= 6) {
+		best_point = config->default_config_id;
+		ESP_EARLY_LOGW(TAG, "tuning fail, best point is fallen back to index %d", best_point);
+	} else if (consecutive_length <= 4) {
+		best_point = end - 1;
+		ESP_EARLY_LOGD(TAG,"tuning success, best point is index %d", best_point);
+	} else {
+		best_point = end - 2;
+		ESP_EARLY_LOGD(TAG,"tuning success, best point is index %d", best_point);
+	}
+
+	return best_point;
+#else
+	abort();
+#endif
+}
+#endif
+
+#if SPI_TIMING_FLASH_STR_MODE || SPI_TIMING_PSRAM_STR_MODE
+static uint32_t select_best_tuning_config_str(spi_timing_config_t *config, uint32_t consecutive_length, uint32_t end)
+{
+#if (SPI_TIMING_CORE_CLOCK_MHZ == 120 || SPI_TIMING_CORE_CLOCK_MHZ == 240)
+	uint32_t best_point;
+
+	if (consecutive_length <= 2|| consecutive_length >= 5) {
+		best_point = config->default_config_id;
+		ESP_EARLY_LOGW(TAG, "tuning fail, best point is fallen back to index %d", best_point);
+	} else {
+		best_point = end - consecutive_length / 2;
+		ESP_EARLY_LOGD(TAG,"tuning success, best point is index %d", best_point);
+	}
+
+	return best_point;
+#else
+	abort();
+#endif
+}
+#endif
+
+static void select_best_tuning_config(spi_timing_config_t *config, uint32_t consecutive_length, uint32_t end, bool is_flash)
+{
+	uint32_t best_point = 0;
+	if (is_flash) {
+#if SPI_TIMING_FLASH_DTR_MODE
+		best_point = select_best_tuning_config_dtr(config, consecutive_length, end);
+#elif SPI_TIMING_FLASH_STR_MODE
+		best_point = select_best_tuning_config_str(config, consecutive_length, end);
+#endif
+		s_flash_best_timing_tuning_config = config->tuning_config_table[best_point];
+	} else {
+#if SPI_TIMING_PSRAM_DTR_MODE
+		best_point = select_best_tuning_config_dtr(config, consecutive_length, end);
+#elif SPI_TIMING_PSRAM_STR_MODE
+		best_point = select_best_tuning_config_str(config, consecutive_length, end);
+#endif
+		s_psram_best_timing_tuning_config = config->tuning_config_table[best_point];
+	}
+}
+
+static void do_tuning(uint8_t *reference_data, spi_timing_config_t *timing_config, bool is_flash)
+{
+	
+	uint32_t consecutive_length = 0;
+	uint32_t last_success_point = 0;
+	uint8_t sample_result[SPI_TIMING_CONFIG_NUM_DEFAULT] = {0};
+
+	init_spi1_for_tuning(is_flash);
+	sweep_for_success_sample_points(reference_data, timing_config, is_flash, sample_result);
+	find_max_consecutive_success_points(sample_result, SPI_TIMING_CONFIG_NUM_DEFAULT, &consecutive_length, &last_success_point);
+	select_best_tuning_config(timing_config, consecutive_length, last_success_point, is_flash);
+}
+#endif  //#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+
+
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING
+static void get_flash_tuning_configs(spi_timing_config_t *config)
+{
+#if SPI_TIMING_FLASH_DTR_MODE
+#define FLASH_MODE  DTR_MODE
+#else //SPI_TIMING_FLASH_STR_MODE
+#define FLASH_MODE  STR_MODE
+#endif
+
+#if CONFIG_ESPTOOLPY_FLASHFREQ_20M
+	*config = SPI_TIMING_FLASH_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 20, FLASH_MODE);
+#elif CONFIG_ESPTOOLPY_FLASHFREQ_40M
+	*config = SPI_TIMING_FLASH_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 40, FLASH_MODE);
+#elif CONFIG_ESPTOOLPY_FLASHFREQ_80M
+	*config = SPI_TIMING_FLASH_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 80, FLASH_MODE);
+#elif CONFIG_ESPTOOLPY_FLASHFREQ_120M
+	*config = SPI_TIMING_FLASH_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 120, FLASH_MODE);
+#endif
+
+#undef FLASH_MODE
+}
+
+void spi_timing_flash_tuning(void)
+{
+	ESP_EARLY_LOGW("FLASH", "DO NOT USE FOR MASS PRODUCTION! Timing parameters will be updated in future IDF version.");
+	
+	spi_timing_enter_mspi_low_speed_mode(true);
+
+	CLEAR_PERI_REG_MASK(SPI_MEM_DDR_REG(1), SPI_MEM_SPI_FMEM_VAR_DUMMY);    //GD flash will read error in variable mode with 20MHz
+
+	uint8_t reference_data[SPI_TIMING_TEST_DATA_LEN] = {0};
+	spi_timing_config_flash_read_data(1, reference_data, SPI_TIMING_FLASH_TEST_DATA_ADDR, sizeof(reference_data));
+	spi_timing_config_t timing_configs = {0};
+	get_flash_tuning_configs(&timing_configs);
+
+	do_tuning(reference_data, &timing_configs, true);
+	spi_timing_enter_mspi_high_speed_mode(true);
+}
+#else
+void spi_timing_flash_tuning(void)
+{
+}
+#endif  //SPI_TIMING_FLASH_NEEDS_TUNING
+
+
+
+#if SPI_TIMING_PSRAM_NEEDS_TUNING
+static void get_psram_tuning_configs(spi_timing_config_t *config)
+{
+#if SPI_TIMING_PSRAM_DTR_MODE
+#define PSRAM_MODE  DTR_MODE
+#else //SPI_TIMING_PSRAM_STR_MODE
+#define PSRAM_MODE  STR_MODE
+#endif
+
+#if CONFIG_SPIRAM_SPEED_40M
+	*config = SPI_TIMING_PSRAM_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 40, PSRAM_MODE);
+#elif CONFIG_SPIRAM_SPEED_80M
+	*config = SPI_TIMING_PSRAM_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 80, PSRAM_MODE);
+#elif CONFIG_SPIRAM_SPEED_120M
+	*config = SPI_TIMING_PSRAM_GET_TUNING_CONFIG(SPI_TIMING_CORE_CLOCK_MHZ, 120, PSRAM_MODE);
+#endif
+
+#undef PSRAM_MODE
+}
+
+void spi_timing_psram_tuning(void)
+{
+	ESP_EARLY_LOGW("PSRAM", "DO NOT USE FOR MASS PRODUCTION! Timing parameters will be updated in future IDF version.");
+	
+	spi_timing_enter_mspi_low_speed_mode(true);
+
+	// write data into psram, used to do timing tuning test.
+	uint8_t reference_data[SPI_TIMING_TEST_DATA_LEN];
+	for (int i=0; i < SPI_TIMING_TEST_DATA_LEN/4; i++) {
+		((uint32_t *)reference_data)[i] = 0xa5ff005a;
+	}
+	spi_timing_config_psram_write_data(1, reference_data, SPI_TIMING_PSRAM_TEST_DATA_ADDR, SPI_TIMING_TEST_DATA_LEN);
+	spi_timing_config_t timing_configs = {0};
+	get_psram_tuning_configs(&timing_configs);
+
+	CLEAR_PERI_REG_MASK(SPI_MEM_DDR_REG(1), SPI_MEM_SPI_FMEM_VAR_DUMMY);
+	do_tuning(reference_data, &timing_configs, false);
+	spi_timing_enter_mspi_high_speed_mode(true);
+}
+
+#else
+void spi_timing_psram_tuning(void)
+{
+}
+#endif  //SPI_TIMING_PSRAM_NEEDS_TUNING
+
+
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+static void clear_timing_tuning_regs(bool control_spi1)
+{
+	spi_timing_config_flash_set_din_mode_num(0, 0, 0);  //SPI0 and SPI1 share the registers for flash din mode and num setting, so we only set SPI0's reg
+	spi_timing_config_flash_set_extra_dummy(0, 0);
+	if (control_spi1) {
+		spi_timing_config_flash_set_extra_dummy(1, 0);
+	} else {
+	}
+}
+#endif  //#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+
+void spi_timing_enter_mspi_low_speed_mode(bool control_spi1)
+{
+	
+
+	spi_timing_config_set_core_clock(0, SPI_TIMING_CONFIG_CORE_CLOCK_80M);  //SPI0 and SPI1 share the register for core clock. So we only set SPI0 here.
+	spi_timing_config_set_flash_clock(0, 4);
+	if (control_spi1) {
+		spi_timing_config_set_flash_clock(1, 4);
+	}
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+	clear_timing_tuning_regs(control_spi1);
+#endif
+}
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+static void set_timing_tuning_regs_as_required(bool control_spi1)
+{
+	spi_timing_config_flash_set_din_mode_num(0, s_flash_best_timing_tuning_config.spi_din_mode, s_flash_best_timing_tuning_config.spi_din_num);
+	spi_timing_config_flash_set_extra_dummy(0, s_flash_best_timing_tuning_config.extra_dummy_len);
+	if (control_spi1) {
+		spi_timing_config_flash_set_extra_dummy(1, s_flash_best_timing_tuning_config.extra_dummy_len);
+	}
+
+	spi_timing_config_psram_set_din_mode_num(0, s_psram_best_timing_tuning_config.spi_din_mode, s_psram_best_timing_tuning_config.spi_din_num);
+	spi_timing_config_psram_set_extra_dummy(0, s_psram_best_timing_tuning_config.extra_dummy_len);
+}
+#endif  //#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+
+
+void spi_timing_enter_mspi_high_speed_mode(bool control_spi1)
+{
+	spi_timing_config_core_clock_t core_clock = get_mspi_core_clock();
+	uint32_t flash_div = get_flash_clock_divider();
+	uint32_t psram_div = get_psram_clock_divider();
+
+	spi_timing_config_set_core_clock(0, core_clock); //SPI0 and SPI1 share the register for core clock. So we only set SPI0 here.
+	spi_timing_config_set_flash_clock(0, flash_div);
+	if (control_spi1) {
+		spi_timing_config_set_flash_clock(1, flash_div);
+	}
+	spi_timing_config_set_psram_clock(0, psram_div);
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+	set_timing_tuning_regs_as_required(true);
+#endif
+}
+
+void spi_timing_change_speed_mode_cache_safe(bool switch_down)
+{
+	Cache_Freeze_ICache_Enable(1);
+	Cache_Freeze_DCache_Enable(1);
+	if (switch_down) {
+		spi_timing_enter_mspi_low_speed_mode(false);
+	} else {
+		spi_timing_enter_mspi_high_speed_mode(false);
+	}
+	Cache_Freeze_DCache_Disable();
+	Cache_Freeze_ICache_Disable();
+}
+
+
+bool spi_timing_is_tuned(void)
+{
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+	return true;
+#else
+	return false;
+#endif
+}
+
+#if SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
+void spi_timing_get_flash_timing_param(spi_flash_hal_timing_config_t *out_timing_config)
+{
+	out_timing_config->clock_config.spimem.val = spi_timing_config_get_flash_clock_reg();
+
+
+	out_timing_config->extra_dummy = s_flash_best_timing_tuning_config.extra_dummy_len;
+
+	spi_timing_config_get_cs_timing(&out_timing_config->cs_setup, &out_timing_config->cs_hold);
+}
+#else
+void spi_timing_get_flash_timing_param(spi_flash_hal_timing_config_t *out_timing_config)
+{
+	abort();
+}
+#endif // SPI_TIMING_FLASH_NEEDS_TUNING || SPI_TIMING_PSRAM_NEEDS_TUNING
 

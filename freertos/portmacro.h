@@ -1,5 +1,4 @@
-#ifndef PORTMACRO_H
-#define PORTMACRO_H
+#pragma once 
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -249,5 +248,3 @@ bool xPortcheckValidStackMem(const void *ptr);
 
 #define portVALID_TCB_MEM(ptr) xPortCheckValidTCBMem(ptr)
 #define portVALID_STACK_MEM(ptr) xPortcheckValidStackMem(ptr)
-
-#endif

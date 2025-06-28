@@ -1,37 +1,8 @@
-
-
-// The Lowlevel layer for TWAI
-
-
-
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef union {
-	struct {
-		struct {
-			uint8_t dlc: 4;             //Data length code (0 to 8) of the frame
-			uint8_t self_reception: 1;  //This frame should be transmitted using self reception command
-			uint8_t single_shot: 1;     //This frame should be transmitted using single shot command
-			uint8_t rtr: 1;             //This frame is a remote transmission request
-			uint8_t frame_format: 1;    //Format of the frame (1 = extended, 0 = standard)
-		};
-		union {
-			struct {
-				uint8_t id[2];          //11 bit standard frame identifier
-				uint8_t data[8];        //Data bytes (0 to 8)
-				uint8_t reserved8[2];
-			} standard;
-			struct {
-				uint8_t id[4];          //29 bit extended frame identifier
-				uint8_t data[8];        //Data bytes (0 to 8)
-			} extended;
-		};
-	};
-	uint8_t bytes[13];
-} __attribute__((packed)) twai_ll_frame_buffer_t;
-
-ESP_STATIC_ASSERT(sizeof(twai_ll_frame_buffer_t) == 13, "TX/RX buffer type should be 13 bytes");
+#include "soc/twai.h"
+#include "soc/i2c.h"
 
 void twai_ll_enter_reset_mode(twai_dev_t *hw)
 {
@@ -173,8 +144,8 @@ void twai_ll_set_tec(twai_dev_t *hw, uint32_t tec)
 
 void twai_ll_set_acc_filter(twai_dev_t* hw, uint32_t code, uint32_t mask, bool single_filter)
 {
-	uint32_t code_swapped = HAL_SWAP32(code);
-	uint32_t mask_swapped = HAL_SWAP32(mask);
+	uint32_t code_swapped = __builtin_bswap32(code);
+	uint32_t mask_swapped = __builtin_bswap32(mask);
 	for (int i = 0; i < 4; i++) {
 		HAL_FORCE_MODIFY_U32_REG_FIELD(hw->acceptance_filter.acr[i], byte, ((code_swapped >> (i * 8)) & 0xFF));
 		HAL_FORCE_MODIFY_U32_REG_FIELD(hw->acceptance_filter.amr[i], byte, ((mask_swapped >> (i * 8)) & 0xFF));
@@ -213,12 +184,12 @@ void twai_ll_format_frame_buffer(uint32_t id, uint8_t dlc, const uint8_t *data,
 
 	//Set ID. The ID registers are big endian and left aligned, therefore a bswap will be required
 	if (is_extd) {
-		uint32_t id_temp = HAL_SWAP32((id & TWAI_EXTD_ID_MASK) << 3); //((id << 3) >> 8*(3-i))
+		uint32_t id_temp = __builtin_bswap32((id & TWAI_EXTD_ID_MASK) << 3); //((id << 3) >> 8*(3-i))
 		for (int i = 0; i < 4; i++) {
 			tx_frame->extended.id[i] = (id_temp >> (8 * i)) & 0xFF;
 		}
 	} else {
-		uint32_t id_temp =  HAL_SWAP16((id & TWAI_STD_ID_MASK) << 5); //((id << 5) >> 8*(1-i))
+		uint32_t id_temp =  __builtin_bswap16((id & TWAI_STD_ID_MASK) << 5); //((id << 5) >> 8*(1-i))
 		for (int i = 0; i < 2; i++) {
 			tx_frame->standard.id[i] = (id_temp >> (8 * i)) & 0xFF;
 		}
@@ -249,14 +220,14 @@ void twai_ll_prase_frame_buffer(twai_ll_frame_buffer_t *rx_frame, uint32_t *id, 
 		for (int i = 0; i < 4; i++) {
 			id_temp |= rx_frame->extended.id[i] << (8 * i);
 		}
-		id_temp = HAL_SWAP32(id_temp) >> 3;  //((byte[i] << 8*(3-i)) >> 3)
+		id_temp = __builtin_bswap32(id_temp) >> 3;  //((byte[i] << 8*(3-i)) >> 3)
 		*id = id_temp & TWAI_EXTD_ID_MASK;
 	} else {
 		uint32_t id_temp = 0;
 		for (int i = 0; i < 2; i++) {
 			id_temp |= rx_frame->standard.id[i] << (8 * i);
 		}
-		id_temp = HAL_SWAP16(id_temp) >> 5;  //((byte[i] << 8*(1-i)) >> 5)
+		id_temp = __builtin_bswap16(id_temp) >> 5;  //((byte[i] << 8*(1-i)) >> 5)
 		*id = id_temp & TWAI_STD_ID_MASK;
 	}
 

@@ -2,6 +2,9 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include "soc/rmt.h"
+#include "soc/i2c.h"
 
 
 #define RMT_LL_MAX_LOOP_COUNT           (1023)/*!< Max loop count that hardware is supported */

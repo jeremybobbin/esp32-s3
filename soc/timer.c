@@ -1,26 +1,10 @@
+#include "soc/timer.h"
+#include "soc/i2c.h"
 
-// The LL layer for Timer Group register operations.
-// Note that most of the register operations in this layer are non-atomic operations.
-
-
-
-#include <stdlib.h>
-
-_Static_assert(TIMER_INTR_T0 == TIMG_T0_INT_CLR, "Add mapping to LL interrupt handling, since it's no longer naturally compatible with the timer_intr_t");
-_Static_assert(TIMER_INTR_T1 == TIMG_T1_INT_CLR, "Add mapping to LL interrupt handling, since it's no longer naturally compatible with the timer_intr_t");
-_Static_assert(TIMER_INTR_WDT == TIMG_WDT_INT_CLR, "Add mapping to LL interrupt handling, since it's no longer naturally compatible with the timer_intr_t");
-
-typedef struct {
-	timg_dev_t *dev;
-	timer_idx_t idx;
-} timer_ll_context_t;
-
-// Get timer group instance with giving group number
 #define TIMER_LL_GET_HW(num) ((num == 0) ? (&TIMERG0) : (&TIMERG1))
 
 void timer_ll_set_divider(timg_dev_t *hw, timer_idx_t timer_num, uint32_t divider)
 {
-	HAL_ASSERT(divider >= 2 && divider <= 65536);
 	if (divider >= 65536) {
 		divider = 0;
 	}
@@ -108,17 +92,17 @@ bool timer_ll_get_alarm_enable(timg_dev_t *hw, timer_idx_t timer_num)
 
 void timer_ll_intr_enable(timg_dev_t *hw, timer_idx_t timer_num)
 {
-	hw->int_ena_timers.val |= BIT(timer_num);
+	hw->int_ena_timers.val |= (1<<(timer_num));
 }
 
 void timer_ll_intr_disable(timg_dev_t *hw, timer_idx_t timer_num)
 {
-	hw->int_ena_timers.val &= (~BIT(timer_num));
+	hw->int_ena_timers.val &= (~(1<<(timer_num)));
 }
 
 void timer_ll_clear_intr_status(timg_dev_t *hw, timer_idx_t timer_num)
 {
-	hw->int_clr_timers.val |= BIT(timer_num);
+	hw->int_clr_timers.val |= (1<<(timer_num));
 }
 
 void timer_ll_get_intr_status(timg_dev_t *hw, uint32_t *intr_status)

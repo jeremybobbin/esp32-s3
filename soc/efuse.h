@@ -466,6 +466,27 @@ typedef volatile struct efuse_dev_s {
 } efuse_dev_t;
 
 
+typedef enum {
+	EFUSE_BLK0              = 0,
+	EFUSE_BLK1              = 1,
+	EFUSE_BLK_KEY0          = 1,
+	EFUSE_BLK_ENCRYPT_FLASH = 1,
+	EFUSE_BLK2              = 2,
+	EFUSE_BLK_KEY1          = 2,
+	EFUSE_BLK_SECURE_BOOT   = 2,
+	EFUSE_BLK3              = 3,
+	EFUSE_BLK_KEY2          = 3,
+	EFUSE_BLK_KEY_MAX       = 4,
+	EFUSE_BLK_MAX           = 4,
+} esp_efuse_block_t;
+
+
+typedef struct {
+	esp_efuse_block_t   efuse_block: 8; /**< Block of eFuse */
+	uint8_t             bit_start;      /**< Start bit [0..255] */
+	uint16_t            bit_count;      /**< Length of bit field [1..-]*/
+} esp_efuse_desc_t;
+
 uint32_t efuse_ll_get_flash_crypt_cnt(void);
 uint32_t efuse_ll_get_wdt_delay_sel(void);
 uint32_t efuse_ll_get_flash_type(void);

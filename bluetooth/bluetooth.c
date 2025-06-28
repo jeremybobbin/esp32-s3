@@ -4,6 +4,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include "bluetooth/bluetooth.h"
+
 #include "heap/esp_heap_caps.h"
 #include "heap/esp_heap_caps_init.h"
 #include "freertos/FreeRTOS.h"
@@ -12,23 +14,23 @@
 #include "freertos/semphr.h"
 #include "freertos/xtensa_api.h"
 #include "freertos/portmacro.h"
-#include "bluetooth/bluetooth.h"
 #include "xtensa/xtensa_intr.h"
 #include "timer/esp_timer.h"
 #include "rom/rom_layout.h"
-#include "soc/rtc.h"
 #include "soc/peripherals.h"
 #include "rom/ets_sys.h"
 #include "soc/gpio.h"
 #include "soc/hmac.h"
+#include "rom/efuse.h"
+//#include "soc/efuse.h"
+#include "soc/random.h"
+#include "soc/phy.h"
 
 #define ESP_MAC_ADDRESS_LEN 8
 #define ESP_ERROR_CHECK(...)
 
 #define MAC_BT ((uint8_t[6]){0xf1, 0xf1, 0xf1, 0xf1, 0xf1, 0xf1})
 #define BT_LOG_TAG                        "BT_INIT"
-
-const char *TAG = "bluetooth";
 
 #define BTDM_INIT_PERIOD                    (5000)    /* ms */
 
@@ -39,40 +41,10 @@ const char *TAG = "bluetooth";
 #define BTDM_LPCLK_SEL_8M        (3)
 
 
-typedef enum {
-	ESP_MAC_WIFI_STA,
-	ESP_MAC_WIFI_SOFTAP,
-	ESP_MAC_BT,
-	ESP_MAC_ETH,
-	ESP_MAC_IEEE802154,
-} esp_mac_type_t;
-
 #define MAC_ADDR_UNIVERSE_BT_OFFSET 2
 #define ESP_MAC_ADDRESS_LEN 8
-static uint8_t base_mac_addr[ESP_MAC_ADDRESS_LEN] = { 0 };
 
-typedef enum {
-    EFUSE_BLK0              = 0,
-    EFUSE_BLK1              = 1,
-    EFUSE_BLK_KEY0          = 1,
-    EFUSE_BLK_ENCRYPT_FLASH = 1,
-    EFUSE_BLK2              = 2,
-    EFUSE_BLK_KEY1          = 2,
-    EFUSE_BLK_SECURE_BOOT   = 2,
-    EFUSE_BLK3              = 3,
-    EFUSE_BLK_KEY2          = 3,
-    EFUSE_BLK_KEY_MAX       = 4,
-    EFUSE_BLK_MAX           = 4,
-} esp_efuse_block_t;
-
-
-typedef struct {
-	esp_efuse_block_t   efuse_block: 8; /**< Block of eFuse */
-	uint8_t             bit_start;      /**< Start bit [0..255] */
-	uint16_t            bit_count;      /**< Length of bit field [1..-]*/
-} esp_efuse_desc_t;
-
-
+static uint8_t base_mac_addr[ESP_MAC_ADDRESS_LEN];
 static const esp_efuse_desc_t MAC_FACTORY[] = {
 	{EFUSE_BLK1, 40, 8}, 	 // Factory MAC addr [0],
 	{EFUSE_BLK1, 32, 8}, 	 // Factory MAC addr [1],
@@ -184,7 +156,6 @@ int esp_read_mac(uint8_t *mac, esp_mac_type_t type) {
 
 	// if base mac address is not set, read one from EFUSE and then write back
 	if (esp_base_mac_addr_get(efuse_mac) != 0) {
-		ESP_LOGI(TAG, "read default base MAC address from EFUSE");
 		esp_efuse_mac_get_default(efuse_mac);
 		esp_base_mac_addr_set(efuse_mac);
 	}
@@ -207,7 +178,6 @@ int esp_read_mac(uint8_t *mac, esp_mac_type_t type) {
 		memcpy(mac, efuse_mac, 8);
 		break;
 	default:
-		ESP_LOGE(TAG, "unsupported mac type");
 		break;
 	}
 
@@ -432,13 +402,13 @@ extern uint32_t _nimble_data_end;
 static void interrupt_set_wrapper(int32_t cpu_no, int32_t intr_source, int32_t intr_num, int32_t intr_prio);
 static void interrupt_clear_wrapper(int32_t intr_source, int32_t intr_num);
 static void interrupt_handler_set_wrapper(int n, void *fn, void *arg);
-static void IRAM_ATTR interrupt_disable(void);
-static void IRAM_ATTR interrupt_restore(void);
-static void IRAM_ATTR task_yield_from_isr(void);
+static void interrupt_disable(void);
+static void interrupt_restore(void);
+static void task_yield_from_isr(void);
 static void *semphr_create_wrapper(uint32_t max, uint32_t init);
 static void semphr_delete_wrapper(void *semphr);
-static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw);
-static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw);
+static int32_t semphr_take_from_isr_wrapper(void *semphr, void *hptw);
+static int32_t semphr_give_from_isr_wrapper(void *semphr, void *hptw);
 static int32_t  semphr_take_wrapper(void *semphr, uint32_t block_time_ms);
 static int32_t  semphr_give_wrapper(void *semphr);
 static void *mutex_create_wrapper(void);
@@ -448,19 +418,19 @@ static int32_t mutex_unlock_wrapper(void *mutex);
 static void *queue_create_wrapper(uint32_t queue_len, uint32_t item_size);
 static void queue_delete_wrapper(void *queue);
 static int32_t queue_send_wrapper(void *queue, void *item, uint32_t block_time_ms);
-static int32_t IRAM_ATTR queue_send_from_isr_wrapper(void *queue, void *item, void *hptw);
+static int32_t queue_send_from_isr_wrapper(void *queue, void *item, void *hptw);
 static int32_t queue_recv_wrapper(void *queue, void *item, uint32_t block_time_ms);
-static int32_t IRAM_ATTR queue_recv_from_isr_wrapper(void *queue, void *item, void *hptw);
+static int32_t queue_recv_from_isr_wrapper(void *queue, void *item, void *hptw);
 static int32_t task_create_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id);
 static void task_delete_wrapper(void *task_handle);
-static bool IRAM_ATTR is_in_isr_wrapper(void);
+static bool is_in_isr_wrapper(void);
 static void *malloc_internal_wrapper(size_t size);
-static int32_t IRAM_ATTR read_mac_wrapper(uint8_t mac[6]);
-static void IRAM_ATTR srand_wrapper(unsigned int seed);
-static int IRAM_ATTR rand_wrapper(void);
-static uint32_t IRAM_ATTR btdm_lpcycles_2_hus(uint32_t cycles, uint32_t *error_corr);
-static uint32_t IRAM_ATTR btdm_hus_2_lpcycles(uint32_t hus);
-static bool IRAM_ATTR btdm_sleep_check_duration(int32_t *slot_cnt);
+static int32_t read_mac_wrapper(uint8_t mac[6]);
+static void srand_wrapper(unsigned int seed);
+static int rand_wrapper(void);
+static uint32_t btdm_lpcycles_2_hus(uint32_t cycles, uint32_t *error_corr);
+static uint32_t btdm_hus_2_lpcycles(uint32_t hus);
+static bool btdm_sleep_check_duration(int32_t *slot_cnt);
 static void btdm_sleep_enter_phase1_wrapper(uint32_t lpcycles);
 static void btdm_sleep_enter_phase2_wrapper(void);
 static void btdm_sleep_exit_phase3_wrapper(void);
@@ -562,21 +532,21 @@ static DRAM_ATTR esp_pm_lock_handle_t s_pm_lock;
 static DRAM_ATTR esp_pm_lock_handle_t s_light_sleep_pm_lock;
 #endif
 
-void IRAM_ATTR btdm_hw_mac_power_down_wrapper(void)
+void btdm_hw_mac_power_down_wrapper(void)
 {
 #if CONFIG_MAC_BB_PD
 	esp_mac_bb_power_down();
 #endif
 }
 
-void IRAM_ATTR btdm_hw_mac_power_up_wrapper(void)
+void btdm_hw_mac_power_up_wrapper(void)
 {
 #if CONFIG_MAC_BB_PD
 	esp_mac_bb_power_up();
 #endif
 }
 
-void IRAM_ATTR btdm_backup_dma_copy_wrapper(uint32_t reg, uint32_t mem_addr, uint32_t num,  bool to_mem)
+void btdm_backup_dma_copy_wrapper(uint32_t reg, uint32_t mem_addr, uint32_t num,  bool to_mem)
 {
 #if CONFIG_MAC_BB_PD
 	ets_backup_dma_copy(reg, mem_addr, num, to_mem);
@@ -619,7 +589,7 @@ static void interrupt_off_wrapper(int intr_num)
 	xt_ints_off(1 << intr_num);
 }
 
-static void IRAM_ATTR interrupt_disable(void)
+static void interrupt_disable(void)
 {
 	if (xPortInIsrContext()) {
 		portENTER_CRITICAL_ISR(&global_int_mux);
@@ -628,7 +598,7 @@ static void IRAM_ATTR interrupt_disable(void)
 	}
 }
 
-static void IRAM_ATTR interrupt_restore(void)
+static void interrupt_restore(void)
 {
 	if (xPortInIsrContext()) {
 		portEXIT_CRITICAL_ISR(&global_int_mux);
@@ -637,7 +607,7 @@ static void IRAM_ATTR interrupt_restore(void)
 	}
 }
 
-static void IRAM_ATTR task_yield_from_isr(void)
+static void task_yield_from_isr(void)
 {
 	portYIELD_FROM_ISR();
 }
@@ -680,12 +650,12 @@ static void semphr_delete_wrapper(void *semphr)
 	free(semphr);
 }
 
-static int IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
+static int semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 {
 	return (int)xSemaphoreTakeFromISR(((btdm_queue_item_t *)semphr)->handle, hptw);
 }
 
-static int IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
+static int semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 {
 	return (int)xSemaphoreGiveFromISR(((btdm_queue_item_t *)semphr)->handle, hptw);
 }
@@ -774,7 +744,7 @@ static int queue_send_wrapper(void *queue, void *item, uint32_t block_time_ms)
 	}
 }
 
-static int IRAM_ATTR queue_send_from_isr_wrapper(void *queue, void *item, void *hptw)
+static int queue_send_from_isr_wrapper(void *queue, void *item, void *hptw)
 {
 	return (int)xQueueSendFromISR(((btdm_queue_item_t*)queue)->handle, item, hptw);
 }
@@ -788,7 +758,7 @@ static int queue_recv_wrapper(void *queue, void *item, uint32_t block_time_ms)
 	}
 }
 
-static int IRAM_ATTR queue_recv_from_isr_wrapper(void *queue, void *item, void *hptw)
+static int queue_recv_from_isr_wrapper(void *queue, void *item, void *hptw)
 {
 	return (int)xQueueReceiveFromISR(((btdm_queue_item_t*)queue)->handle, item, hptw);
 }
@@ -803,7 +773,7 @@ static void task_delete_wrapper(void *task_handle)
 	vTaskDelete(task_handle);
 }
 
-static bool IRAM_ATTR is_in_isr_wrapper(void)
+static bool is_in_isr_wrapper(void)
 {
 	return (bool)xPortInIsrContext();
 }
@@ -816,24 +786,24 @@ static void *malloc_internal_wrapper(size_t size)
 	return p;
 }
 
-static int IRAM_ATTR read_mac_wrapper(uint8_t mac[6])
+static int read_mac_wrapper(uint8_t mac[6])
 {
 	int ret = esp_read_mac(mac, ESP_MAC_BT);
 
 	return ret;
 }
 
-static void IRAM_ATTR srand_wrapper(unsigned int seed)
+static void srand_wrapper(unsigned int seed)
 {
 	/* empty function */
 }
 
-static int IRAM_ATTR rand_wrapper(void)
+static int rand_wrapper(void)
 {
 	return (int)esp_random();
 }
 
-static uint32_t IRAM_ATTR btdm_lpcycles_2_hus(uint32_t cycles, uint32_t *error_corr)
+static uint32_t btdm_lpcycles_2_hus(uint32_t cycles, uint32_t *error_corr)
 {
 	uint64_t local_error_corr = (error_corr == NULL) ? 0 : (uint64_t)(*error_corr);
 	uint64_t res = (uint64_t)btdm_lpcycle_us * cycles * 2;
@@ -849,7 +819,7 @@ static uint32_t IRAM_ATTR btdm_lpcycles_2_hus(uint32_t cycles, uint32_t *error_c
 /*
  * @brief Converts a duration in half us into a number of low power clock cycles.
  */
-static uint32_t IRAM_ATTR btdm_hus_2_lpcycles(uint32_t hus)
+static uint32_t btdm_hus_2_lpcycles(uint32_t hus)
 {
 	// The number of sleep duration(us) should not lead to overflow. Thrs: 100s
 	// Compute the sleep duration in us to low power clock cycles, with calibration result applied
@@ -860,7 +830,7 @@ static uint32_t IRAM_ATTR btdm_hus_2_lpcycles(uint32_t hus)
 	return (uint32_t)cycles;
 }
 
-static bool IRAM_ATTR btdm_sleep_check_duration(int32_t *half_slot_cnt)
+static bool btdm_sleep_check_duration(int32_t *half_slot_cnt)
 {
 	if (*half_slot_cnt < BTDM_MIN_SLEEP_DURATION) {
 		return false;
@@ -949,7 +919,7 @@ static void btdm_sleep_exit_phase3_wrapper(void)
 	}
 }
 
-static void IRAM_ATTR btdm_sleep_exit_phase0(void *param)
+static void btdm_sleep_exit_phase0(void *param)
 {
 	assert(s_lp_cntl.enable == 1);
 
@@ -975,7 +945,7 @@ static void IRAM_ATTR btdm_sleep_exit_phase0(void *param)
 	}
 }
 
-static void IRAM_ATTR btdm_slp_tmr_callback(void *arg)
+static void btdm_slp_tmr_callback(void *arg)
 {
 #ifdef CONFIG_PM_ENABLE
 	btdm_vnd_offload_post(BTDM_VND_OL_SIG_WAKEUP_TMR, (void *)BTDM_ASYNC_WAKEUP_SRC_TMR);
@@ -1221,7 +1191,7 @@ static int try_heap_caps_add_region(intptr_t start, intptr_t end)
 }
 
 #if CONFIG_MAC_BB_PD
-static void IRAM_ATTR btdm_mac_bb_power_down_cb(void)
+static void btdm_mac_bb_power_down_cb(void)
 {
 	if (s_lp_cntl.mac_bb_pd && s_lp_stat.mac_bb_pd == 0) {
 		btdm_ble_power_down_dma_copy(true);
@@ -1229,7 +1199,7 @@ static void IRAM_ATTR btdm_mac_bb_power_down_cb(void)
 	}
 }
 
-static void IRAM_ATTR btdm_mac_bb_power_up_cb(void)
+static void btdm_mac_bb_power_up_cb(void)
 {
 	if (s_lp_cntl.mac_bb_pd && s_lp_stat.mac_bb_pd) {
 		btdm_ble_power_down_dma_copy(false);
@@ -1806,7 +1776,7 @@ void esp_bt_controller_wakeup_request(void)
 
 }
 
-int IRAM_ATTR esp_bt_h4tl_eif_io_event_notify(int event)
+int esp_bt_h4tl_eif_io_event_notify(int event)
 {
 	return btdm_hci_tl_io_event_post(event);
 }

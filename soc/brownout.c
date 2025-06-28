@@ -1,5 +1,6 @@
 #include "soc/rtc_cntl.h"
-#include "soc/i2c.h"
+#include "soc/trace.h"
+#include "rom/i2c.h"
 #include <stdbool.h>
 
 #define I2C_BOD            0x61

@@ -5,11 +5,15 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+#include "soc/pcnt.h"
 
 
 #define PCNT_LL_GET_HW(num) (((num) == 0) ? (&PCNT) : NULL)
 #define PCNT_LL_MAX_GLITCH_WIDTH 1023
 
+/*
 typedef enum {
 	PCNT_LL_EVENT_THRES1,
 	PCNT_LL_EVENT_THRES0,
@@ -18,6 +22,7 @@ typedef enum {
 	PCNT_LL_EVENT_ZERO_CROSS,
 	PCNT_LL_EVENT_MAX
 } pcnt_ll_event_id_t;
+*/
 
 #define PCNT_LL_EVENT_MASK ((1 << PCNT_LL_EVENT_MAX) - 1)
 

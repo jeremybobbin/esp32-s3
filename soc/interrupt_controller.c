@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "xtensa/specreg.h"
 #include "xtensa/xtensa_intr.h"
+#include "xtensa/core-macros.h"
 
 typedef void (*interrupt_handler_t)(void *arg);
 

@@ -39,7 +39,6 @@ void lcd_ll_select_clk_src(lcd_cam_dev_t *dev, lcd_clock_source_t src)
 	default:
 		// disable LCD clock source
 		dev->lcd_clock.lcd_clk_sel = 0;
-		HAL_ASSERT(false);
 		break;
 	}
 }
@@ -47,7 +46,6 @@ void lcd_ll_select_clk_src(lcd_cam_dev_t *dev, lcd_clock_source_t src)
 void lcd_ll_set_group_clock_coeff(lcd_cam_dev_t *dev, int div_num, int div_a, int div_b)
 {
 	// lcd_clk = module_clock_src / (div_num + div_b / div_a)
-	HAL_ASSERT(div_num >= 2 && div_num <= LCD_LL_CLK_FRAC_DIV_N_MAX);
 	// dic_num == 0 means LCD_LL_CLK_FRAC_DIV_N_MAX divider in hardware
 	if (div_num >= LCD_LL_CLK_FRAC_DIV_N_MAX) {
 		div_num = 0;
@@ -70,7 +68,6 @@ void lcd_ll_set_pixel_clock_edge(lcd_cam_dev_t *dev, bool active_on_neg)
 
 void lcd_ll_set_pixel_clock_prescale(lcd_cam_dev_t *dev, uint32_t prescale)
 {
-	HAL_ASSERT(prescale <= LCD_LL_PCLK_DIV_MAX);
 	// Formula: pixel_clk = lcd_clk / (1 + clkcnt_n)
 	// clkcnt_n can't be zero
 	uint32_t scale = 1;
@@ -90,7 +87,6 @@ void lcd_ll_enable_rgb_yuv_convert(lcd_cam_dev_t *dev, bool en)
 
 void lcd_ll_set_convert_data_width(lcd_cam_dev_t *dev, uint32_t width)
 {
-	HAL_ASSERT(width == 8 || width == 16);
 	dev->lcd_rgb_yuv.lcd_conv_mode_8bits_on = (width == 8) ? 1 : 0;
 }
 
@@ -125,7 +121,6 @@ void lcd_ll_set_convert_mode_yuv_to_rgb(lcd_cam_dev_t *dev, lcd_yuv_sample_t yuv
 
 void lcd_ll_set_convert_mode_yuv_to_yuv(lcd_cam_dev_t *dev, lcd_yuv_sample_t src_sample, lcd_yuv_sample_t dst_sample)
 {
-	HAL_ASSERT(src_sample != dst_sample);
 	dev->lcd_rgb_yuv.lcd_conv_trans_mode = 1;
 	dev->lcd_rgb_yuv.lcd_conv_yuv_mode = LCD_LL_YUV_SAMPLE_TO_REG(src_sample);
 	dev->lcd_rgb_yuv.lcd_conv_yuv2yuv_mode = LCD_LL_YUV_SAMPLE_TO_REG(dst_sample);
@@ -133,7 +128,6 @@ void lcd_ll_set_convert_mode_yuv_to_yuv(lcd_cam_dev_t *dev, lcd_yuv_sample_t src
 
 void lcd_ll_set_phase_cycles(lcd_cam_dev_t *dev, uint32_t cmd_cycles, uint32_t dummy_cycles, uint32_t data_cycles)
 {
-	HAL_ASSERT(cmd_cycles <= 2);
 	dev->lcd_user.lcd_cmd = (cmd_cycles > 0);
 	dev->lcd_user.lcd_dummy = (dummy_cycles > 0);
 	dev->lcd_user.lcd_dout = (data_cycles > 0);
@@ -151,7 +145,6 @@ void lcd_ll_set_blank_cycles(lcd_cam_dev_t *dev, uint32_t fk_cycles, uint32_t bk
 
 void lcd_ll_set_data_width(lcd_cam_dev_t *dev, uint32_t width)
 {
-	HAL_ASSERT(width == 8 || width == 16);
 	dev->lcd_user.lcd_2byte_en = (width == 16);
 }
 
@@ -185,7 +178,6 @@ void lcd_ll_reverse_bit_order(lcd_cam_dev_t *dev, bool en)
 
 void lcd_ll_swap_byte_order(lcd_cam_dev_t *dev, uint32_t width, bool en)
 {
-	HAL_ASSERT(width == 8 || width == 16);
 	if (width == 8) {
 		// {B0}{B1}{B2}{B3} => {B1}{B0}{B3}{B2}
 		dev->lcd_user.lcd_8bits_order = en;
@@ -217,7 +209,6 @@ void lcd_ll_set_dc_delay_ticks(lcd_cam_dev_t *dev, uint32_t delay)
 
 void lcd_ll_set_command(lcd_cam_dev_t *dev, uint32_t data_width, uint32_t command)
 {
-	HAL_ASSERT(data_width == 8 || data_width == 16);
 	// if command phase has two cycles, in the first cycle, command[15:0] is sent out via lcd_data_out[15:0]
 	// in the second cycle, command[31:16] is sent out via lcd_data_out[15:0]
 	if (data_width == 8) {

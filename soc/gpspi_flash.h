@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <sys/param.h> // For MIN/MAX
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
+
+#include "soc/spi.h"
 
 #define gpspi_flash_ll_get_hw(host_id)  (((host_id)==SPI2_HOST ? &GPSPI2 \
 												: ((host_id)==SPI3_HOST ? &GPSPI3 \
@@ -12,7 +15,6 @@
 										  -1 \
 										)) )
 
-typedef typeof(GPSPI2.clock) gpspi_flash_ll_clock_reg_t;
 
 #define GPSPI_FLASH_LL_CLKREG_VAL_5MHZ   ((gpspi_flash_ll_clock_reg_t){.val=0x0000F1CF})   ///< Clock set to 5 MHz
 #define GPSPI_FLASH_LL_CLKREG_VAL_10MHZ  ((gpspi_flash_ll_clock_reg_t){.val=0x000070C7})   ///< Clock set to 10 MHz
@@ -20,6 +22,8 @@ typedef typeof(GPSPI2.clock) gpspi_flash_ll_clock_reg_t;
 #define GPSPI_FLASH_LL_CLKREG_VAL_26MHZ  ((gpspi_flash_ll_clock_reg_t){.val=0x00002002})   ///< Clock set to 26 MHz
 #define GPSPI_FLASH_LL_CLKREG_VAL_40MHZ  ((gpspi_flash_ll_clock_reg_t){.val=0x00001001})   ///< Clock set to 40 MHz
 #define GPSPI_FLASH_LL_CLKREG_VAL_80MHZ  ((gpspi_flash_ll_clock_reg_t){.val=0x80000000})   ///< Clock set to 80 MHz
+
+
 
 void gpspi_flash_ll_reset(spi_dev_t *dev);
 bool gpspi_flash_ll_cmd_is_done(const spi_dev_t *dev);

@@ -9,6 +9,7 @@
 #define LEDC_LL_FRACTIONAL_BITS    (8)
 #define LEDC_LL_FRACTIONAL_MAX     ((1 << LEDC_LL_FRACTIONAL_BITS) - 1)
 
+/*
 #define LEDC_LL_GLOBAL_CLOCKS { \
                                 LEDC_SLOW_CLK_APB, \
                                 LEDC_SLOW_CLK_XTAL, \
@@ -16,6 +17,7 @@
                               }
 
 #define LEDC_LL_GLOBAL_CLK_DEFAULT LEDC_SLOW_CLK_RC_FAST
+*/
 
 void ledc_ll_enable_bus_clock(bool enable)
 {
@@ -196,7 +198,7 @@ void ledc_ll_set_fade_end_intr(ledc_dev_t *hw, ledc_mode_t speed_mode, ledc_chan
 {
 	uint32_t value = hw->int_ena.val;
 	uint32_t int_en_base = LEDC_DUTY_CHNG_END_LSCH0_INT_ENA_S;
-	hw->int_ena.val = fade_end_intr_en ? (value | BIT(int_en_base + channel_num)) : (value & (~(BIT(int_en_base + channel_num))));
+	hw->int_ena.val = fade_end_intr_en ? (value | (1<<(int_en_base + channel_num))) : (value & (~(1<<(int_en_base + channel_num))));
 }
 
 void ledc_ll_get_fade_end_intr_status(ledc_dev_t *hw, ledc_mode_t speed_mode, uint32_t *intr_status)
@@ -209,7 +211,7 @@ void ledc_ll_get_fade_end_intr_status(ledc_dev_t *hw, ledc_mode_t speed_mode, ui
 void ledc_ll_clear_fade_end_intr_status(ledc_dev_t *hw, ledc_mode_t speed_mode, ledc_channel_t channel_num)
 {
 	uint32_t int_en_base = LEDC_DUTY_CHNG_END_LSCH0_INT_ENA_S;
-	hw->int_clr.val = BIT(int_en_base + channel_num);
+	hw->int_clr.val = 1<<(int_en_base + channel_num);
 }
 
 void ledc_ll_bind_channel_timer(ledc_dev_t *hw, ledc_mode_t speed_mode, ledc_channel_t channel_num, ledc_timer_t timer_sel)

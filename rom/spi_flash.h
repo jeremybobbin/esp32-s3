@@ -1,48 +1,7 @@
-
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
-#include "esp_attr.h"
 
-
-/** \defgroup spi_flash_apis, spi flash operation related apis
-  * @brief spi_flash apis
-  */
-
-/** @addtogroup spi_flash_apis
-  * @{
-  */
-
-/*************************************************************
- *                            Note
- *************************************************************
- * 1. ESP32 chip have 4 SPI slave/master, however, SPI0 is
- *    used as an SPI master to access Flash and ext-SRAM by
- *    Cache module. It will support Decryto read for Flash,
- *    read/write for ext-SRAM. And SPI1 is also used as an
- *    SPI master for Flash read/write and ext-SRAM read/write.
- *    It will support Encrypto write for Flash.
- * 2. As an SPI master, SPI support Highest clock to 80M,
- *    however, Flash with 80M Clock should be configured
- *    for different Flash chips. If you want to use 80M
- *    clock We should use the SPI that is certified by
- *    Espressif. However, the certification is not started
- *    at the time, so please use 40M clock at the moment.
- * 3. SPI Flash can use 2 lines or 4 lines mode. If you
- *    use 2 lines mode, you can save two pad SPIHD and
- *    SPIWP for gpio. ESP32 support configured SPI pad for
- *    Flash, the configuration is stored in efuse and flash.
- *    However, the configurations of pads should be certified
- *    by Espressif. If you use this function, please use 40M
- *    clock at the moment.
- * 4. ESP32 support to use Common SPI command to configure
- *    Flash to QIO mode, if you failed to configure with fix
- *    command. With Common SPI Command, ESP32 can also provide
- *    a way to use same Common SPI command groups on different
- *    Flash chips.
- * 5. This functions are not protected by packeting, Please use the
- *************************************************************
- */
 
 #define PERIPHS_SPI_FLASH_CMD                 SPI_MEM_CMD_REG(1)
 #define PERIPHS_SPI_FLASH_ADDR                SPI_MEM_ADDR_REG(1)

@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include "soc/rtc_io.h"
+
 
 void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw);
 void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw);

@@ -1,5 +1,10 @@
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "soc/sha.h"
+#include "soc/gpio.h"
 
 
 

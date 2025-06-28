@@ -41,6 +41,11 @@
 /** Disable interrupt by interrupt number */
 #define ESP_INTR_DISABLE(inum) esp_intr_disable_source(inum)
 
+#define traceISR_ENTER(...)
+#define traceISR_EXIT(...)
+#define traceQUEUE_GIVE_FROM_ISR(...)
+#define traceQUEUE_TAKE_FROM_ISR(...)
+
 
 BaseType_t xPortSysTickHandler(void);
 BaseType_t xPortSysTickHandler(void)

@@ -1,9 +1,12 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include "heap/soc_memory_layout.h"
 
-uint32_t IRAM_ATTR cpu_ll_get_core_id(void);
-uint32_t IRAM_ATTR cpu_ll_get_cycle_count(void);
-void IRAM_ATTR cpu_ll_set_cycle_count(uint32_t val);
+extern bool g_spiram_ok;
+
+uint32_t cpu_ll_get_core_id(void);
+uint32_t cpu_ll_get_cycle_count(void);
+void cpu_ll_set_cycle_count(uint32_t val);
 void *cpu_ll_get_sp(void);
 void cpu_ll_init_hwloop(void);
 void cpu_ll_set_breakpoint(int id, uint32_t pc);

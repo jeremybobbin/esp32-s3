@@ -1,7 +1,7 @@
 #include <stdbool.h>
-#include "gpio.h"
-#include "usb_serial_jtag.h"
-#include "rtc_cntl.h"
+#include "soc/gpio.h"
+#include "soc/usb_serial_jtag.h"
+#include "soc/rtc_cntl.h"
 
 // Get GPIO hardware instance with giving gpio num
 #define GPIO_LL_GET_HW(num) (((num) == 0) ? (&GPIO) : NULL)
@@ -9,7 +9,6 @@
 // On ESP32S3, pro cpu and app cpu shares the same interrupt enable bit
 #define GPIO_LL_INTR_ENA      (1<<0)
 #define GPIO_LL_NMI_INTR_ENA  (1<<1)
-#define SOC_GPIO_PIN_COUNT 49
 
 #define SIG_GPIO_OUT_IDX  256
 #define GPIO_FUNC0_OUT_SEL_CFG_REG          (0x60004000+0x554)

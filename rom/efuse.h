@@ -2,6 +2,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "rom/rsa_pss.h"
+#include "soc/efuse.h"
+
 /** \defgroup efuse_APIs efuse APIs
   * @brief     ESP32 efuse read/write APIs
   * @attention
@@ -12,36 +15,172 @@
   * @{
   */
 
+
+typedef struct ets_secure_boot_sig_block ets_secure_boot_sig_block_t;
+typedef struct ets_secure_boot_signature ets_secure_boot_signature_t;
+typedef struct ets_secure_boot_key_digests ets_secure_boot_key_digests_t;
+
 typedef enum {
-    ETS_EFUSE_KEY_PURPOSE_USER = 0,
-    ETS_EFUSE_KEY_PURPOSE_RESERVED = 1,
-    ETS_EFUSE_KEY_PURPOSE_XTS_AES_256_KEY_1 = 2,
-    ETS_EFUSE_KEY_PURPOSE_XTS_AES_256_KEY_2 = 3,
-    ETS_EFUSE_KEY_PURPOSE_XTS_AES_128_KEY = 4,
-    ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_ALL = 5,
-    ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_JTAG = 6,
-    ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_DIGITAL_SIGNATURE = 7,
-    ETS_EFUSE_KEY_PURPOSE_HMAC_UP = 8,
-    ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST0 = 9,
-    ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST1 = 10,
-    ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST2 = 11,
-    ETS_EFUSE_KEY_PURPOSE_MAX,
+	SB_SUCCESS = 0x3A5A5AA5,
+	SB_FAILED = 0x7533885E,
+} secure_boot_status_t;
+
+int ets_secure_boot_verify_bootloader(uint8_t *verified_hash, bool allow_key_revoke);
+
+secure_boot_status_t ets_secure_boot_verify_bootloader_with_keys(uint8_t *verified_hash, const ets_secure_boot_key_digests_t *trusted_keys, bool stage_load);
+
+secure_boot_status_t ets_secure_boot_verify_signature(const ets_secure_boot_signature_t *sig, const uint8_t *image_digest, const ets_secure_boot_key_digests_t *trusted_keys, uint8_t *verified_digest);
+
+ETS_STATUS ets_secure_boot_read_key_digests(ets_secure_boot_key_digests_t *trusted_keys);
+
+#define CRC_SIGN_BLOCK_LEN 1196
+#define SIG_BLOCK_PADDING 4096
+#define ETS_SECURE_BOOT_V2_SIGNATURE_MAGIC 0xE7
+
+struct ets_secure_boot_sig_block {
+	uint8_t magic_byte;
+	uint8_t version;
+	uint8_t _reserved1;
+	uint8_t _reserved2;
+	uint8_t image_digest[32];
+	ets_rsa_pubkey_t key;
+	uint8_t signature[384];
+	uint32_t block_crc;
+	uint8_t _padding[16];
+};
+
+#define SECURE_BOOT_NUM_BLOCKS 3
+
+struct ets_secure_boot_signature {
+	ets_secure_boot_sig_block_t block[SECURE_BOOT_NUM_BLOCKS];
+	uint8_t _padding[4096 - (sizeof(ets_secure_boot_sig_block_t) * SECURE_BOOT_NUM_BLOCKS)];
+};
+
+#define MAX_KEY_DIGESTS 3
+
+struct ets_secure_boot_key_digests {
+	const void *key_digests[MAX_KEY_DIGESTS];
+	bool allow_key_revoke;
+};
+
+#define ESP_ERR_EFUSE                              0x1600
+#define ESP_OK_EFUSE_CNT                          (ESP_ERR_EFUSE + 0x01)
+#define ESP_ERR_EFUSE_CNT_IS_FULL                 (ESP_ERR_EFUSE + 0x02)
+#define ESP_ERR_EFUSE_REPEATED_PROG               (ESP_ERR_EFUSE + 0x03)
+#define ESP_ERR_CODING                            (ESP_ERR_EFUSE + 0x04)
+#define ESP_ERR_NOT_ENOUGH_UNUSED_KEY_BLOCKS      (ESP_ERR_EFUSE + 0x05)
+#define ESP_ERR_DAMAGED_READING                   (ESP_ERR_EFUSE + 0x06)
+
+
+/*
+typedef struct {
+    esp_efuse_block_t   efuse_block: 8;
+    uint8_t             bit_start;
+    uint16_t            bit_count;
+} esp_efuse_desc_t;
+*/
+
+
+typedef enum {
+	ESP_EFUSE_ROM_LOG_ALWAYS_ON,
+	ESP_EFUSE_ROM_LOG_ON_GPIO_LOW,
+	ESP_EFUSE_ROM_LOG_ON_GPIO_HIGH,
+	ESP_EFUSE_ROM_LOG_ALWAYS_OFF
+} esp_efuse_rom_log_scheme_t;
+
+typedef enum {
+	EFUSE_CODING_SCHEME_NONE    = 0,    /**< None */
+	EFUSE_CODING_SCHEME_RS      = 3,    /**< Reed-Solomon coding */
+} esp_efuse_coding_scheme_t;
+
+typedef enum {
+	ETS_EFUSE_KEY_PURPOSE_USER = 0,
+	ETS_EFUSE_KEY_PURPOSE_RESERVED = 1,
+	ETS_EFUSE_KEY_PURPOSE_XTS_AES_256_KEY_1 = 2,
+	ETS_EFUSE_KEY_PURPOSE_XTS_AES_256_KEY_2 = 3,
+	ETS_EFUSE_KEY_PURPOSE_XTS_AES_128_KEY = 4,
+	ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_ALL = 5,
+	ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_JTAG = 6,
+	ETS_EFUSE_KEY_PURPOSE_HMAC_DOWN_DIGITAL_SIGNATURE = 7,
+	ETS_EFUSE_KEY_PURPOSE_HMAC_UP = 8,
+	ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST0 = 9,
+	ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST1 = 10,
+	ETS_EFUSE_KEY_PURPOSE_SECURE_BOOT_DIGEST2 = 11,
+	ETS_EFUSE_KEY_PURPOSE_MAX,
 } ets_efuse_purpose_t;
 
 typedef enum {
-    ETS_EFUSE_BLOCK0 = 0,
-    ETS_EFUSE_MAC_SPI_SYS_0 = 1,
-    ETS_EFUSE_BLOCK_SYS_DATA = 2,
-    ETS_EFUSE_BLOCK_USR_DATA = 3,
-    ETS_EFUSE_BLOCK_KEY0 = 4,
-    ETS_EFUSE_BLOCK_KEY1 = 5,
-    ETS_EFUSE_BLOCK_KEY2 = 6,
-    ETS_EFUSE_BLOCK_KEY3 = 7,
-    ETS_EFUSE_BLOCK_KEY4 = 8,
-    ETS_EFUSE_BLOCK_KEY5 = 9,
-    ETS_EFUSE_BLOCK_KEY6 = 10,
-    ETS_EFUSE_BLOCK_MAX,
+	ETS_EFUSE_BLOCK0 = 0,
+	ETS_EFUSE_MAC_SPI_SYS_0 = 1,
+	ETS_EFUSE_BLOCK_SYS_DATA = 2,
+	ETS_EFUSE_BLOCK_USR_DATA = 3,
+	ETS_EFUSE_BLOCK_KEY0 = 4,
+	ETS_EFUSE_BLOCK_KEY1 = 5,
+	ETS_EFUSE_BLOCK_KEY2 = 6,
+	ETS_EFUSE_BLOCK_KEY3 = 7,
+	ETS_EFUSE_BLOCK_KEY4 = 8,
+	ETS_EFUSE_BLOCK_KEY5 = 9,
+	ETS_EFUSE_BLOCK_KEY6 = 10,
+	ETS_EFUSE_BLOCK_MAX,
 } ets_efuse_block_t;
+
+
+int esp_efuse_read_field_blob(const esp_efuse_desc_t* field[], void* dst, size_t dst_size_bits);
+bool esp_efuse_read_field_bit(const esp_efuse_desc_t *field[]);
+int esp_efuse_read_field_cnt(const esp_efuse_desc_t* field[], size_t* out_cnt);
+int esp_efuse_write_field_blob(const esp_efuse_desc_t* field[], const void* src, size_t src_size_bits);
+int esp_efuse_write_field_cnt(const esp_efuse_desc_t* field[], size_t cnt);
+int esp_efuse_write_field_bit(const esp_efuse_desc_t* field[]);
+int esp_efuse_set_write_protect(esp_efuse_block_t blk);
+int esp_efuse_set_read_protect(esp_efuse_block_t blk);
+int esp_efuse_get_field_size(const esp_efuse_desc_t* field[]);
+uint32_t esp_efuse_read_reg(esp_efuse_block_t blk, unsigned int num_reg);
+int esp_efuse_write_reg(esp_efuse_block_t blk, unsigned int num_reg, uint32_t val);
+esp_efuse_coding_scheme_t esp_efuse_get_coding_scheme(esp_efuse_block_t blk);
+int esp_efuse_read_block(esp_efuse_block_t blk, void* dst_key, size_t offset_in_bits, size_t size_bits);
+int esp_efuse_write_block(esp_efuse_block_t blk, const void* src_key, size_t offset_in_bits, size_t size_bits);
+uint32_t esp_efuse_get_pkg_ver(void);
+void esp_efuse_reset(void);
+int esp_efuse_disable_rom_download_mode(void);
+int esp_efuse_set_rom_log_scheme(esp_efuse_rom_log_scheme_t log_scheme);
+int esp_efuse_enable_rom_secure_download_mode(void);
+uint32_t esp_efuse_read_secure_version(void);
+bool esp_efuse_check_secure_version(uint32_t secure_version);
+int esp_efuse_update_secure_version(uint32_t secure_version);
+#if defined(BOOTLOADER_BUILD) && defined(CONFIG_EFUSE_VIRTUAL) && !defined(CONFIG_EFUSE_VIRTUAL_KEEP_IN_FLASH)
+void esp_efuse_init_virtual_mode_in_ram(void);
+#endif
+#ifdef CONFIG_EFUSE_VIRTUAL_KEEP_IN_FLASH
+void esp_efuse_init_virtual_mode_in_flash(uint32_t offset, uint32_t size);
+#endif
+int esp_efuse_batch_write_begin(void);
+int esp_efuse_batch_write_cancel(void);
+int esp_efuse_batch_write_commit(void);
+bool esp_efuse_block_is_empty(esp_efuse_block_t block);
+bool esp_efuse_get_key_dis_read(esp_efuse_block_t block);
+int esp_efuse_set_key_dis_read(esp_efuse_block_t block);
+bool esp_efuse_get_key_dis_write(esp_efuse_block_t block);
+int esp_efuse_set_key_dis_write(esp_efuse_block_t block);
+bool esp_efuse_key_block_unused(esp_efuse_block_t block);
+bool esp_efuse_find_purpose(ets_efuse_purpose_t purpose, esp_efuse_block_t *block);
+bool esp_efuse_get_keypurpose_dis_write(esp_efuse_block_t block);
+ets_efuse_purpose_t esp_efuse_get_key_purpose(esp_efuse_block_t block);
+const esp_efuse_desc_t **esp_efuse_get_purpose_field(esp_efuse_block_t block);
+const esp_efuse_desc_t** esp_efuse_get_key(esp_efuse_block_t block);
+int esp_efuse_set_key_purpose(esp_efuse_block_t block, ets_efuse_purpose_t purpose);
+int esp_efuse_set_keypurpose_dis_write(esp_efuse_block_t block);
+esp_efuse_block_t esp_efuse_find_unused_key_block(void);
+unsigned esp_efuse_count_unused_key_blocks(void);
+bool esp_efuse_get_digest_revoke(unsigned num_digest);
+int esp_efuse_set_digest_revoke(unsigned num_digest);
+bool esp_efuse_get_write_protect_of_digest_revoke(unsigned num_digest);
+int esp_efuse_set_write_protect_of_digest_revoke(unsigned num_digest);
+int esp_efuse_write_key(esp_efuse_block_t block, ets_efuse_purpose_t purpose, const void *key, size_t key_size_bytes);
+int esp_efuse_write_keys(const ets_efuse_purpose_t purposes[], uint8_t keys[][32], unsigned number_of_keys);
+int esp_secure_boot_read_key_digests(ets_secure_boot_key_digests_t *trusted_keys);
+int esp_efuse_check_errors(void);
+
+
 
 /**
  * @brief set timing accroding the apb clock, so no read error or write error happens.

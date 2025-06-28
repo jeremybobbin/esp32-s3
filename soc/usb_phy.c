@@ -1,6 +1,8 @@
 
 
 #include <stdbool.h>
+#include "soc/usb.h"
+#include "soc/usb_phy.h"
 
 
 void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
@@ -9,9 +11,9 @@ void usb_phy_ll_int_otg_enable(usb_wrap_dev_t *hw)
 	// USB_OTG use internal PHY
 	hw->otg_conf.phy_sel = 0;
 	// phy_sel is controlled by the following register value
-	RTCCNTL.usb_conf.sw_hw_usb_phy_sel = 1;
+	RTCCNTL->usb_conf.sw_hw_usb_phy_sel = 1;
 	// phy_sel=sw_usb_phy_sel=1, USB_OTG is connected with internal PHY
-	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
+	RTCCNTL->usb_conf.sw_usb_phy_sel = 1;
 }
 
 void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
@@ -19,9 +21,9 @@ void usb_phy_ll_ext_otg_enable(usb_wrap_dev_t *hw)
 	// USB_OTG use external PHY
 	hw->otg_conf.phy_sel = 1;
 	// phy_sel is controlled by the following register value
-	RTCCNTL.usb_conf.sw_hw_usb_phy_sel = 1;
+	RTCCNTL->usb_conf.sw_hw_usb_phy_sel = 1;
 	// phy_sel=sw_usb_phy_sel=0, USB_OTG is connected with external PHY through GPIO Matrix
-	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
+	RTCCNTL->usb_conf.sw_usb_phy_sel = 0;
 }
 
 void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
@@ -35,9 +37,9 @@ void usb_phy_ll_int_jtag_enable(usb_serial_jtag_dev_t *hw)
 	// Enable USB pad function
 	hw->conf0.usb_pad_enable = 1;
 	// phy_sel is controlled by the following register value
-	RTCCNTL.usb_conf.sw_hw_usb_phy_sel = 1;
+	RTCCNTL->usb_conf.sw_hw_usb_phy_sel = 1;
 	// phy_sel=sw_usb_phy_sel=0, USB_Serial_JTAG is connected with internal PHY
-	RTCCNTL.usb_conf.sw_usb_phy_sel = 0;
+	RTCCNTL->usb_conf.sw_usb_phy_sel = 0;
 }
 
 void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
@@ -45,9 +47,9 @@ void usb_phy_ll_ext_jtag_enable(usb_serial_jtag_dev_t *hw)
 	// USB_Serial_JTAG use external PHY
 	hw->conf0.phy_sel = 1;
 	// phy_sel is controlled by the following register value
-	RTCCNTL.usb_conf.sw_hw_usb_phy_sel = 1;
+	RTCCNTL->usb_conf.sw_hw_usb_phy_sel = 1;
 	// phy_sel=sw_usb_phy_sel=1, USB_Serial_JTAG is connected with external PHY
-	RTCCNTL.usb_conf.sw_usb_phy_sel = 1;
+	RTCCNTL->usb_conf.sw_usb_phy_sel = 1;
 }
 
 void usb_phy_ll_int_load_conf(usb_wrap_dev_t *hw, bool dp_pu, bool dp_pd, bool dm_pu, bool dm_pd)

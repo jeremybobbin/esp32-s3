@@ -1,3 +1,8 @@
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "freertos/FreeRTOS.h"
+
 #define MHZ (1000000)
 
 #define RTC_SLOW_CLK_X32K_CAL_TIMEOUT_THRES(cycles)  (cycles << 12)
@@ -849,3 +854,14 @@ rtc_vddsdio_config_t rtc_vddsdio_get_config(void);
  * @param config new VDDSDIO configuration
  */
 void rtc_vddsdio_set_config(rtc_vddsdio_config_t config);
+
+uint32_t esp_clk_slowclk_cal_get(void);
+void esp_clk_slowclk_cal_set(uint32_t value);
+int esp_clk_cpu_freq(void);
+int esp_clk_apb_freq(void);
+int esp_clk_xtal_freq(void);
+uint64_t esp_clk_rtc_time(void);
+void esp_clk_private_lock(void);
+void esp_clk_private_unlock(void);
+
+

@@ -4,6 +4,8 @@
 
 
 #include <stdbool.h>
+#include <stdint.h>
+#include "soc/mcpwm.h"
 
 
 /// Get the address of peripheral registers
@@ -524,4 +526,25 @@ bool mcpwm_ll_fault_is_cbc_on(mcpwm_dev_t *mcpwm, int op)
 {
 	return mcpwm->operators[op].fh_status.fh_cbc_on;
 }
+
+void mcpwm_ll_timer_set_execute_command(mcpwm_dev_t *mcpwm, int timer_id, mcpwm_timer_execute_cmd_t cmd) {
+	switch (cmd) {
+	case MCPWM_TIMER_STOP_AT_ZERO:
+		mcpwm->timer[timer_id].timer_cfg1.timer_start = 0;
+		break;
+	case MCPWM_TIMER_STOP_AT_PEAK:
+		mcpwm->timer[timer_id].timer_cfg1.timer_start = 1;
+		break;
+	case MCPWM_TIMER_START_NO_STOP:
+		mcpwm->timer[timer_id].timer_cfg1.timer_start = 2;
+		break;
+	case MCPWM_TIMER_START_STOP_AT_ZERO:
+		mcpwm->timer[timer_id].timer_cfg1.timer_start = 3;
+		break;
+	case MCPWM_TIMER_START_STOP_AT_PEAK:
+		mcpwm->timer[timer_id].timer_cfg1.timer_start = 4;
+		break;
+	}
+}
+
 

@@ -4,6 +4,8 @@
 
 
 #include <stdbool.h>
+#include "soc/sigmadelta.h"
+#include "soc/i2c.h"
 
 
 // Get SIGMADELTA hardware instance with giving sigmadelta num

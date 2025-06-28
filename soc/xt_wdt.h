@@ -1,5 +1,8 @@
 #include <stdbool.h>
 
+#include "soc/rtc_cntl.h"
+
+
 #define XT_WDT_LL_XTAL32_DEAD_INTR_MASK RTC_CNTL_XTAL32K_DEAD_INT_ST_M
 
 void xt_wdt_ll_enable(rtc_cntl_dev_t *hw, bool enable);

@@ -20,6 +20,14 @@ typedef enum {
 } esp_bt_ctrl_hci_tl_t;
 
 typedef enum {
+	ESP_MAC_WIFI_STA,
+	ESP_MAC_WIFI_SOFTAP,
+	ESP_MAC_BT,
+	ESP_MAC_ETH,
+	ESP_MAC_IEEE802154,
+} esp_mac_type_t;
+
+typedef enum {
 	ESP_BLE_CE_LEN_TYPE_ORIG = 0,      /*!< original */
 	ESP_BLE_CE_LEN_TYPE_CE   = 1,      /*!< use CE_LEN parameter from HCI commands */
 	ESP_BLE_CE_LEN_TYPE_SD   = 1,      /*!< Espressif vendor defined */

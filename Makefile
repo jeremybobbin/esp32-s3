@@ -37,14 +37,18 @@ libsoc.a: \
 	soc/interrupt_descriptor_table.o \
 	soc/lcd.o \
 	soc/ledc.o \
+	soc/lldesc.o \
 	soc/mcpwm.o \
 	soc/mpu.o \
 	soc/mwdt.o \
 	soc/pcnt.o \
 	soc/peripherals.o \
+	soc/phy.o \
+	soc/random.o \
 	soc/rmt.o \
 	soc/rtc_cntl.o \
 	soc/rtc_io.o \
+	soc/rtc.o \
 	soc/rwdt.o \
 	soc/sens.o \
 	soc/sha.o \
@@ -54,6 +58,7 @@ libsoc.a: \
 	soc/spi_flash.o \
 	soc/spimem_flash.o \
 	soc/spi.o \
+	soc/spiram.o \
 	soc/systimer.o \
 	soc/timer.o \
 	soc/touch_sensor.o \
@@ -74,6 +79,7 @@ libheap.a: \
 	heap/memory_layout.o \
 	heap/memory_layout_utils.o \
 	heap/multi_heap.o
+	$(AR) rcs $@ $?
 
 librtos.a: \
 	freertos/croutine.o \
@@ -215,6 +221,7 @@ libxtensa.a: \
 	xtensa/syscache_asm.o \
 	xtensa/windowspill_asm.o \
 	xtensa/xtensa_intr.o
+	$(AR) rcs $@ $?
 
 libbluetooth.a: \
 	bluetooth/arch_main.o \
@@ -272,6 +279,6 @@ libbluetooth.a: \
 	bluetooth/task.o \
 	bluetooth/vhci.o \
 	bluetooth/vshci_task.o
-
+	$(AR) rcs $@ $?
 clean:
 	rm -f *.a wifi/esp_adapter.o bluetooth/bluetooth.o heap/*.o soc/*.o xtensa/*.o freertos/*.o libxtensa.a

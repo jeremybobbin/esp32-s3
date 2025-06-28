@@ -1,4 +1,5 @@
 #include "soc/hmac.h"
+#include "soc/gpio.h"
 #include <stddef.h>
 
 #define SHA256_BLOCK_SZ 64

@@ -39,6 +39,25 @@
 #include "timers.h"
 #include "stack_macros.h"
 
+#include <sys/reent.h>
+#include "rom/libc_stubs.h"
+
+extern void _cleanup_r(struct _reent* r);
+
+void esp_reent_init(struct _reent* r)
+{
+	memset(r, 0, sizeof(*r));
+	r->_stdout = _GLOBAL_REENT->_stdout;
+	r->_stderr = _GLOBAL_REENT->_stderr;
+	r->_stdin  = _GLOBAL_REENT->_stdin;
+	r->__cleanup = &_cleanup_r;
+	r->__sdidinit = 1;
+	r->__sglue._next = NULL;
+	r->__sglue._niobs = 0;
+	r->__sglue._iobs = NULL;
+}
+
+
 #define taskCRITICAL_MUX &xTaskQueueMutex
 #undef taskENTER_CRITICAL
 #undef taskEXIT_CRITICAL
@@ -50,6 +69,7 @@
 #define taskEXIT_CRITICAL_ISR( )        portEXIT_CRITICAL_ISR( taskCRITICAL_MUX )
 #undef _REENT_INIT_PTR
 #define _REENT_INIT_PTR                 esp_reent_init
+
 
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined

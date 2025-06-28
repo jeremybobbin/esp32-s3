@@ -1,12 +1,6 @@
+#include "soc/gpspi_flash.h"
+#include "soc/spi_flash.h"
 
-
-// The Lowlevel layer for SPI Flash
-
-
-
-
-// For esp32s2, spimem is equivalent to traditional spi peripherals found
-// in esp32. Let the spi flash clock reg definitions reflect this.
 #define SPI_FLASH_LL_CLKREG_VAL_5MHZ   {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_5MHZ}
 #define SPI_FLASH_LL_CLKREG_VAL_10MHZ  {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_10MHZ}
 #define SPI_FLASH_LL_CLKREG_VAL_20MHZ  {.spimem=SPIMEM_FLASH_LL_CLKREG_VAL_20MHZ}
@@ -24,11 +18,7 @@
 									 dev_id; \
 									})
 
-typedef union  {
-	gpspi_flash_ll_clock_reg_t gpspi;
-	spimem_flash_ll_clock_reg_t spimem;
-} spi_flash_ll_clock_reg_t;
-
+/*
 #ifdef GPSPI_BUILD
 #define spi_flash_ll_reset(dev)                              gpspi_flash_ll_reset((spi_dev_t*)dev)
 #define spi_flash_ll_cmd_is_done(dev)                        gpspi_flash_ll_cmd_is_done((spi_dev_t*)dev)
@@ -81,3 +71,4 @@ typedef union  {
 #define spi_flash_ll_set_cs_setup(dev, cs_setup_time)        spimem_flash_ll_set_cs_setup((spi_mem_dev_t*)dev, cs_setup_time)
 #endif
 
+*/

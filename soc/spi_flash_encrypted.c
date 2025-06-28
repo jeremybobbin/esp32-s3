@@ -5,13 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-
-/// Choose type of chip you want to encrypt manully
-typedef enum
-{
-	FLASH_ENCRYPTION_MANU = 0, ///!< Manually encrypt the flash chip.
-	PSRAM_ENCRYPTION_MANU = 1  ///!< Manually encrypt the psram chip.
-} flash_encrypt_ll_type_t;
+#include "soc/gpio.h"
+#include "soc/spi_flash_encrypted.h"
+#include "soc/cross-int.h"
 
 void spi_flash_encrypt_ll_enable(void)
 {
@@ -29,7 +25,6 @@ void spi_flash_encrypt_ll_disable(void)
 void spi_flash_encrypt_ll_type(flash_encrypt_ll_type_t type)
 {
 	// Our hardware only support flash encryption
-	HAL_ASSERT(type == FLASH_ENCRYPTION_MANU);
 	REG_WRITE(AES_XTS_DESTINATION_REG, type);
 }
 

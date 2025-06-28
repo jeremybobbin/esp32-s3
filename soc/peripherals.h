@@ -1,3 +1,4 @@
+
 typedef enum {
 	PERIPH_LEDC_MODULE = 0,
 	PERIPH_UART0_MODULE,
@@ -146,8 +147,8 @@ typedef enum {
 void periph_module_enable(periph_module_t periph);
 void periph_module_disable(periph_module_t periph);
 void periph_module_reset(periph_module_t periph);
-IRAM_ATTR void wifi_bt_common_module_enable(void);
-IRAM_ATTR void wifi_bt_common_module_disable(void);
+void wifi_bt_common_module_enable(void);
+void wifi_bt_common_module_disable(void);
 void wifi_module_enable(void);
 void wifi_module_disable(void);
 

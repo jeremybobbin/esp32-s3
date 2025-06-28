@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "soc/mwdt.h"
+
 #define RWDT_LL_WDT_WKEY_VALUE 0x50D83AA1
 
 #define RWDT_LL_STG_SEL_OFF             0

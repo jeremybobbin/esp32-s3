@@ -17,6 +17,8 @@ typedef portBASE_TYPE               BaseType_t;
 typedef uint32_t TickType_t;
 typedef unsigned portBASE_TYPE      UBaseType_t;
 
+void vPortSetupTimer(void);
+
 #include "FreeRTOSConfig.h"
 #include "projdefs.h"
 #include "portable.h"

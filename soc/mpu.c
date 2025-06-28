@@ -1,7 +1,8 @@
 
 #include <stdint.h>
+#include "xtensa/core-macros.h"
 
-
+#define SOC_MPU_MIN_REGION_SIZE                   0x20000000U
 
 
 uint32_t mpu_ll_id_to_addr(unsigned id)
