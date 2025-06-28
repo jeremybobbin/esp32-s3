@@ -164,6 +164,25 @@ typedef struct {
 	};
 } adc_ll_rtc_output_data_t;
 
+#define ADC_MAX_DELAY UINT32_MAX
+
+typedef struct adc_digi_init_config_s {
+	uint32_t max_store_buf_size;
+	uint32_t conv_num_each_intr;
+	uint32_t adc1_chan_mask;
+	uint32_t adc2_chan_mask;
+} adc_digi_init_config_t;
+
+typedef struct {
+	bool conv_limit_en;
+	uint32_t conv_limit_num;
+	uint32_t pattern_num;
+	adc_digi_pattern_config_t *adc_pattern;
+	uint32_t sample_freq_hz;
+	adc_digi_convert_mode_t conv_mode;
+	adc_digi_output_format_t format;
+} adc_digi_configuration_t;
+
 typedef volatile struct apb_saradc_dev_s {
 	union {
 		struct {

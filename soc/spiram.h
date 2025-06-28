@@ -1291,6 +1291,16 @@ typedef enum {
 } psram_cache_mode_t;
 
 typedef enum {
+	PSRAM_SIZE_16MBITS  = 0,
+	PSRAM_SIZE_32MBITS  = 1,
+	PSRAM_SIZE_64MBITS  = 2,
+	PSRAM_SIZE_128MBITS = 3,
+	PSRAM_SIZE_256MBITS = 4,
+	PSRAM_SIZE_MAX,
+} psram_size_t;
+
+
+typedef enum {
 	PSRAM_VADDR_MODE_NORMAL=0, ///< App and pro CPU use their own flash cache for external RAM access
 	PSRAM_VADDR_MODE_LOWHIGH,  ///< App and pro CPU share external RAM caches: pro CPU has low 2M, app CPU has high 2M
 	PSRAM_VADDR_MODE_EVENODD,  ///< App and pro CPU share external RAM caches: pro CPU does even 32yte ranges, app does odd ones.

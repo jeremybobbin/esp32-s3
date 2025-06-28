@@ -150,6 +150,10 @@
             (REG_WRITE((_r),((REG_READ(_r) & ~((_f##_V) << (_f##_S)))|(((_v) & (_f##_V))<<(_f##_S)))));                \
         })
 
+#define REG_GET_BIT(_r, _b)  ({                                                                                        \
+            (*(volatile uint32_t*)(_r) & (_b));                                                                        \
+        })
+
 #define REG_SET_BIT(_r, _b)  ({                                                                                        \
             (*(volatile uint32_t*)(_r) |= (_b));                                                                       \
         })

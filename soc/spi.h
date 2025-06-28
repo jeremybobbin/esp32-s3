@@ -1026,3 +1026,12 @@ void spi_timing_change_speed_mode_cache_safe(bool switch_down);
 bool spi_timing_is_tuned(void);
 void spi_timing_get_flash_timing_param(spi_flash_hal_timing_config_t *out_timing_config);
 void spi_timing_get_flash_timing_param(spi_flash_hal_timing_config_t *out_timing_config);
+
+spi_timing_config_core_clock_t spi_timing_config_get_core_clock(void);
+void spi_timing_config_set_core_clock(uint8_t spi_num, spi_timing_config_core_clock_t core_clock);
+
+uint32_t spi_timing_config_get_flash_clock_reg(void);
+void spi_timing_config_set_flash_clock(uint8_t spi_num, uint32_t freqdiv);
+
+void spi_timing_config_set_psram_clock(uint8_t spi_num, uint32_t freqdiv);
+

@@ -226,6 +226,45 @@ typedef enum {
 } esp_ble_power_type_t;
 
 typedef enum {
+	ESP_BLE_AD_TYPE_FLAG                     = 0x01,    /* relate to BTM_BLE_AD_TYPE_FLAG in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_16SRV_PART               = 0x02,    /* relate to BTM_BLE_AD_TYPE_16SRV_PART in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_16SRV_CMPL               = 0x03,    /* relate to BTM_BLE_AD_TYPE_16SRV_CMPL in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_32SRV_PART               = 0x04,    /* relate to BTM_BLE_AD_TYPE_32SRV_PART in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_32SRV_CMPL               = 0x05,    /* relate to BTM_BLE_AD_TYPE_32SRV_CMPL in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_128SRV_PART              = 0x06,    /* relate to BTM_BLE_AD_TYPE_128SRV_PART in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_128SRV_CMPL              = 0x07,    /* relate to BTM_BLE_AD_TYPE_128SRV_CMPL in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_NAME_SHORT               = 0x08,    /* relate to BTM_BLE_AD_TYPE_NAME_SHORT in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_NAME_CMPL                = 0x09,    /* relate to BTM_BLE_AD_TYPE_NAME_CMPL in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_TX_PWR                   = 0x0A,    /* relate to BTM_BLE_AD_TYPE_TX_PWR in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_DEV_CLASS                = 0x0D,    /* relate to BTM_BLE_AD_TYPE_DEV_CLASS in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_SM_TK                    = 0x10,    /* relate to BTM_BLE_AD_TYPE_SM_TK in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_SM_OOB_FLAG              = 0x11,    /* relate to BTM_BLE_AD_TYPE_SM_OOB_FLAG in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_INT_RANGE                = 0x12,    /* relate to BTM_BLE_AD_TYPE_INT_RANGE in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_SOL_SRV_UUID             = 0x14,    /* relate to BTM_BLE_AD_TYPE_SOL_SRV_UUID in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_128SOL_SRV_UUID          = 0x15,    /* relate to BTM_BLE_AD_TYPE_128SOL_SRV_UUID in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_SERVICE_DATA             = 0x16,    /* relate to BTM_BLE_AD_TYPE_SERVICE_DATA in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_PUBLIC_TARGET            = 0x17,    /* relate to BTM_BLE_AD_TYPE_PUBLIC_TARGET in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_RANDOM_TARGET            = 0x18,    /* relate to BTM_BLE_AD_TYPE_RANDOM_TARGET in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_APPEARANCE               = 0x19,    /* relate to BTM_BLE_AD_TYPE_APPEARANCE in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_ADV_INT                  = 0x1A,    /* relate to BTM_BLE_AD_TYPE_ADV_INT in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_LE_DEV_ADDR              = 0x1b,    /* relate to BTM_BLE_AD_TYPE_LE_DEV_ADDR in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_LE_ROLE                  = 0x1c,    /* relate to BTM_BLE_AD_TYPE_LE_ROLE in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_SPAIR_C256               = 0x1d,    /* relate to BTM_BLE_AD_TYPE_SPAIR_C256 in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_SPAIR_R256               = 0x1e,    /* relate to BTM_BLE_AD_TYPE_SPAIR_R256 in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_32SOL_SRV_UUID           = 0x1f,    /* relate to BTM_BLE_AD_TYPE_32SOL_SRV_UUID in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_32SERVICE_DATA           = 0x20,    /* relate to BTM_BLE_AD_TYPE_32SERVICE_DATA in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_128SERVICE_DATA          = 0x21,    /* relate to BTM_BLE_AD_TYPE_128SERVICE_DATA in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_LE_SECURE_CONFIRM        = 0x22,    /* relate to BTM_BLE_AD_TYPE_LE_SECURE_CONFIRM in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_LE_SECURE_RANDOM         = 0x23,    /* relate to BTM_BLE_AD_TYPE_LE_SECURE_RANDOM in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_URI                      = 0x24,    /* relate to BTM_BLE_AD_TYPE_URI in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_INDOOR_POSITION          = 0x25,    /* relate to BTM_BLE_AD_TYPE_INDOOR_POSITION in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_TRANS_DISC_DATA          = 0x26,    /* relate to BTM_BLE_AD_TYPE_TRANS_DISC_DATA in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_LE_SUPPORT_FEATURE       = 0x27,    /* relate to BTM_BLE_AD_TYPE_LE_SUPPORT_FEATURE in stack/btm_ble_api.h */
+	ESP_BLE_AD_TYPE_CHAN_MAP_UPDATE          = 0x28,    /* relate to BTM_BLE_AD_TYPE_CHAN_MAP_UPDATE in stack/btm_ble_api.h */
+	ESP_BLE_AD_MANUFACTURER_SPECIFIC_TYPE    = 0xFF,    /* relate to BTM_BLE_AD_MANUFACTURER_SPECIFIC_TYPE in stack/btm_ble_api.h */
+} esp_ble_adv_data_type;
+
+typedef enum {
 	ESP_PWR_LVL_N24 = 0,              /*!< Corresponding to -24dbm */
 	ESP_PWR_LVL_N21 = 1,              /*!< Corresponding to -21dbm */
 	ESP_PWR_LVL_N18 = 2,              /*!< Corresponding to -18dbm */
@@ -244,6 +283,89 @@ typedef enum {
 	ESP_PWR_LVL_P21 = 15,             /*!< Corresponding to  +21dbm */
 	ESP_PWR_LVL_INVALID = 0xFF,         /*!< Indicates an invalid value */
 } esp_power_level_t;
+
+typedef uint8_t esp_ble_gap_adv_type_t;
+
+typedef enum {
+	ADV_TYPE_IND                = 0x00,
+	ADV_TYPE_DIRECT_IND_HIGH    = 0x01,
+	ADV_TYPE_SCAN_IND           = 0x02,
+	ADV_TYPE_NONCONN_IND        = 0x03,
+	ADV_TYPE_DIRECT_IND_LOW     = 0x04,
+} esp_ble_adv_type_t;
+
+
+/// BLE device address type
+typedef enum {
+	BLE_ADDR_TYPE_PUBLIC        = 0x00,
+	BLE_ADDR_TYPE_RANDOM        = 0x01,
+	BLE_ADDR_TYPE_RPA_PUBLIC    = 0x02,
+	BLE_ADDR_TYPE_RPA_RANDOM    = 0x03,
+} esp_ble_addr_type_t;
+
+#define ESP_BD_ADDR_LEN     6
+
+typedef uint8_t esp_bd_addr_t[ESP_BD_ADDR_LEN];
+
+typedef enum {
+	ADV_CHNL_37     = 0x01,
+	ADV_CHNL_38     = 0x02,
+	ADV_CHNL_39     = 0x04,
+	ADV_CHNL_ALL    = 0x07,
+} esp_ble_adv_channel_t;
+
+typedef enum {
+	///Allow both scan and connection requests from anyone
+	ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY  = 0x00,
+	///Allow both scan req from White List devices only and connection req from anyone
+	ADV_FILTER_ALLOW_SCAN_WLST_CON_ANY,
+	///Allow both scan req from anyone and connection req from White List devices only
+	ADV_FILTER_ALLOW_SCAN_ANY_CON_WLST,
+	///Allow scan and connection requests from White List devices only
+	ADV_FILTER_ALLOW_SCAN_WLST_CON_WLST,
+	///Enumeration end value for advertising filter policy value check
+} esp_ble_adv_filter_t;
+
+
+typedef struct {
+	uint16_t                adv_int_min;
+	uint16_t                adv_int_max;
+	esp_ble_adv_type_t      adv_type;           /*!< Advertising type */
+	esp_ble_addr_type_t     own_addr_type;      /*!< Owner bluetooth device address type */
+	esp_bd_addr_t           peer_addr;          /*!< Peer device bluetooth device address */
+	esp_ble_addr_type_t     peer_addr_type;     /*!< Peer device bluetooth device address type, only support public address type and random address type */
+	esp_ble_adv_channel_t   channel_map;        /*!< Advertising channel map */
+	esp_ble_adv_filter_t    adv_filter_policy;  /*!< Advertising filter policy */
+} esp_ble_adv_params_t;
+
+typedef struct {
+	bool                    set_scan_rsp;           /*!< Set this advertising data as scan response or not*/
+	bool                    include_name;           /*!< Advertising data include device name or not */
+	bool                    include_txpower;        /*!< Advertising data include TX power */
+	int                     min_interval;
+	int                     max_interval;
+	int                     appearance;             /*!< External appearance of device */
+	uint16_t                manufacturer_len;       /*!< Manufacturer data length */
+	uint8_t                 *p_manufacturer_data;   /*!< Manufacturer data point */
+	uint16_t                service_data_len;       /*!< Service data length */
+	uint8_t                 *p_service_data;        /*!< Service data point */
+	uint16_t                service_uuid_len;       /*!< Service uuid length */
+	uint8_t                 *p_service_uuid;        /*!< Service uuid array point */
+	uint8_t                 flag;                   /*!< Advertising flag of discovery mode, see BLE_ADV_DATA_FLAG detail */
+} esp_ble_adv_data_t;
+
+/// Ble scan type
+typedef enum {
+	BLE_SCAN_TYPE_PASSIVE   =   0x0,            /*!< Passive scan */
+	BLE_SCAN_TYPE_ACTIVE    =   0x1,            /*!< Active scan */
+} esp_ble_scan_type_t;
+
+/// white list address type
+typedef enum {
+	BLE_WL_ADDR_TYPE_PUBLIC        = 0x00,
+	BLE_WL_ADDR_TYPE_RANDOM        = 0x01,
+} esp_ble_wl_addr_type_t;
+
 
 int esp_ble_tx_power_set(esp_ble_power_type_t power_type, esp_power_level_t power_level);
 esp_power_level_t esp_ble_tx_power_get(esp_ble_power_type_t power_type);
@@ -271,3 +393,6 @@ int esp_bt_h4tl_eif_io_event_notify(int event);
 void esp_wifi_bt_power_domain_on(void);
 
 void esp_wifi_bt_power_domain_off(void);
+
+int esp_efuse_mac_get_default(uint8_t *mac);
+

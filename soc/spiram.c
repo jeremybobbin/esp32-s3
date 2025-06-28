@@ -1,23 +1,46 @@
 #include <stdlib.h>
+#include <errno.h>
 
 #include "soc/spiram.h"
 #include "soc/gpio.h"
 #include "soc/spi.h"
-#include "heap/soc_memory_layout.h"
 #include "rom/cache.h"
+#include "heap/soc_memory_layout.h"
+#include "heap/esp_heap_caps_init.h"
 
 #define MMU_ACCESS_SPIRAM (1<<15)
+#define MIN(a, b) (a) > (b) ? (b) : (a)
 
 //#define PSRAM_MODE PSRAM_VADDR_MODE_NORMAL
 
 static const char *TAG = "spiram";
 static bool s_spiram_inited = false;
+static psram_size_t s_psram_size;
 
 #if CONFIG_SPIRAM_SPEED_40M
 #define PSRAM_SPEED PSRAM_CACHE_S40M
 #else  //#if CONFIG_SPIRAM_SPEED_80M
 #define PSRAM_SPEED PSRAM_CACHE_S80M
 #endif
+
+#define CONFIG_SPIRAM_SIZE -1
+
+void spi_flash_set_vendor_required_regs(void)
+{
+#if CONFIG_ESPTOOLPY_OCT_FLASH
+    //Flash chip requires MSPI specifically, call this function to set them
+    esp_opiflash_set_required_regs();
+    SET_PERI_REG_BITS(SPI_MEM_CACHE_FCTRL_REG(1), SPI_MEM_CACHE_USR_CMD_4BYTE_V, 1, SPI_MEM_CACHE_USR_CMD_4BYTE_S);
+#else
+    // Set back MSPI registers after Octal PSRAM initialization.
+    SET_PERI_REG_BITS(SPI_MEM_CACHE_FCTRL_REG(1), SPI_MEM_CACHE_USR_CMD_4BYTE_V, 0, SPI_MEM_CACHE_USR_CMD_4BYTE_S);
+#endif // CONFIG_ESPTOOLPY_OCT_FLASH
+}
+
+void spi_flash_set_rom_required_regs(void) {
+	CLEAR_PERI_REG_MASK(SPI_MEM_DDR_REG(1), SPI_MEM_SPI_FMEM_VAR_DUMMY);
+}
+
 
 static void psram_set_cs_timing(void) {
 	//SPI0/1 share the cs_hold / cs_setup, cd_hold_time / cd_setup_time, cs_hold_delay registers for PSRAM, so we only need to set SPI0 related registers here
@@ -118,6 +141,7 @@ static void s_get_psram_mode_reg(int spi_num, opi_psram_mode_reg_t *out_reg) {
 }
 
 static void s_print_psram_info(opi_psram_mode_reg_t *reg_val) {
+/*
 	ESP_EARLY_LOGI(TAG, "vendor id : 0x%02x (%s)", reg_val->mr1.vendor_id, reg_val->mr1.vendor_id == 0x0d ? "AP" : "UNKNOWN");
 	ESP_EARLY_LOGI(TAG, "dev id    : 0x%02x (generation %d)", reg_val->mr2.dev_id, reg_val->mr2.dev_id + 1);
 	ESP_EARLY_LOGI(TAG, "density   : 0x%02x (%d Mbit)", reg_val->mr2.density, reg_val->mr2.density == 0x1 ? 32 :
@@ -137,8 +161,39 @@ static void s_print_psram_info(opi_psram_mode_reg_t *reg_val) {
 	ESP_EARLY_LOGI(TAG, "DriveStrength: 0x%02x (1/%d)", reg_val->mr0.drive_str, reg_val->mr0.drive_str == 0x00 ? 1 :
 																				reg_val->mr0.drive_str == 0x01 ? 2 :
 																				reg_val->mr0.drive_str == 0x02 ? 4 : 8);
+																				*/
 }
 
+
+static void s_config_psram_spi_phases(void) {
+	//Config Write CMD phase for SPI0 to access PSRAM
+	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_CACHE_SRAM_USR_WCMD_M);
+	SET_PERI_REG_BITS(SPI_MEM_SRAM_DWR_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_WR_CMD_BITLEN, OCT_PSRAM_WR_CMD_BITLEN - 1, SPI_MEM_CACHE_SRAM_USR_WR_CMD_BITLEN_S);
+	SET_PERI_REG_BITS(SPI_MEM_SRAM_DWR_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_WR_CMD_VALUE, OPI_PSRAM_SYNC_WRITE, SPI_MEM_CACHE_SRAM_USR_WR_CMD_VALUE_S);
+
+	//Config Read CMD phase for SPI0 to access PSRAM
+	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_CACHE_SRAM_USR_RCMD_M);
+	SET_PERI_REG_BITS(SPI_MEM_SRAM_DRD_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_RD_CMD_BITLEN_V, OCT_PSRAM_RD_CMD_BITLEN - 1, SPI_MEM_CACHE_SRAM_USR_RD_CMD_BITLEN_S);
+	SET_PERI_REG_BITS(SPI_MEM_SRAM_DRD_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_RD_CMD_VALUE_V, OPI_PSRAM_SYNC_READ, SPI_MEM_CACHE_SRAM_USR_RD_CMD_VALUE_S);
+
+	//Config ADDR phase
+	SET_PERI_REG_BITS(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_ADDR_BITLEN_V, OCT_PSRAM_ADDR_BITLEN - 1, SPI_MEM_SRAM_ADDR_BITLEN_S);
+	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_CACHE_USR_SCMD_4BYTE_M);
+
+	//Config RD/WR Dummy phase
+	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_USR_RD_SRAM_DUMMY_M | SPI_MEM_USR_WR_SRAM_DUMMY_M);
+	SET_PERI_REG_BITS(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_RDUMMY_CYCLELEN_V, OCT_PSRAM_RD_DUMMY_BITLEN - 1, SPI_MEM_SRAM_RDUMMY_CYCLELEN_S);
+	SET_PERI_REG_MASK(SPI_MEM_SPI_SMEM_DDR_REG(0), SPI_MEM_SPI_SMEM_VAR_DUMMY_M);
+	SET_PERI_REG_BITS(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_WDUMMY_CYCLELEN_V, OCT_PSRAM_WR_DUMMY_BITLEN - 1, SPI_MEM_SRAM_WDUMMY_CYCLELEN_S);
+
+	CLEAR_PERI_REG_MASK(SPI_MEM_SPI_SMEM_DDR_REG(0), SPI_MEM_SPI_SMEM_DDR_WDAT_SWP_M | SPI_MEM_SPI_SMEM_DDR_RDAT_SWP_M);
+	SET_PERI_REG_MASK(SPI_MEM_SPI_SMEM_DDR_REG(0), SPI_MEM_SPI_SMEM_DDR_EN_M);
+
+	SET_PERI_REG_MASK(SPI_MEM_SRAM_CMD_REG(0), SPI_MEM_SDUMMY_OUT_M | SPI_MEM_SCMD_OCT_M | SPI_MEM_SADDR_OCT_M | SPI_MEM_SDOUT_OCT_M | SPI_MEM_SDIN_OCT_M);
+	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_OCT_M);
+
+	Cache_Resume_DCache(0);
+}
 
 
 int psram_enable(psram_cache_mode_t mode, psram_vaddr_mode_t vaddrmode) {
@@ -181,36 +236,6 @@ int psram_enable(psram_cache_mode_t mode, psram_vaddr_mode_t vaddrmode) {
 
 	s_config_psram_spi_phases();
 	return 0;
-}
-
-static void s_config_psram_spi_phases(void) {
-	//Config Write CMD phase for SPI0 to access PSRAM
-	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_CACHE_SRAM_USR_WCMD_M);
-	SET_PERI_REG_BITS(SPI_MEM_SRAM_DWR_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_WR_CMD_BITLEN, OCT_PSRAM_WR_CMD_BITLEN - 1, SPI_MEM_CACHE_SRAM_USR_WR_CMD_BITLEN_S);
-	SET_PERI_REG_BITS(SPI_MEM_SRAM_DWR_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_WR_CMD_VALUE, OPI_PSRAM_SYNC_WRITE, SPI_MEM_CACHE_SRAM_USR_WR_CMD_VALUE_S);
-
-	//Config Read CMD phase for SPI0 to access PSRAM
-	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_CACHE_SRAM_USR_RCMD_M);
-	SET_PERI_REG_BITS(SPI_MEM_SRAM_DRD_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_RD_CMD_BITLEN_V, OCT_PSRAM_RD_CMD_BITLEN - 1, SPI_MEM_CACHE_SRAM_USR_RD_CMD_BITLEN_S);
-	SET_PERI_REG_BITS(SPI_MEM_SRAM_DRD_CMD_REG(0), SPI_MEM_CACHE_SRAM_USR_RD_CMD_VALUE_V, OPI_PSRAM_SYNC_READ, SPI_MEM_CACHE_SRAM_USR_RD_CMD_VALUE_S);
-
-	//Config ADDR phase
-	SET_PERI_REG_BITS(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_ADDR_BITLEN_V, OCT_PSRAM_ADDR_BITLEN - 1, SPI_MEM_SRAM_ADDR_BITLEN_S);
-	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_CACHE_USR_SCMD_4BYTE_M);
-
-	//Config RD/WR Dummy phase
-	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_USR_RD_SRAM_DUMMY_M | SPI_MEM_USR_WR_SRAM_DUMMY_M);
-	SET_PERI_REG_BITS(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_RDUMMY_CYCLELEN_V, OCT_PSRAM_RD_DUMMY_BITLEN - 1, SPI_MEM_SRAM_RDUMMY_CYCLELEN_S);
-	SET_PERI_REG_MASK(SPI_MEM_SPI_SMEM_DDR_REG(0), SPI_MEM_SPI_SMEM_VAR_DUMMY_M);
-	SET_PERI_REG_BITS(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_WDUMMY_CYCLELEN_V, OCT_PSRAM_WR_DUMMY_BITLEN - 1, SPI_MEM_SRAM_WDUMMY_CYCLELEN_S);
-
-	CLEAR_PERI_REG_MASK(SPI_MEM_SPI_SMEM_DDR_REG(0), SPI_MEM_SPI_SMEM_DDR_WDAT_SWP_M | SPI_MEM_SPI_SMEM_DDR_RDAT_SWP_M);
-	SET_PERI_REG_MASK(SPI_MEM_SPI_SMEM_DDR_REG(0), SPI_MEM_SPI_SMEM_DDR_EN_M);
-
-	SET_PERI_REG_MASK(SPI_MEM_SRAM_CMD_REG(0), SPI_MEM_SDUMMY_OUT_M | SPI_MEM_SCMD_OCT_M | SPI_MEM_SADDR_OCT_M | SPI_MEM_SDOUT_OCT_M | SPI_MEM_SDIN_OCT_M);
-	SET_PERI_REG_MASK(SPI_MEM_CACHE_SCTRL_REG(0), SPI_MEM_SRAM_OCT_M);
-
-	Cache_Resume_DCache(0);
 }
 
 psram_size_t psram_get_size()
@@ -470,14 +495,29 @@ bool esp_spiram_is_initialized(void)
 	return s_spiram_inited;
 }
 
-uint8_t esp_spiram_get_cs_io(void)
-{
+uint8_t psram_get_cs_io(void) {
+	return OCT_PSRAM_CS1_IO;
+}
+
+uint8_t esp_spiram_get_cs_io(void) {
 	return psram_get_cs_io();
 }
 
+#define SPI_TIMING_CORE_CLOCK_MHZ 80 // TODO
 
-uint8_t psram_get_cs_io(void)
-{
-	return OCT_PSRAM_CS1_IO;
+spi_timing_config_core_clock_t spi_timing_config_get_core_clock(void) {
+	switch (SPI_TIMING_CORE_CLOCK_MHZ) {
+	case 80:
+		return SPI_TIMING_CONFIG_CORE_CLOCK_80M;
+	case 120:
+		return SPI_TIMING_CONFIG_CORE_CLOCK_120M;
+	case 160:
+		return SPI_TIMING_CONFIG_CORE_CLOCK_160M;
+	case 240:
+		return SPI_TIMING_CONFIG_CORE_CLOCK_240M;
+	default:
+		abort();
+	}
 }
+
 

@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,7 @@
 #include "soc/gpio.h"
 #include "soc/peripherals.h"
 #include "soc/trace.h"
+#include "bluetooth/bluetooth.h"
 
 #define DR_REG_SYSCON_BASE                      0x60026000
 #define SYSCON_WIFI_RST_EN_REG          (DR_REG_SYSCON_BASE + 0x18)
@@ -506,7 +508,7 @@ const esp_phy_init_data_t* esp_phy_get_init_data(void)
 	}
 	// read phy data from flash
 	int err = esp_partition_read(partition, 0, init_data_store, init_data_store_length);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		free(init_data_store);
 		return NULL;
 	}
@@ -537,7 +539,7 @@ const esp_phy_init_data_t* esp_phy_get_init_data(void)
 
 		// write default data
 		err = esp_partition_write(partition, 0, init_data_store, init_data_store_length);
-		if (err != ESP_OK) {
+		if (err != 0) {
 			free(init_data_store);
 			return NULL;
 		}
@@ -579,19 +581,77 @@ static const char* PHY_CAL_VERSION_KEY = "cal_version";
 static const char* PHY_CAL_MAC_KEY = "cal_mac";
 static const char* PHY_CAL_DATA_KEY = "cal_data";
 
-static int load_cal_data_from_nvs_handle(nvs_handle_t handle,
-		esp_phy_calibration_data_t* out_cal_data);
+int load_cal_data_from_nvs_handle(nvs_handle_t handle, esp_phy_calibration_data_t* out_cal_data) {
+	int err;
+	uint32_t cal_data_version;
 
-static int store_cal_data_to_nvs_handle(nvs_handle_t handle,
-		const esp_phy_calibration_data_t* cal_data);
+	err = nvs_get_u32(handle, PHY_CAL_VERSION_KEY, &cal_data_version);
+	if (err != 0) {
+		return err;
+	}
+	uint32_t cal_format_version = phy_get_rf_cal_version() & (~(1<<(16)));
+	if (cal_data_version != cal_format_version) {
+		return EPERM;
+	}
+	uint8_t cal_data_mac[6];
+	size_t length = sizeof(cal_data_mac);
+	err = nvs_get_blob(handle, PHY_CAL_MAC_KEY, cal_data_mac, &length);
+	if (err != 0) {
+		return err;
+	}
+	if (length != sizeof(cal_data_mac)) {
+		return EINVAL;
+	}
+	uint8_t sta_mac[6];
+	esp_efuse_mac_get_default(sta_mac);
+	if (memcmp(sta_mac, cal_data_mac, sizeof(sta_mac)) != 0) {
+		return EPERM;
+	}
+	length = sizeof(*out_cal_data);
+	err = nvs_get_blob(handle, PHY_CAL_DATA_KEY, out_cal_data, &length);
+	if (err != 0) {
+		return err;
+	}
+	if (length != sizeof(*out_cal_data)) {
+		return EINVAL;
+	}
+	return 0;
+}
 
-int esp_phy_load_cal_data_from_nvs(esp_phy_calibration_data_t* out_cal_data)
-{
+int store_cal_data_to_nvs_handle(nvs_handle_t handle, const esp_phy_calibration_data_t* cal_data) {
+	int err;
+
+	err = nvs_set_blob(handle, PHY_CAL_DATA_KEY, cal_data, sizeof(*cal_data));
+	if (err != 0) {
+		return err;
+	}
+
+	uint8_t sta_mac[6];
+	esp_efuse_mac_get_default(sta_mac);
+	err = nvs_set_blob(handle, PHY_CAL_MAC_KEY, sta_mac, sizeof(sta_mac));
+	if (err != 0) {
+		return err;
+	}
+
+	uint32_t cal_format_version = phy_get_rf_cal_version() & (~(1<<(16)));
+	err = nvs_set_u32(handle, PHY_CAL_VERSION_KEY, cal_format_version);
+	if (err != 0) {
+		return err;
+	}
+
+	err = nvs_commit(handle);
+	if (err != 0) {
+	}
+
+	return err;
+}
+
+int esp_phy_load_cal_data_from_nvs(esp_phy_calibration_data_t* out_cal_data) {
 	nvs_handle_t handle;
 	int err = nvs_open(PHY_NAMESPACE, NVS_READONLY, &handle);
 	if (err == ESP_ERR_NVS_NOT_INITIALIZED) {
 		return err;
-	} else if (err != ESP_OK) {
+	} else if (err != 0) {
 		return err;
 	}
 	err = load_cal_data_from_nvs_handle(handle, out_cal_data);
@@ -603,7 +663,7 @@ int esp_phy_store_cal_data_to_nvs(const esp_phy_calibration_data_t* cal_data)
 {
 	nvs_handle_t handle;
 	int err = nvs_open(PHY_NAMESPACE, NVS_READWRITE, &handle);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		return err;
 	}
 	else {
@@ -617,16 +677,16 @@ int esp_phy_erase_cal_data_in_nvs(void)
 {
 	nvs_handle_t handle;
 	int err = nvs_open(PHY_NAMESPACE, NVS_READWRITE, &handle);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		return err;
 	}
 	else {
 		err = nvs_erase_all(handle);
-		if (err != ESP_OK) {
+		if (err != 0) {
 		}
 		else {
 			err = nvs_commit(handle);
-			if (err != ESP_OK) {
+			if (err != 0) {
 			}
 		}
 	}
@@ -634,74 +694,6 @@ int esp_phy_erase_cal_data_in_nvs(void)
 	return err;
 }
 
-static int load_cal_data_from_nvs_handle(nvs_handle_t handle,
-		esp_phy_calibration_data_t* out_cal_data)
-{
-	int err;
-	uint32_t cal_data_version;
-
-	err = nvs_get_u32(handle, PHY_CAL_VERSION_KEY, &cal_data_version);
-	if (err != ESP_OK) {
-		return err;
-	}
-	uint32_t cal_format_version = phy_get_rf_cal_version() & (~BIT(16));
-	if (cal_data_version != cal_format_version) {
-		return ESP_FAIL;
-	}
-	uint8_t cal_data_mac[6];
-	size_t length = sizeof(cal_data_mac);
-	err = nvs_get_blob(handle, PHY_CAL_MAC_KEY, cal_data_mac, &length);
-	if (err != ESP_OK) {
-		return err;
-	}
-	if (length != sizeof(cal_data_mac)) {
-		return ESP_ERR_INVALID_SIZE;
-	}
-	uint8_t sta_mac[6];
-	esp_efuse_mac_get_default(sta_mac);
-	if (memcmp(sta_mac, cal_data_mac, sizeof(sta_mac)) != 0) {
-		return ESP_FAIL;
-	}
-	length = sizeof(*out_cal_data);
-	err = nvs_get_blob(handle, PHY_CAL_DATA_KEY, out_cal_data, &length);
-	if (err != ESP_OK) {
-		return err;
-	}
-	if (length != sizeof(*out_cal_data)) {
-		return ESP_ERR_INVALID_SIZE;
-	}
-	return ESP_OK;
-}
-
-static int store_cal_data_to_nvs_handle(nvs_handle_t handle,
-		const esp_phy_calibration_data_t* cal_data)
-{
-	int err;
-
-	err = nvs_set_blob(handle, PHY_CAL_DATA_KEY, cal_data, sizeof(*cal_data));
-	if (err != ESP_OK) {
-		return err;
-	}
-
-	uint8_t sta_mac[6];
-	esp_efuse_mac_get_default(sta_mac);
-	err = nvs_set_blob(handle, PHY_CAL_MAC_KEY, sta_mac, sizeof(sta_mac));
-	if (err != ESP_OK) {
-		return err;
-	}
-
-	uint32_t cal_format_version = phy_get_rf_cal_version() & (~BIT(16));
-	err = nvs_set_u32(handle, PHY_CAL_VERSION_KEY, cal_format_version);
-	if (err != ESP_OK) {
-		return err;
-	}
-
-	err = nvs_commit(handle);
-	if (err != ESP_OK) {
-	}
-
-	return err;
-}
 
 #if CONFIG_ESP_PHY_REDUCE_TX_POWER
 static void __attribute((unused)) esp_phy_reduce_tx_power(esp_phy_init_data_t* init_data)
@@ -761,7 +753,7 @@ void esp_phy_load_cal_and_init(void)
 		calibration_mode = PHY_RF_CAL_NONE;
 	}
 	int err = esp_phy_load_cal_data_from_nvs(cal_data);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		calibration_mode = PHY_RF_CAL_FULL;
 	}
 
@@ -771,11 +763,11 @@ void esp_phy_load_cal_and_init(void)
 	if (ret == ESP_CAL_DATA_CHECK_FAIL) {
 	}
 
-	if ((calibration_mode != PHY_RF_CAL_NONE && err != ESP_OK) ||
+	if ((calibration_mode != PHY_RF_CAL_NONE && err != 0) ||
 			(calibration_mode != PHY_RF_CAL_FULL && ret == ESP_CAL_DATA_CHECK_FAIL)) {
 		err = esp_phy_store_cal_data_to_nvs(cal_data);
 	} else {
-		err = ESP_OK;
+		err = 0;
 	}
 #else
 	register_chipv7_phy(init_data, cal_data, PHY_RF_CAL_FULL);
@@ -799,9 +791,9 @@ static int phy_crc_check_init_data(uint8_t* init_data, const uint8_t* checksum, 
 	uint32_t crc_size_conversion = htonl(crc_data);
 
 	if (crc_size_conversion != *(uint32_t*)(checksum)) {
-		return ESP_FAIL;
+		return EPERM;
 	}
-	return ESP_OK;
+	return 0;
 }
 
 static uint8_t phy_find_bin_type_according_country(const char* country)
@@ -839,9 +831,9 @@ static int phy_find_bin_data_according_type(uint8_t* out_init_data_store,
 	  }
 
 	  if (i == init_data_control_info->number) {
-		  return ESP_FAIL;
+		  return EPERM;
 	  }
-	  return ESP_OK;
+	  return 0;
 }
 
 static int phy_get_multiple_init_data(const esp_partition_t* partition,
@@ -851,34 +843,34 @@ static int phy_get_multiple_init_data(const esp_partition_t* partition,
 {
 	phy_control_info_data_t* init_data_control_info = (phy_control_info_data_t*) malloc(sizeof(phy_control_info_data_t));
 	if (init_data_control_info == NULL) {
-		return ESP_FAIL;
+		return EPERM;
 	}
-	int err = ESP_OK;
+	int err = 0;
 #if CONFIG_ESP_PHY_MULTIPLE_INIT_DATA_BIN_EMBED
 	memcpy(init_data_control_info, multi_phy_init_data_bin_start + init_data_store_length, sizeof(phy_control_info_data_t));
 #else
 	err = esp_partition_read(partition, init_data_store_length, init_data_control_info, sizeof(phy_control_info_data_t));
-	if (err != ESP_OK) {
+	if (err != 0) {
 		free(init_data_control_info);
-		return ESP_FAIL;
+		return EPERM;
 	}
 #endif
 	if ((init_data_control_info->check_algorithm) == PHY_CRC_ALGORITHM) {
 		err =  phy_crc_check_init_data(init_data_control_info->multiple_bin_checksum, init_data_control_info->control_info_checksum,
 				sizeof(phy_control_info_data_t) - sizeof(init_data_control_info->control_info_checksum));
-		if (err != ESP_OK) {
+		if (err != 0) {
 			free(init_data_control_info);
-			return ESP_FAIL;
+			return EPERM;
 		}
 	} else {
 		free(init_data_control_info);
-		return ESP_FAIL;
+		return EPERM;
 	}
 
 	uint8_t* init_data_multiple = (uint8_t*) malloc(sizeof(esp_phy_init_data_t) * init_data_control_info->number);
 	if (init_data_multiple == NULL) {
 		free(init_data_control_info);
-		return ESP_FAIL;
+		return EPERM;
 	}
 
 #if CONFIG_ESP_PHY_MULTIPLE_INIT_DATA_BIN_EMBED
@@ -886,28 +878,28 @@ static int phy_get_multiple_init_data(const esp_partition_t* partition,
 #else
 	err = esp_partition_read(partition, init_data_store_length + sizeof(phy_control_info_data_t),
 			init_data_multiple, sizeof(esp_phy_init_data_t) * init_data_control_info->number);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		free(init_data_multiple);
 		free(init_data_control_info);
-		return ESP_FAIL;
+		return EPERM;
 	}
 #endif
 	if ((init_data_control_info->check_algorithm) == PHY_CRC_ALGORITHM) {
 		err = phy_crc_check_init_data(init_data_multiple, init_data_control_info->multiple_bin_checksum,
 				sizeof(esp_phy_init_data_t) * init_data_control_info->number);
-		if (err != ESP_OK) {
+		if (err != 0) {
 			free(init_data_multiple);
 			free(init_data_control_info);
-			return ESP_FAIL;
+			return EPERM;
 		}
 	} else {
 		free(init_data_multiple);
 		free(init_data_control_info);
-		return ESP_FAIL;
+		return EPERM;
 	}
 
 	err = phy_find_bin_data_according_type(init_data_store, init_data_control_info, init_data_multiple, init_data_type);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		s_phy_init_data_type = ESP_PHY_INIT_DATA_TYPE_DEFAULT;
 	} else {
 		s_phy_init_data_type = init_data_type;
@@ -915,56 +907,56 @@ static int phy_get_multiple_init_data(const esp_partition_t* partition,
 
 	free(init_data_multiple);
 	free(init_data_control_info);
-	return ESP_OK;
+	return 0;
 }
 
 int esp_phy_update_init_data(phy_init_data_type_t init_data_type)
 {
 #if CONFIG_ESP_PHY_MULTIPLE_INIT_DATA_BIN_EMBED
-	int err = ESP_OK;
+	int err = 0;
 	const esp_partition_t* partition = NULL;
 	size_t init_data_store_length = sizeof(phy_init_magic_pre) +
 		sizeof(esp_phy_init_data_t) + sizeof(phy_init_magic_post);
 	uint8_t* init_data_store = (uint8_t*) malloc(init_data_store_length);
 	if (init_data_store == NULL) {
-		return ESP_ERR_NO_MEM;
+		return ENOMEM;
 	}
 	memcpy(init_data_store, multi_phy_init_data_bin_start, init_data_store_length);
 #else
 	const esp_partition_t* partition = esp_partition_find_first(
 		  ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_PHY, NULL);
 	if (partition == NULL) {
-		return ESP_FAIL;
+		return EPERM;
 	}
 	size_t init_data_store_length = sizeof(phy_init_magic_pre) +
 		sizeof(esp_phy_init_data_t) + sizeof(phy_init_magic_post);
 	uint8_t* init_data_store = (uint8_t*) malloc(init_data_store_length);
 	if (init_data_store == NULL) {
-		return ESP_ERR_NO_MEM;
+		return ENOMEM;
 	}
 
 	int err = esp_partition_read(partition, 0, init_data_store, init_data_store_length);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		free(init_data_store);
-		return ESP_FAIL;
+		return EPERM;
 	}
 #endif
 	if (memcmp(init_data_store, PHY_INIT_MAGIC, sizeof(phy_init_magic_pre)) != 0 ||
 			memcmp(init_data_store + init_data_store_length - sizeof(phy_init_magic_post),
 				PHY_INIT_MAGIC, sizeof(phy_init_magic_post)) != 0) {
 		free(init_data_store);
-		return ESP_FAIL;
+		return EPERM;
 	}
 
 	//find init data bin according init data type
 	if (init_data_type != ESP_PHY_INIT_DATA_TYPE_DEFAULT) {
 		err = phy_get_multiple_init_data(partition, init_data_store, init_data_store_length, init_data_type);
-		if (err != ESP_OK) {
+		if (err != 0) {
 			free(init_data_store);
 #if CONFIG_ESP_PHY_INIT_DATA_ERROR
 			abort();
 #else
-			return ESP_FAIL;
+			return EPERM;
 #endif
 		}
 	} else {
@@ -973,9 +965,9 @@ int esp_phy_update_init_data(phy_init_data_type_t init_data_type)
 
 	if (s_current_apply_phy_init_data != s_phy_init_data_type) {
 		err = esp_phy_apply_phy_init_data(init_data_store + sizeof(phy_init_magic_pre));
-		if (err != ESP_OK) {
+		if (err != 0) {
 			free(init_data_store);
-			return ESP_FAIL;
+			return EPERM;
 		}
 
 				s_phy_type[s_current_apply_phy_init_data], s_phy_type[s_phy_init_data_type]);
@@ -983,7 +975,7 @@ int esp_phy_update_init_data(phy_init_data_type_t init_data_type)
 	}
 
 	free(init_data_store);
-	return ESP_OK;
+	return 0;
 }
 #endif
 
@@ -993,26 +985,26 @@ int esp_phy_update_country_info(const char *country)
 	uint8_t phy_init_data_type_map = 0;
 
 	if (!s_multiple_phy_init_data_bin) {
-		return ESP_FAIL;
+		return EPERM;
 	}
 
 	if (!memcmp(country, s_phy_current_country, sizeof(s_phy_current_country))) {
-		return ESP_OK;
+		return 0;
 	}
 
 	memcpy(s_phy_current_country, country, sizeof(s_phy_current_country));
 
 	phy_init_data_type_map = phy_find_bin_type_according_country(country);
 	if (phy_init_data_type_map == s_phy_init_data_type) {
-		return ESP_OK;
+		return 0;
 	}
 
 	int err =  esp_phy_update_init_data(phy_init_data_type_map);
-	if (err != ESP_OK) {
+	if (err != 0) {
 		return err;
 	}
 #endif
-	return ESP_OK;
+	return 0;
 }
 
 void esp_wifi_power_domain_on(void) __attribute__((alias("esp_wifi_bt_power_domain_on")));
